@@ -1,0 +1,23 @@
+# Copyright 2016 Toyota Research Institute.  All rights reserved.
+
+# Valgrind test config.
+build:valgrind --run_under /usr/bin/valgrind
+
+# Default to an optimized build
+build -c opt
+
+# Common options
+build --strip=never
+build --copt -Wall
+build --copt -Werror
+build --copt -Wextra
+
+# N.B.: this library's assertions are written such that they are integral to
+# the test strategy, and not a performance issue. Do not change this line.
+build --copt -UNDEBUG
+
+build --copt -D_LINUX
+build --copt -msse3
+
+test --test_output=errors
+

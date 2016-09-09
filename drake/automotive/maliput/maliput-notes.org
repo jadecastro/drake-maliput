@@ -1,0 +1,18 @@
+
+
+* Setup build env
+** Setup bazel
+   : echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+   : curl https://storage.googleapis.com/bazel-apt/doc/apt-key.pub.gpg | sudo apt-key add -
+
+   : sudo aptitude update && sudo aptitude install bazel
+
+   : sudo aptitude upgrade bazel
+
+** Fetch dependencies
+   : sudo aptitude install build-essential libboost-dev
+
+
+* Building
+  : cd maliput
+  : bazel build //...
