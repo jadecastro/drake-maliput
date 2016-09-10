@@ -36,7 +36,7 @@ double Lane::length() const {
 Rot3 Lane::rot3_of_p_(const double p) const {
   return Rot3(heading_of_p_(p),
               -std::atan(elevation().fdot_p(p)),
-              superelevation().f_p(p));
+              superelevation().f_p(p) * p_scale_);
 }
 
 

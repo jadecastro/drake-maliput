@@ -34,6 +34,21 @@ TEST(HodgePodge, Podge) {
   EXPECT_NEAR(xyz.y_, 0., 1e-2);
   EXPECT_NEAR(xyz.z_, 0., 1e-2);
 
+  xyz = l1->ToGeoPosition({1., 0., 0.});
+  EXPECT_NEAR(xyz.x_, 100. * (1. / 141.42), 1e-2);
+  EXPECT_NEAR(xyz.y_, 100. * (1. / 141.42), 1e-2);
+  EXPECT_NEAR(xyz.z_, 0., 1e-2);
+
+  xyz = l1->ToGeoPosition({1., 1., 0.});
+  EXPECT_NEAR(xyz.x_, 0, 1e-2);
+  EXPECT_NEAR(xyz.y_, 2. * 100. * (1. / 141.42), 1e-2);
+  EXPECT_NEAR(xyz.z_, 0., 1e-2);
+
+  xyz = l1->ToGeoPosition({0., 1., 0.});
+  EXPECT_NEAR(xyz.x_, 100. * (-1. / 141.42), 1e-2);
+  EXPECT_NEAR(xyz.y_, 100. * (1. / 141.42), 1e-2);
+  EXPECT_NEAR(xyz.z_, 0., 1e-2);
+
   xyz = l1->ToGeoPosition({141.42, 0., 0.});
   EXPECT_NEAR(xyz.x_, 100., 1e-2);
   EXPECT_NEAR(xyz.y_, 100., 1e-2);
