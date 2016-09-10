@@ -5,8 +5,12 @@ cc_library(
     name = "maliput",
 #LATER#    srcs = glob(["**/*.cc"], exclude=["**/test/*.cc"]),
 #LATER#    hdrs = glob(["**/*.h"], exclude=["**/test/*.h"]),
-    srcs = glob(["geometry_api/*.cc", "monolane/*.cc"], exclude=["**/test/*.cc"]),
-    hdrs = glob(["geometry_api/*.h", "monolane/*.h"], exclude=["**/test/*.h"]),
+    srcs = glob(["geometry_api/*.cc",
+                 "monolane/*.cc",
+                 "utility/*.cc"], exclude=["**/test/*.cc"]),
+    hdrs = glob(["geometry_api/*.h",
+                 "monolane/*.h",
+                 "utility/*.h"], exclude=["**/test/*.h"]),
 ###    defines = ["GLM_FORCE_RADIANS"],
 ###    copts = ["-I/usr/include/ImageMagick"],
 ###    linkopts = ["-lGLEW", "-lglfw", "-lGL", "-lproj", "-lz",
@@ -25,6 +29,14 @@ cc_test(
     deps = [":maliput", "@gtest//:main",],
     size = "small",
     )
+
+cc_binary(
+    name = "maliput_obj_gtest",
+    srcs = [
+        "utility/test/test_generate_obj.cc",
+        ],
+    data = glob(["data/**"]),
+    deps = [":maliput", "@gtest//:main"])
 
 #LATER#cc_binary(
 #LATER#    name = "maliput_gl_gtest",

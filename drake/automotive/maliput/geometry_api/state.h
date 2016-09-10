@@ -20,6 +20,8 @@ struct Rotation {
 
 
 struct GeoPosition {
+  GeoPosition() {}
+
   GeoPosition(double x, double y, double z) : x_(x), y_(y), z_(z) {}
 
   double x_{};
