@@ -28,11 +28,12 @@ TEST(GenerateObj, Podge) {
   const double kPi2 = kPi / 2.;
 
   mono::RoadGeometry rg = mono::RoadGeometry({"apple"});
-  rg.NewJunction({"j1"})->NewSegment({"s1"})->NewLineLane(
+  auto l0 = rg.NewJunction({"j1"})->NewSegment({"s1"})->NewLineLane(
       {"l1"}, {0., 0.}, {100., 0.},
       {-5., 5.}, {-10., 10.},
       {0., 0., (60. / 100.), (-40. / 100)},
       zp);
+  EXPECT_NEAR(20., l0->ToGeoPosition({l0->length(), 0., 0.}).z_, 1e-12);
 
   const double s50 = 50. * kPi2;
   rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
@@ -67,6 +68,88 @@ TEST(GenerateObj, Podge) {
 
 
   generate_obj(&rg, "/tmp/omg.obj", 1.);
+}
+
+TEST(GenerateObj, Fig8) {
+  mono::CubicPolynomial zp {0., 0., 0., 0.};
+  api::GeoPosition xyz {0., 0., 0.};
+  api::Rotation rot {0., 0., 0.};
+
+  const double kPi = 3.14159;
+  const double kPi2 = kPi / 2.;
+
+  mono::RoadGeometry rg = mono::RoadGeometry({"figure-eight"});
+  api::RBounds lane_rb{-2., 2.};
+  api::RBounds drive_rb{-4., 4.};
+  auto l0 = rg.NewJunction({"j1"})->NewSegment({"s1"})->NewLineLane(
+      {"l1"}, {0., 0.}, {50., 0.},
+      lane_rb, drive_rb,
+      {0., 0., (3. * 3. / 50.), (-2 * 3. / 50.)},
+      zp);
+  EXPECT_NEAR(50., l0->length(), 0.1);
+  EXPECT_NEAR(3., l0->ToGeoPosition({l0->length(), 0., 0.}).z_, 1e-12);
+
+  // TODO(rick.poyner@tri.global): add curve superelevations.
+  const double s50 = 50. * kPi2;
+  auto l1 = rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
+      {"l2"}, {50., 50.}, 50., -kPi2, 1.5 * kPi2,
+      lane_rb, drive_rb,
+      {(3. / (s50 * 1.5)), 0., 0., 0.},
+      zp);
+  EXPECT_NEAR(3., l1->ToGeoPosition({0., 0., 0.}).z_, 1e-12);
+  EXPECT_NEAR(3., l1->ToGeoPosition({l1->length(), 0., 0.}).z_, 1e-12);
+
+  auto l2 = rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
+      {"l2"}, {50., 50.}, 50., 0.5 * kPi2, 1.5 * kPi2,
+      lane_rb, drive_rb,
+      {(3. / (s50 * 1.5)), 0., 0., 0.},
+      zp);
+  EXPECT_NEAR(3., l2->ToGeoPosition({0., 0., 0.}).z_, 1e-12);
+  EXPECT_NEAR(3., l2->ToGeoPosition({l2->length(), 0., 0.}).z_, 1e-12);
+
+  auto l3 = rg.NewJunction({"j1"})->NewSegment({"s1"})->NewLineLane(
+      {"l1"}, {0., 50.}, {0., -50.},
+      lane_rb, drive_rb,
+      {(3. / 50.), 0., (3. * 3. / 50.), (-2 * 3. / 50.)},
+      zp);
+  EXPECT_NEAR(50., l3->length(), 0.1);
+  EXPECT_NEAR(6., l3->ToGeoPosition({l3->length(), 0., 0.}).z_, 1e-12);
+
+  auto l4 = rg.NewJunction({"j1"})->NewSegment({"s1"})->NewLineLane(
+      {"l1"}, {0., 0.}, {0., -50.},
+      lane_rb, drive_rb,
+      {(6. / 50.), 0., (3. * -3. / 50.), (-2 * -3. / 50.)},
+      zp);
+  EXPECT_NEAR(50., l4->length(), 0.1);
+  EXPECT_NEAR(3., l4->ToGeoPosition({l4->length(), 0., 0.}).z_, 1e-12);
+
+  // TODO(rick.poyner@tri.global): add curve superelevations.
+  auto l5 = rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
+      {"l2"}, {-50., -50.}, -50., 0., -1.5 * kPi2,
+      lane_rb, drive_rb,
+      {(3. / (s50 * 1.5)), 0., 0., 0.},
+      zp);
+  EXPECT_NEAR(50., l4->length(), 0.1);
+  EXPECT_NEAR(3., l5->ToGeoPosition({0., 0., 0.}).z_, 1e-12);
+  EXPECT_NEAR(3., l5->ToGeoPosition({l5->length(), 0., 0.}).z_, 1e-12);
+
+  auto l6 = rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
+      {"l6"}, {-50., -50.}, 50., 0.5 * kPi2, 1.5 * kPi2,
+      lane_rb, drive_rb,
+      {(3. / (s50 * 1.5)), 0., 0., 0.},
+      zp);
+  EXPECT_NEAR(3., l6->ToGeoPosition({0., 0., 0.}).z_, 1e-12);
+  EXPECT_NEAR(3., l6->ToGeoPosition({l6->length(), 0., 0.}).z_, 1e-12);
+
+  auto l7 = rg.NewJunction({"j1"})->NewSegment({"s1"})->NewLineLane(
+      {"l1"}, {-50., 0.}, {50., 0.},
+      lane_rb, drive_rb,
+      {(3. / 50.), 0., (3. * -3. / 50.), (-2 * -3. / 50.)},
+      zp);
+  EXPECT_NEAR(50., l7->length(), 0.1);
+  EXPECT_NEAR(0., l7->ToGeoPosition({l7->length(), 0., 0.}).z_, 1e-12);
+
+  generate_obj(&rg, "/tmp/wtf.obj", 1.);
 }
 
 
