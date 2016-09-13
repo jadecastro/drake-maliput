@@ -8,7 +8,7 @@ namespace geometry_api {
 
 class BranchPoint;
 class Segment;
-class SetOfLanes;
+class SetOfLaneEnds;
 
 class BranchChoices; // TODO maddog define me.
 
@@ -64,11 +64,14 @@ class Lane {
                              LanePosition* new_lane_pos,
                              LanePosition* new_lane_vel) const = 0;
 
-  virtual const BranchPoint* GetBranchPoint(Endpoint which_end) const = 0;
+  virtual const BranchPoint* GetBranchPoint(
+      const LaneEnd::Which which_end) const = 0;
 
-  virtual const SetOfLanes* GetBranches(Endpoint which_end) const = 0;
+  virtual const SetOfLaneEnds* GetBranches(
+      const LaneEnd::Which which_end) const = 0;
 
-  virtual const Lane* GetDefaultBranch(Endpoint which_end) const = 0;
+  virtual const LaneEnd& GetDefaultBranch(
+      const LaneEnd::Which which_end) const = 0;
 };
 
 

@@ -6,14 +6,13 @@ namespace maliput {
 namespace geometry_api {
 
 
-
-class SetOfLanes {
+class SetOfLaneEnds {
  public:
-  virtual ~SetOfLanes() {}
+  virtual ~SetOfLaneEnds() {}
 
   // TODO maddog  Improve this.
   virtual int count() const = 0;
-  virtual const Lane* get(int index) const = 0;
+  virtual const LaneEnd& get(int index) const = 0;
 };
 
 
@@ -25,13 +24,13 @@ class BranchPoint {
   // Provide persistent ID.
   virtual const BranchPointId id() const = 0;
 
-  virtual const SetOfLanes* GetBranches(const Lane* lane,
-                                        const Lane::Endpoint which_end) const = 0;
-  virtual const Lane* GetDefaultBranch(const Lane* lane,
-                                       const Lane::Endpoint which_end) const = 0;
-  virtual const SetOfLanes* GetASide() const = 0;
+  virtual const SetOfLaneEnds* GetBranches(const LaneEnd& end) const = 0;
 
-  virtual const SetOfLanes* GetBSide() const = 0;
+  virtual const LaneEnd& GetDefaultBranch(const LaneEnd& end) const = 0;
+
+  virtual const SetOfLaneEnds* GetASide() const = 0;
+
+  virtual const SetOfLaneEnds* GetBSide() const = 0;
 };
 
 

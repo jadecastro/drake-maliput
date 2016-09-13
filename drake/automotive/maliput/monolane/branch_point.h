@@ -19,50 +19,46 @@ class Lane;
 class RoadGeometry;
 
 
-class SetOfLanes : public api::SetOfLanes {
+class SetOfLaneEnds : public api::SetOfLaneEnds {
  public:
-  virtual int count() const { return lanes_.size(); }
+  virtual ~SetOfLaneEnds() {}
 
-  virtual const api::Lane* get(int index) const;
+  virtual int count() const { return ends_.size(); }
+
+  virtual const api::LaneEnd& get(int index) const;
 
  private:
-  std::vector<Lane*> lanes_;
+  std::vector<api::LaneEnd> ends_;
 };
 
 
 class BranchPoint : public api::BranchPoint {
-
- private:
-  typedef std::pair<const api::Lane*, api::Lane::Endpoint> EndedLane;
-
  public:
   // Provide persistent ID.
   virtual const api::BranchPointId id() const { return id_; }
 
-  virtual const api::SetOfLanes* GetBranches(
-      const api::Lane* lane,
-      const api::Lane::Endpoint which_end) const;
+  virtual const api::SetOfLaneEnds* GetBranches(
+      const api::LaneEnd& end) const;
 
-  virtual const api::Lane* GetDefaultBranch(
-      const api::Lane* lane,
-      const api::Lane::Endpoint which_end) const;
+  virtual const api::LaneEnd& GetDefaultBranch(
+      const api::LaneEnd& end) const;
 
-  virtual const api::SetOfLanes* GetASide() const {
+  virtual const api::SetOfLaneEnds* GetASide() const {
     return &a_side_;
   }
 
-  virtual const api::SetOfLanes* GetBSide() const {
+  virtual const api::SetOfLaneEnds* GetBSide() const {
     return &b_side_;
   }
 
  private:
   api::BranchPointId id_;
   RoadGeometry* road_geometry_;
-  SetOfLanes a_side_;
-  SetOfLanes b_side_;
+  SetOfLaneEnds a_side_;
+  SetOfLaneEnds b_side_;
 
-  std::map<EndedLane, SetOfLanes> branches_;
-  std::map<EndedLane, Lane*> defaults_;
+  std::map<api::LaneEnd, SetOfLaneEnds> branches_;
+  std::map<api::LaneEnd, api::LaneEnd> defaults_;
 };
 
 

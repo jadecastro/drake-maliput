@@ -31,6 +31,15 @@ class Lane : public api::Lane {
         elevation_(elevation),
         superelevation_(superelevation) {}
 
+  // TODO(maddog) Explain clearly how/why the elevation and superelevation
+  //              functions need to be isotropically scaled by the xy-projected
+  //              arc-length of the xy-primitive curve.
+
+
+  // TODO(maddog) Allow lane centerline to be offset from "segment ref line",
+  //              so that superelevation can have a center-of-rotation which
+  //              is different from r=0.
+
   virtual ~Lane() {}
 
   virtual const api::LaneId id() const override { return id_; }
@@ -43,11 +52,14 @@ class Lane : public api::Lane {
 
   virtual const api::Lane* to_right() const override { return nullptr; }
 
-  virtual const api::BranchPoint* GetBranchPoint(Endpoint which_end) const override;
+  virtual const api::BranchPoint* GetBranchPoint(
+      const api::LaneEnd::Which which_end) const override;
 
-  virtual const api::SetOfLanes* GetBranches(Endpoint which_end) const override;
+  virtual const api::SetOfLaneEnds* GetBranches(
+      const api::LaneEnd::Which which_end) const override;
 
-  virtual const api::Lane* GetDefaultBranch(Endpoint which_end) const override;
+  virtual const api::LaneEnd& GetDefaultBranch(
+      const api::LaneEnd::Which which_end) const override;
 
   virtual double length() const override;
 

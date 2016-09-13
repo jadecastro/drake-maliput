@@ -11,20 +11,23 @@ namespace api = maliput::geometry_api;
 
 const api::Segment* Lane::segment() const { return segment_; }
 
-const api::BranchPoint* Lane::GetBranchPoint(Endpoint which_end) const {
+const api::BranchPoint* Lane::GetBranchPoint(
+    const api::LaneEnd::Which which_end) const {
   switch (which_end) {
-    case Endpoint::kStart: { return start_bp_; }
-    case Endpoint::kEnd:   { return end_bp_; }
+    case api::LaneEnd::kStart: { return start_bp_; }
+    case api::LaneEnd::kEnd:   { return end_bp_; }
   }
   assert(0);
 }
 
-const api::SetOfLanes* Lane::GetBranches(Endpoint which_end) const {
-  return GetBranchPoint(which_end)->GetBranches(this, which_end);
+const api::SetOfLaneEnds* Lane::GetBranches(
+    api::LaneEnd::Which which_end) const {
+  return GetBranchPoint(which_end)->GetBranches({this, which_end});
 }
 
-const api::Lane* Lane::GetDefaultBranch(Endpoint which_end) const {
-  return GetBranchPoint(which_end)->GetDefaultBranch(this, which_end);
+const api::LaneEnd& Lane::GetDefaultBranch(
+    api::LaneEnd::Which which_end) const {
+  return GetBranchPoint(which_end)->GetDefaultBranch({this, which_end});
 }
 
 
