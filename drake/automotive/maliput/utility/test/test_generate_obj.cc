@@ -70,6 +70,7 @@ TEST(GenerateObj, Podge) {
   generate_obj(&rg, "/tmp/omg.obj", 1.);
 }
 
+
 TEST(GenerateObj, Fig8) {
   mono::CubicPolynomial zp {0., 0., 0., 0.};
   api::GeoPosition xyz {0., 0., 0.};
@@ -152,6 +153,32 @@ TEST(GenerateObj, Fig8) {
   generate_obj(&rg, "/tmp/wtf.obj", 1.);
 }
 
+
+#if 0
+TEST(GenerateObj, Hodge) {
+  const double kPi = 3.14159;
+  const double kPi2 = kPi / 2.;
+  mono::Builder b = mono::Builder({-5., 5.}, {-10., 10.});
+
+  mono::XYZPoint start {{0., 0., 0.}, {0., 0., 0., 0.}};
+  auto c1 = b.Connect("1", start, 100,
+                      {20., 0., 0., 0.});
+  auto c2 = b.Connect("2", c1->end(), ArcOffset(50., kPi2),
+                      {20., 0., 0.2, 0.});
+  auto c3 = b.Connect("3", c2->end(), ArcOffset(50., kPi2),
+                      {20., 0., 0., 0.});
+  auto c4 = b.Connect("4", c3->end(), 100,
+                      {0., 0., 0., 0.});
+  auto c5 = b.Connect("5", c4->end(), ArcOffset(50., kPi2),
+                      {0., 0., 0.5, 0.});
+  auto c6 = b.Connect("6", c2->end(), ArcOffset(50., kPi2),
+                      {0., 0., 0., 0.});
+  b.CheckCongruent(c6->end(), c1->start());
+
+  std::unique_ptr<mono::RoadGeometry> rg = b.Build("apple");
+  generate_obj(rg, "/tmp/omg.obj", 1.);
+}
+#endif
 
 
 
