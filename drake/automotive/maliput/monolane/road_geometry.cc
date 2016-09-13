@@ -4,6 +4,7 @@
 
 #include "branch_point.h"
 #include "junction.h"
+#include "make_unique.h"
 
 namespace maliput {
 namespace monolane {
@@ -11,19 +12,18 @@ namespace monolane {
 namespace api = maliput::geometry_api;
 
 Junction* RoadGeometry::NewJunction(api::JunctionId id) {
-  Junction* j = new Junction(id, this);
-  junctions_.push_back(j);
-  return j;
+  junctions_.push_back(make_unique<Junction>(id, this));
+  return junctions_.back().get();
 }
 
 
 const api::Junction* RoadGeometry::junction(int index) const {
-  return junctions_[index];
+  return junctions_[index].get();
 }
 
 
 const api::BranchPoint* RoadGeometry::branch_point(int index) const {
-  return branch_points_[index];
+  return branch_points_[index].get();
 }
 
 

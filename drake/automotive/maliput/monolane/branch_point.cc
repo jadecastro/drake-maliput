@@ -15,7 +15,7 @@ const api::SetOfLanes* BranchPoint::GetBranches(
     const api::Lane* lane,
     const api::Lane::Endpoint which_end) const {
   // TODO maddog  Deal with no-such-key.
-  return branches_.at(EndedLane(lane, which_end));
+  return &(branches_.at(EndedLane(lane, which_end)));
 }
 
 const api::Lane* BranchPoint::GetDefaultBranch(

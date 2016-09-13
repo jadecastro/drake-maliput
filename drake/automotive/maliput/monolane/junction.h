@@ -1,6 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <vector>
+
+#include "segment.h"
 
 #include "geometry_api/junction.h"
 #include "geometry_api/road_geometry.h"
@@ -13,7 +16,6 @@ namespace monolane {
 namespace api = maliput::geometry_api;
 
 class RoadGeometry;
-class Segment;
 
 class Junction : public api::Junction {
  public:
@@ -37,7 +39,7 @@ class Junction : public api::Junction {
  private:
   api::JunctionId id_;
   RoadGeometry* road_geometry_;
-  std::vector<Segment*> segments_;
+  std::vector<std::unique_ptr<Segment>> segments_;
 };
 
 

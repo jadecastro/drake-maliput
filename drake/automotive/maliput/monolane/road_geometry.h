@@ -1,6 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <vector>
+
+#include "branch_point.h"
+#include "junction.h"
 
 #include "geometry_api/branch_point.h"
 #include "geometry_api/junction.h"
@@ -10,10 +14,6 @@ namespace maliput {
 namespace monolane {
 
 namespace api = maliput::geometry_api;
-
-class BranchPoint;
-class Junction;
-
 
 /// A simple RoadGeometry implementation that only supports a
 /// single lane per segment.
@@ -47,8 +47,8 @@ class RoadGeometry : public api::RoadGeometry {
 
  private:
   api::RoadGeometryId id_;
-  std::vector<Junction*> junctions_;
-  std::vector<BranchPoint*> branch_points_;
+  std::vector<std::unique_ptr<Junction>> junctions_;
+  std::vector<std::unique_ptr<BranchPoint>> branch_points_;
 };
 
 

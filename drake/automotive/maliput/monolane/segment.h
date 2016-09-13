@@ -1,6 +1,9 @@
 #pragma once
 
 #include <cassert>
+#include <memory>
+
+#include "lane.h"
 
 #include "geometry_api/junction.h"
 #include "geometry_api/lane.h"
@@ -15,7 +18,6 @@ namespace monolane {
 namespace api = maliput::geometry_api;
 
 class Junction;
-class Lane;
 class ArcLane;
 class LineLane;
 
@@ -50,7 +52,7 @@ class Segment : public api::Segment {
  private:
   api::SegmentId id_;
   Junction* junction_;
-  Lane* lane_ {};
+  std::unique_ptr<Lane> lane_;
 };
 
 

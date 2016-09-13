@@ -1,5 +1,6 @@
 #include "junction.h"
 
+#include "make_unique.h"
 #include "road_geometry.h"
 #include "segment.h"
 
@@ -16,14 +17,13 @@ const api::RoadGeometry* Junction::road_geometry() const {
 
 
 Segment* Junction::NewSegment(api::SegmentId id) {
-  Segment* segment = new Segment(id, this);
-  segments_.push_back(segment);
-  return segment;
+  segments_.push_back(make_unique<Segment>(id, this));
+  return segments_.back().get();;
 }
 
 
 const api::Segment* Junction::segment (int index) const {
-  return segments_[index];
+  return segments_[index].get();
 }
 
 } // namespace monolane

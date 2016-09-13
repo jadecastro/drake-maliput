@@ -57,10 +57,11 @@ class BranchPoint : public api::BranchPoint {
 
  private:
   api::BranchPointId id_;
+  RoadGeometry* road_geometry_;
   SetOfLanes a_side_;
   SetOfLanes b_side_;
 
-  std::map<EndedLane, SetOfLanes*> branches_;
+  std::map<EndedLane, SetOfLanes> branches_;
   std::map<EndedLane, Lane*> defaults_;
 };
 
