@@ -32,6 +32,7 @@ cc_test(
 
 cc_test(
     name = "maliput_obj_gtest",
+    size = "small",
     srcs = [
         "utility/test/test_generate_obj.cc",
         ],
