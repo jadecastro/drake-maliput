@@ -30,7 +30,7 @@ cc_test(
     size = "small",
     )
 
-cc_binary(
+cc_test(
     name = "maliput_obj_gtest",
     srcs = [
         "utility/test/test_generate_obj.cc",
