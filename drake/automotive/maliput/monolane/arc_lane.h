@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <cmath>
 
 #include "lane.h"
 
@@ -20,10 +21,12 @@ class ArcLane : public Lane {
           const CubicPolynomial& superelevation)
       : Lane(id, segment,
              lane_bounds, driveable_bounds,
-             radius * d_theta,
+             radius * std::abs(d_theta),
              elevation, superelevation),
         r_(radius), cx_(center.x), cy_(center.y),
-        theta0_(theta0), d_theta_(d_theta) {}
+        theta0_(theta0), d_theta_(d_theta) {
+    assert(r_ > 0.);
+  }
 
 #if 0
   // TODO(maddog)  This belongs in a Builder.
