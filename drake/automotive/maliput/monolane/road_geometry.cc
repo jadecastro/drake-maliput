@@ -17,6 +17,12 @@ Junction* RoadGeometry::NewJunction(api::JunctionId id) {
 }
 
 
+BranchPoint* RoadGeometry::NewBranchPoint(api::BranchPointId id) {
+  branch_points_.push_back(make_unique<BranchPoint>(id, this));
+  return branch_points_.back().get();
+}
+
+
 const api::Junction* RoadGeometry::junction(int index) const {
   return junctions_[index].get();
 }

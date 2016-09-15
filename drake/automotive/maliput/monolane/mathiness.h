@@ -82,6 +82,8 @@ struct Rot3 {
 // parameterized on domain p in [0, 1]
 class CubicPolynomial {
  public:
+  CubicPolynomial() : CubicPolynomial(0., 0., 0., 0.) {}
+
   CubicPolynomial(double a, double b, double c, double d)
       : a_(a), b_(b), c_(c), d_(d) {
     const double df = f_p(1.) - f_p(0.);
@@ -113,11 +115,11 @@ class CubicPolynomial {
   }
 
  private:
-  double a_;
-  double b_;
-  double c_;
-  double d_;
-  double s_1_;
+  double a_{};
+  double b_{};
+  double c_{};
+  double d_{};
+  double s_1_{};
 };
 
 } // namespace monolane

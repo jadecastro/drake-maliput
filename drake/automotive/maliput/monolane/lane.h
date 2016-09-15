@@ -6,7 +6,6 @@
 
 #include "mathiness.h"
 
-
 namespace maliput {
 namespace monolane {
 

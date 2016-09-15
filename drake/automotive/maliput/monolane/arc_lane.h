@@ -28,39 +28,6 @@ class ArcLane : public Lane {
     assert(r_ > 0.);
   }
 
-#if 0
-  // TODO(maddog)  This belongs in a Builder.
-  /// radius > 0: turn to left
-  /// radius < 0: turn to right
-  /// radius == 0:  forbidden
-  ArcLane(const api::LaneId& id, Segment* segment,
-          const V2& xy0, const double heading0, const V2& xy1,
-          const api::RBounds& lane_bounds,
-          const api::RBounds& driveable_bounds,
-          const CubicPolynomial& elevation,
-          const CubicPolynomial& superelevation)
-      : Lane(id, segment,
-             lane_bounds, driveable_bounds, elevation, superelevation) {
-    const V2 B = V2::midpoint(xy1, xy0);
-    const V2 dP = V2::difference(xy1, xy0);
-    double beta = dP.heading() - heading0;
-    assert(beta != 0.);
-    double g = 0.5 / std::tan(beta);
-    double d = dP.length();
-
-    const double PI = 3.14159; // TODO(maddog)  Get from somewhere else.
-    r_ = 0.5 * d / std::sin(beta);
-    cx_ = B.x - (g * dP.y);
-    cy_ = B.y + (g * dP.x);
-    if (r_ > 0.) {
-      theta0_ = heading0 - (0.5 * PI);
-    } else {
-      theta0_ = heading0 + (0.5 * PI);
-    }
-    d_theta_ = 2. * beta;
-  }
-#endif
-
   virtual api::LanePosition ToLanePosition(
       const api::GeoPosition& geo_pos) const override;
 

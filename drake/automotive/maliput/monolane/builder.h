@@ -1,7 +1,24 @@
 #pragma once
 
+
+#include <cassert>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <boost/noncopyable.hpp>
+
+#include "geometry_api/state.h"
+
 namespace maliput {
+
+namespace geometry_api {
+class RoadGeometry;
+}
+
 namespace monolane {
+
+namespace api = maliput::geometry_api;
 
 
 /// Builder for monolane road networks.
@@ -14,45 +31,15 @@ namespace monolane {
 ///    and superelevation
 
 
-
-//XXXstruct LaneParams {
-//XXX  double r_min_;
-//XXX  double r_center_;
-//XXX  double r_max_;
-//XXX};
-
-
-
-
-typedef std::vector<std::pair<std::vector<int>,
-                              std::vector<int>>> LaneMap;
-
-
-class Connection : boost::noncopyable {
- public:
-  Connection(Builder* builder,
-             const std::string& id,
-             const Point& start, const Point& end,
-             const LaneMap& lane_map);
-
-  const Point& start() const { return start_; }
-
-  const Point& end() const { return end_; }
-
-  const LaneMap& lane_map() const { return lane_map_; }
-
- private:
-  std::string id_;
-  Point start_;
-  Point end_;
-  LaneMap lane_map_;
-};
-
-
 struct XYPoint {
-  double x_;
-  double y_;
-  double heading_; // radians, zero == x direction
+  XYPoint() {}
+
+  XYPoint(double x, double y, double heading)
+      :x_(x), y_(y), heading_(heading) {}
+
+  double x_{};
+  double y_{};
+  double heading_{}; // radians, zero == x direction
 };
 
 struct ZPoint {
@@ -64,13 +51,73 @@ struct ZPoint {
 };
 
 struct XYZPoint {
+  XYZPoint() {}
+
+  XYZPoint(const XYPoint& xy, const ZPoint& z) : xy_(xy), z_(z) {}
+
   XYPoint xy_;
   ZPoint z_;
 };
 
+// radius_ must be non-negative.
+// d_theta_ > 0. is counterclockwise ('veer to left').
+// d_theta_ < 0. is clockwise ('veer to right').
 struct ArcOffset {
-  double radius_;
-  double theta_;
+  ArcOffset() {}
+
+  ArcOffset(const double radius, const double d_theta)
+      : radius_(radius), d_theta_(d_theta) {
+    assert(radius_ > 0.);
+  }
+
+  double radius_{};
+  double d_theta_{};
+};
+
+
+class Connection : boost::noncopyable {
+ public:
+  enum Type { kLine, kArc };
+
+  Connection(const Type type, const std::string& id,
+             const XYZPoint& start, const XYZPoint& end)
+      : type_(type), id_(id), start_(start), end_(end) {}
+
+  Connection(const Type type, const std::string& id,
+             const XYZPoint& start, const XYZPoint& end,
+             double cx, double cy, double radius, double d_theta)
+      : type_(type), id_(id), start_(start), end_(end),
+        cx_(cx), cy_(cy), radius_(radius), d_theta_(d_theta) {}
+
+  Type type() const { return type_; }
+
+  const std::string& id() const { return id_; }
+
+  const XYZPoint& start() const { return start_; }
+
+  const XYZPoint& end() const { return end_; }
+
+  double cx() const { return cx_; }
+
+  double cy() const { return cy_; }
+
+  double radius() const { return radius_; }
+
+  double d_theta() const { return d_theta_; }
+
+  ~Connection() {}
+
+ private:
+  Type type_{};
+  std::string id_;
+  XYZPoint start_;
+  XYZPoint end_;
+
+  // Bits specific to type_ == kArc:
+  double cx_{};
+  double cy_{};
+  double radius_{};
+  double d_theta_{};
 };
 
 
@@ -79,57 +126,70 @@ class Builder : boost::noncopyable {
   Builder(const api::RBounds& lane_bounds,
           const api::RBounds& driveable_bounds);
 
-  // Connect a start point to a specific end point.
-  const Connection* Connect(
-      const std::string& id,
-      const Point& start,
-      const Point& end,
-      const LaneMap& lane_map);
+//SOON//  // Connect a start point to a specific end point.
+//SOON//  const Connection* Connect(
+//SOON//      const std::string& id,
+//SOON//      const XYZPoint& start,
+//SOON//      const XYZPoint& end);
+
+  // TODO(maddog) Provide for grouping within Junctions.
+  // TODO(maddog) Provide for explicit branch-point siding of ends...
+  //              e.g. to allow 3-way intersection.
 
   // Connect a start point to an end point relative to the start,
   // with a linear displacement.
   const Connection* Connect(
       const std::string& id,
-      const Point& start,
+      const XYZPoint& start,
       const double length,
-      const ZPoint& z_end,
-      const LaneMap& lane_map);
+      const ZPoint& z_end);
 
   // Connect a start point to an end point relative to the start,
   // with an arc displacement.
   const Connection* Connect(
       const std::string& id,
-      const Point& start,
+      const XYZPoint& start,
+      const ArcOffset& arc,
+      const ZPoint& z_end);
+
+  // Hackery until generic Connect(start, end) implemented.
+  const Connection* Connect(
+      const std::string& id,
+      const XYZPoint& start,
       const ArcOffset& arc,
       const ZPoint& z_end,
-      const LaneMap& lane_map);
+      const XYPoint& forced_end);
 
   // Produce a RoadGeometry.
-  const RoadGeometry* Build() const;
-
+  std::unique_ptr<const api::RoadGeometry> Build(
+      const api::RoadGeometryId& id) const;
 
  private:
   api::RBounds lane_bounds_;
   api::RBounds driveable_bounds_;
   std::vector<std::unique_ptr<Connection>> connections_;
-
-
 };
 
 
 
-} // namespace biarc
+} // namespace monolane
 } // namespace maliput
 
 
+#include <functional>
+#include <tuple>
 
+namespace std {
 
+using XYZPoint = maliput::monolane::XYZPoint;
 
-auto b = make_unique<NetworkBuilder>();
-
-b.addLine(xyz(0., 0., 0.),
-          0., // heading, radians
-          1000., // length, m
-          0., // initial elevation gradient, dz/ds
-          0., // initial superelevation
-          0., // initial superelevation gradient, dTheta/ds
+template <> struct less<XYZPoint> {
+  bool operator()(const XYZPoint& lhs, const XYZPoint& rhs) const {
+    auto as_tuple = [](const XYZPoint& p) {
+      return std::tie(p.xy_.x_, p.xy_.y_, p.xy_.heading_,
+                      p.z_.z_, p.z_.zdot_, p.z_.theta_, p.z_.thetadot_);
+    };
+    return as_tuple(lhs) < as_tuple(rhs);
+  }
+};
+} // namespace std

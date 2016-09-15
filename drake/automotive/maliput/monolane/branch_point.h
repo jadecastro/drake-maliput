@@ -27,6 +27,8 @@ class SetOfLaneEnds : public api::SetOfLaneEnds {
 
   virtual const api::LaneEnd& get(int index) const;
 
+  void add(const api::LaneEnd& end) { ends_.push_back(end); }
+
  private:
   std::vector<api::LaneEnd> ends_;
 };
@@ -34,6 +36,10 @@ class SetOfLaneEnds : public api::SetOfLaneEnds {
 
 class BranchPoint : public api::BranchPoint {
  public:
+  BranchPoint(const api::BranchPointId& id, RoadGeometry* rg)
+      : id_(id), road_geometry_(rg) {}
+
+
   // Provide persistent ID.
   virtual const api::BranchPointId id() const { return id_; }
 
@@ -51,13 +57,20 @@ class BranchPoint : public api::BranchPoint {
     return &b_side_;
   }
 
+  const api::LaneEnd& AddABranch(const api::LaneEnd& lane_end);
+
+  const api::LaneEnd& AddBBranch(const api::LaneEnd& lane_end);
+
+  void SetDefault(const api::LaneEnd& lane_end,
+                  const api::LaneEnd& default_branch);
+
  private:
   api::BranchPointId id_;
   RoadGeometry* road_geometry_;
   SetOfLaneEnds a_side_;
   SetOfLaneEnds b_side_;
 
-  std::map<api::LaneEnd, SetOfLaneEnds> branches_;
+  std::map<api::LaneEnd, SetOfLaneEnds*> branches_;
   std::map<api::LaneEnd, api::LaneEnd> defaults_;
 };
 

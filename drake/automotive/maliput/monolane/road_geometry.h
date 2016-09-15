@@ -25,6 +25,7 @@ class RoadGeometry : public api::RoadGeometry {
 
   Junction* NewJunction(api::JunctionId id);
 
+  BranchPoint* NewBranchPoint(api::BranchPointId id);
 
   virtual const api::RoadGeometryId id() const {
     return id_;
