@@ -159,7 +159,7 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
         // TODO(maddog) Uh, which direction?  Info lost since cnx constructed!
         //              ...and deal with wrap-arounds, too.
         const double d_theta = cnx->d_theta();
-        const double arc_length = radius * d_theta;
+        const double arc_length = radius * std::abs(d_theta);
         const CubicPolynomial elevation(MakeCubic(
             arc_length,
             cnx->start().z_.z_,

@@ -182,6 +182,38 @@ TEST(GenerateObj, Hodge) {
 }
 
 
+TEST(GenerateObj, Fig8Builder) {
+  const double kPi = 3.14159;
+  const double kPi2 = kPi / 2.;
+  mono::Builder b({-2., 2.}, {-4., 4.});
+
+  mono::XYZPoint start {{0., 0., -kPi / 4.}, {0., 0., 0., 0.}};
+  auto c0 = b.Connect("0", start,
+                      50., {3., 0., 0., 0.});
+
+  auto c1 = b.Connect("1", c0->end(),
+                      mono::ArcOffset(50., 1.5 * kPi2), {3., 0., 0.4, 0.});
+  auto c2 = b.Connect("2", c1->end(),
+                      mono::ArcOffset(50., 1.5 * kPi2), {3., 0., 0., 0.});
+
+  auto c3 = b.Connect("3", c2->end(),
+                      50., {6., 0., 0., 0.});
+  auto c4 = b.Connect("4", c3->end(),
+                      50., {3., 0., 0., 0.});
+
+  auto c5 = b.Connect("5", c4->end(),
+                      mono::ArcOffset(50., -1.5 * kPi2), {3., 0., -0.4, 0.});
+  auto c6 = b.Connect("6", c5->end(),
+                      mono::ArcOffset(50., -1.5 * kPi2), {3., 0., 0., 0.});
+
+  /*auto c6 =*/ b.Connect("6", c6->end(),
+                      50., {0., 0., 0., 0.});
+
+  std::unique_ptr<const api::RoadGeometry> rg = b.Build({"figure-eight"});
+  generate_obj(rg.get(), "/tmp/wtf2.obj", 1.);
+}
+
+
 
 } // namespace monolane
 } // namespace maliput
