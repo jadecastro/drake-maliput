@@ -131,5 +131,35 @@ TEST(GenerateObj, Fig8Builder) {
 
 
 
+TEST(GenerateObj, DoubleRing) {
+  const double kPi = 3.14159;
+  mono::Builder b({-2., 2.}, {-4., 4.});
+
+  mono::XYZPoint start {{0., 0., kPi / 2.}, {0., 0., 0., 0.}};
+  auto cr0 = b.Connect("r0", start,
+                      mono::ArcOffset(50., -0.25 * kPi), {0., 0., 0.0, 0.});
+  auto cr1 = b.Connect("r1", cr0->end(),
+                      mono::ArcOffset(50., -0.75 * kPi), {0., 0., -0.4, 0.});
+  auto cr2 = b.Connect("r2", cr1->end(),
+                      mono::ArcOffset(50., -0.75 * kPi), {0., 0., 0.0, 0.});
+  auto cr3 = b.Connect("r3", cr2->end(),
+                      mono::ArcOffset(50., -0.25 * kPi), {0., 0., 0.0, 0.});
+
+  auto cl0 = b.Connect("l0", cr3->end(),
+                      mono::ArcOffset(50., 0.25 * kPi), {0., 0., 0.0, 0.});
+  auto cl1 = b.Connect("l1", cl0->end(),
+                      mono::ArcOffset(50., 0.75 * kPi), {0., 0., 0.4, 0.});
+  auto cl2 = b.Connect("l2", cl1->end(),
+                      mono::ArcOffset(50., 0.75 * kPi), {0., 0., 0.0, 0.});
+  /*auto cl3 =*/ b.Connect("l3", cl2->end(),
+                      mono::ArcOffset(50., 0.25 * kPi), {0., 0., 0.0, 0.},
+                      start.xy_);
+
+  std::unique_ptr<const api::RoadGeometry> rg = b.Build({"double-ring"});
+  generate_obj(rg.get(), "/tmp/double-ring.obj", 1.);
+}
+
+
+
 } // namespace monolane
 } // namespace maliput
