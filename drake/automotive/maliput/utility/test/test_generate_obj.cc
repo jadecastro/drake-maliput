@@ -184,7 +184,6 @@ TEST(GenerateObj, Hodge) {
 
 TEST(GenerateObj, Fig8Builder) {
   const double kPi = 3.14159;
-  const double kPi2 = kPi / 2.;
   mono::Builder b({-2., 2.}, {-4., 4.});
 
   mono::XYZPoint start {{0., 0., -kPi / 4.}, {0., 0., 0., 0.}};
@@ -192,9 +191,9 @@ TEST(GenerateObj, Fig8Builder) {
                       50., {3., 0., 0., 0.});
 
   auto c1 = b.Connect("1", c0->end(),
-                      mono::ArcOffset(50., 1.5 * kPi2), {3., 0., 0.4, 0.});
+                      mono::ArcOffset(50., 0.75 * kPi), {3., 0., 0.4, 0.});
   auto c2 = b.Connect("2", c1->end(),
-                      mono::ArcOffset(50., 1.5 * kPi2), {3., 0., 0., 0.});
+                      mono::ArcOffset(50., 0.75 * kPi), {3., 0., 0., 0.});
 
   auto c3 = b.Connect("3", c2->end(),
                       50., {6., 0., 0., 0.});
@@ -202,9 +201,9 @@ TEST(GenerateObj, Fig8Builder) {
                       50., {3., 0., 0., 0.});
 
   auto c5 = b.Connect("5", c4->end(),
-                      mono::ArcOffset(50., -1.5 * kPi2), {3., 0., -0.4, 0.});
+                      mono::ArcOffset(50., -0.75 * kPi), {3., 0., -0.4, 0.});
   auto c6 = b.Connect("6", c5->end(),
-                      mono::ArcOffset(50., -1.5 * kPi2), {3., 0., 0., 0.});
+                      mono::ArcOffset(50., -0.75 * kPi), {3., 0., 0., 0.});
 
   /*auto c6 =*/ b.Connect("6", c6->end(),
                       50., {0., 0., 0., 0.});
