@@ -9,21 +9,23 @@ namespace geometry_api {
 class Lane;
 
 
+/// The endpoint of a specific Lane.
 struct LaneEnd {
+  /// Labels for the endpointss of a Lane.  kStart is the "s == 0"
+  /// end, and kEnd is the "s == maximum" end.
+  enum Which { kStart, kEnd, };
 
-  enum Which {
-    kStart,
-    kEnd,
-  };
-
+  /// Default constructor.
   LaneEnd() {}
 
+  /// The specified @param end of the specified @param lane.
   LaneEnd(const Lane* lane, Which end) : lane_(lane), end_(end) {}
 
   const Lane* lane_{};
   Which end_{};
 
-  // NB:  See specialization of std::less<> at end of file.
+  // NB:  See specialization of std::less<> at end of file, providing
+  //      a total ordering used by, e.g., std::map.
 };
 
 
