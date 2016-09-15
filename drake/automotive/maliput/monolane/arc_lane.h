@@ -49,9 +49,6 @@ class ArcLane : public Lane {
   double cy_;
   double theta0_;
   double d_theta_;
-
-  double delta_r_min_;
-  double delta_r_max_;
 };
 
 

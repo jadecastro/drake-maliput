@@ -23,7 +23,8 @@ class LineLane : public Lane {
         x0_(xy0.x),
         y0_(xy0.y),
         dx_(dxy.x),
-        dy_(dxy.y) {}
+        dy_(dxy.y),
+        heading_(std::atan2(dy_, dx_)) {}
 
   virtual api::LanePosition ToLanePosition(
       const api::GeoPosition& geo_pos) const override;
@@ -41,13 +42,12 @@ class LineLane : public Lane {
   virtual V2 xy_of_p_(const double p) const override;
   virtual double heading_of_p_(const double p) const override;
 
-  double x0_;
-  double y0_;
-  double dx_;
-  double dy_;
+  const double x0_;
+  const double y0_;
+  const double dx_;
+  const double dy_;
 
-  double delta_r_min_;
-  double delta_r_max_;
+  const double heading_; // Memoized; derived from dy_, dx_.
 };
 
 

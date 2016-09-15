@@ -2,6 +2,8 @@
 
 #include "lane.h"
 
+#include <boost/optional.hpp>
+
 namespace maliput {
 namespace geometry_api {
 
@@ -26,7 +28,8 @@ class BranchPoint {
 
   virtual const SetOfLaneEnds* GetBranches(const LaneEnd& end) const = 0;
 
-  virtual const LaneEnd& GetDefaultBranch(const LaneEnd& end) const = 0;
+  virtual const boost::optional<LaneEnd>& GetDefaultBranch(
+      const LaneEnd& end) const = 0;
 
   virtual const SetOfLaneEnds* GetASide() const = 0;
 

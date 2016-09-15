@@ -15,10 +15,7 @@ V2 LineLane::xy_of_p_(const double p) const {
 }
 
 
-// TODO(maddog)  Memoize this constant.
-double LineLane::heading_of_p_(const double) const {
-  return std::atan2(dy_, dx_);
-}
+double LineLane::heading_of_p_(const double) const { return heading_; }
 
 
 api::LanePosition LineLane::ToLanePosition(

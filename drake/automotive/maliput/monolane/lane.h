@@ -57,7 +57,7 @@ class Lane : public api::Lane {
   virtual const api::SetOfLaneEnds* GetBranches(
       const api::LaneEnd::Which which_end) const override;
 
-  virtual const api::LaneEnd& GetDefaultBranch(
+  virtual const boost::optional<api::LaneEnd>& GetDefaultBranch(
       const api::LaneEnd::Which which_end) const override;
 
   virtual double length() const override;

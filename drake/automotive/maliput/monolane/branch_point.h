@@ -46,7 +46,7 @@ class BranchPoint : public api::BranchPoint {
   virtual const api::SetOfLaneEnds* GetBranches(
       const api::LaneEnd& end) const;
 
-  virtual const api::LaneEnd& GetDefaultBranch(
+  virtual const boost::optional<api::LaneEnd>& GetDefaultBranch(
       const api::LaneEnd& end) const;
 
   virtual const api::SetOfLaneEnds* GetASide() const {
@@ -71,7 +71,7 @@ class BranchPoint : public api::BranchPoint {
   SetOfLaneEnds b_side_;
 
   std::map<api::LaneEnd, SetOfLaneEnds*> branches_;
-  std::map<api::LaneEnd, api::LaneEnd> defaults_;
+  std::map<api::LaneEnd, boost::optional<api::LaneEnd>> defaults_;
 };
 
 

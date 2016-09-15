@@ -25,7 +25,7 @@ const api::SetOfLaneEnds* Lane::GetBranches(
   return GetBranchPoint(which_end)->GetBranches({this, which_end});
 }
 
-const api::LaneEnd& Lane::GetDefaultBranch(
+const boost::optional<api::LaneEnd>& Lane::GetDefaultBranch(
     api::LaneEnd::Which which_end) const {
   return GetBranchPoint(which_end)->GetDefaultBranch({this, which_end});
 }
