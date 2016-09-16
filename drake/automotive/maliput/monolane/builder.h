@@ -126,14 +126,11 @@ class Builder : boost::noncopyable {
   Builder(const api::RBounds& lane_bounds,
           const api::RBounds& driveable_bounds);
 
-  // Connect a start point to a specific end point.
-  //
-  // Connection will be made with the most parsimonious possible choice of
-  // either arc, arc and line segment, or two arcs of equal radius.
-  const Connection* Connect(
-      const std::string& id,
-      const XYZPoint& start,
-      const XYZPoint& end);
+//SOON//  // Connect a start point to a specific end point.
+//SOON//  const Connection* Connect(
+//SOON//      const std::string& id,
+//SOON//      const XYZPoint& start,
+//SOON//      const XYZPoint& end);
 
   // TODO(maddog) Provide for grouping within Junctions.
   // TODO(maddog) Provide for explicit branch-point siding of ends...
