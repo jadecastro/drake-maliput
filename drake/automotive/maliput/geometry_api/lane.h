@@ -53,6 +53,9 @@ class Lane {
 
   virtual LanePosition ToLanePosition(const GeoPosition& geo_pos) const = 0;
 
+  // TODO(maddog)  Method to convert LanePosition to that of another Lane.
+  //               (Should assert that both lanes belong to same Segment.)
+
   /// Return the rotation which transforms LANE basis into GEO basis.
   virtual Rotation GetOrientation(const LanePosition& lane_pos) const = 0;
 
