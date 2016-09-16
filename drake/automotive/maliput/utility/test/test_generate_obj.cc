@@ -191,5 +191,18 @@ TEST(GenerateObj, TeeIntersection) {
 }
 
 
+TEST(GenerateObj, Helix) {
+  const double kPi = 3.14159;
+  mono::Builder b({-2., 2.}, {-4., 4.});
+
+  mono::XYZPoint start {{0., -10., 0.}, {0., 0., 0.4, 0.}};
+  b.Connect("1", start,
+            mono::ArcOffset(10., 4. * kPi), {20., 0., 0.4, 0.});
+
+  std::unique_ptr<const api::RoadGeometry> rg = b.Build({"helix"});
+  generate_obj(rg.get(), "/tmp/helix.obj", 1.);
+}
+
+
 } // namespace monolane
 } // namespace maliput
