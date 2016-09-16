@@ -160,6 +160,30 @@ TEST(GenerateObj, DoubleRing) {
 }
 
 
+#if 0
+TEST(GenerateObj, TeeIntersection) {
+  const double kPi = 3.14159;
+  mono::Builder b({-2., 2.}, {-4., 4.});
+
+  mono::XYZPoint start {{0., 0., kPi / 2.}, {0., 0., 0., 0.}};
+  auto cs = b.Connect("south",
+                      {{0., -10., -kPi / 2.}, {0., 0., 0., 0.}},
+                      10., {0., 0., 0.0, 0.});
+  auto cw = b.Connect("west",
+                      {{-10., 0., kPi}, {0., 0., 0., 0.}},
+                      10., {0., 0., 0.0, 0.});
+  auto ce = b.Connect("east",
+                      {{10., 0., 0.}, {0., 0., 0., 0.}},
+                      10., {0., 0., 0.0, 0.});
+
+  auto csw = b.Connect("south-west", cs->start(), cw->start());
+  auto cse = b.Connect("south-east", cs->start(), ce->start());
+  auto cew = b.Connect("east-west",  ce->start(), cw->start());
+
+  std::unique_ptr<const api::RoadGeometry> rg = b.Build({"tee"});
+  generate_obj(rg.get(), "/tmp/tee.obj", 1.);
+}
+#endif
 
 } // namespace monolane
 } // namespace maliput

@@ -86,6 +86,67 @@ const Connection* Builder::Connect(
 
 
 namespace {
+
+XYPoint TranslateRotateInverse(const XYPoint& p1, const XYPoint& p0) {
+  const double xt = p1.x_ - p0.x_;
+  const double yt = p1.y_ - p0.y_;
+  double ch = std::cos(p0.heading_);
+  double sh = std::sin(p0.heading_);
+
+  const double xr = ( xt * ch) + (yt * sh);
+  const double yr = (-xt * sh) + (yt * ch);
+
+  return XYPoint(xr, yr, p1.heading_ - p0.heading_);
+}
+
+
+/// Ensure theta is in range [-pi, pi].
+double CanonicalizeAngle(const double theta) {
+  return std::atan2(std::sin(theta), std::cos(theta));
+}
+
+} // namespace
+
+
+
+
+
+#if 0
+const Connection* Builder::Connect(
+    const std::string& id,
+    const XYZPoint& start,
+    const XYZPoint& end) {
+
+  // "Canonicalize" the problem by translating/rotating such that start
+  // moves to origin with heading zero.
+  XYPoint cend = TranslateRotateInverse(end.xy_, start.xy_);
+
+  const double angle_xy = std::atan2(cend.y_, cend.x_);
+  const double skew = CanonicalizeAngle(cend.heading_ - angle_xy);
+
+  if ((angle_xy == 0.) && (skew == 0.)) {
+    // One straight segment will actually work.
+    assert(0); // TODO(maddog) Implement me.
+  } else if ((angle_xy == 0.) || (skew == 0.)) {
+    // If only one or other is zero, only a cusp is feasible.
+    assert(0);
+  } else if (((angle_xy > 0.) && (skew > 0.)) ||
+             ((angle_xy < 0.) && (skew < 0.))) {
+    // Arc and Segment is feasible.
+    assert(0); // TODO(maddog) Implement me.
+  } else {
+    // Two Symmetric Arcs is feasible.
+    assert(0); // TODO(maddog) Implement me.
+  }
+
+  // Rotate/translate solution back to reflect original problem.
+
+
+}
+#endif
+
+
+namespace {
 BranchPoint* FindOrCreateBranchPoint(
     const XYZPoint& point,
     RoadGeometry* rg,
