@@ -42,6 +42,21 @@ const Connection* Builder::Connect(
 const Connection* Builder::Connect(
     const std::string& id,
     const XYZPoint& start,
+    const double length,
+    const ZPoint& z_end,
+    const XYPoint& forced_end) {
+  assert(length);  // TODO(maddog)  Validate length vs forced_end.
+  const XYZPoint end(forced_end, z_end);
+  connections_.push_back(make_unique<Connection>(
+      Connection::Type::kLine, id,
+      start, end));
+  return connections_.back().get();
+}
+
+
+const Connection* Builder::Connect(
+    const std::string& id,
+    const XYZPoint& start,
     const ArcOffset& arc,
     const ZPoint& z_end) {
   const double alpha = start.xy_.heading_;

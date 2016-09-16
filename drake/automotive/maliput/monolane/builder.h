@@ -2,6 +2,7 @@
 
 
 #include <cassert>
+#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -37,12 +38,23 @@ struct XYPoint {
   XYPoint(double x, double y, double heading)
       :x_(x), y_(y), heading_(heading) {}
 
+
+  XYPoint reverse() const {
+    return XYPoint(x_, y_,
+                   std::atan2(-std::sin(heading_), -std::cos(heading_)));
+  }
+
   double x_{};
   double y_{};
   double heading_{}; // radians, zero == x direction
 };
 
 struct ZPoint {
+
+  ZPoint reverse() const {
+    return {z_, -zdot_, -theta_, -thetadot_};
+  }
+
   double z_;
   double zdot_;
 
@@ -54,6 +66,10 @@ struct XYZPoint {
   XYZPoint() {}
 
   XYZPoint(const XYPoint& xy, const ZPoint& z) : xy_(xy), z_(z) {}
+
+  XYZPoint reverse() const {
+    return {xy_.reverse(), z_.reverse()};
+  }
 
   XYPoint xy_;
   ZPoint z_;
@@ -143,6 +159,13 @@ class Builder : boost::noncopyable {
       const XYZPoint& start,
       const double length,
       const ZPoint& z_end);
+
+  const Connection* Connect(
+      const std::string& id,
+      const XYZPoint& start,
+      const double length,
+      const ZPoint& z_end,
+      const XYPoint& forced_end);
 
   // Connect a start point to an end point relative to the start,
   // with an arc displacement.
