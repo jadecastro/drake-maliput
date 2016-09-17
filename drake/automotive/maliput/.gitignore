@@ -1,6 +1,0 @@
-*~
-bazel-bin
-bazel-genfiles
-bazel-out
-bazel-road_network
-bazel-testlogs

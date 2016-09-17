@@ -1,7 +1,9 @@
-#include "line_lane.h"
+#include "drake/automotive/maliput/monolane/line_lane.h"
 
 #include <cassert>
 #include <cmath>
+
+#include "drake/automotive/maliput/monolane/ignore.h"
 
 namespace maliput {
 namespace monolane {
@@ -20,8 +22,9 @@ double LineLane::heading_of_p_(const double) const { return heading_; }
 
 api::LanePosition LineLane::ToLanePosition(
     const api::GeoPosition& geo_pos) const {
-  (geo_pos.x_); // TODO maddog temp warning quashing
+  ignore(geo_pos.x_); // TODO maddog temp warning quashing
   assert(0); // TODO maddog Implement me.
+  return api::LanePosition(0, 0, 0);
   }
 
 
@@ -33,14 +36,14 @@ void LineLane::KinematicStep(double delta_t,
                              const api::Lane** new_lane,
                              api::LanePosition* new_lane_pos,
                              api::LanePosition* new_lane_vel) const {
-  (&delta_t);
-  (&current_lane_pos);
-  (&current_lane_vel);
-  (&lane_accel);
-  (&choices);
-  (&new_lane);
-  (&new_lane_pos);
-  (&new_lane_vel); // TODO maddog temp warning quashing
+  ignore(&delta_t);
+  ignore(&current_lane_pos);
+  ignore(&current_lane_vel);
+  ignore(&lane_accel);
+  ignore(&choices);
+  ignore(&new_lane);
+  ignore(&new_lane_pos);
+  ignore(&new_lane_vel); // TODO maddog temp warning quashing
   assert(0); // TODO maddog Implement me.
 }
 

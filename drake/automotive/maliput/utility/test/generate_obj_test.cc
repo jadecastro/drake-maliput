@@ -1,17 +1,17 @@
-#include "utility/generate_obj.h"
+#include "drake/automotive/maliput/utility/generate_obj.h"
 
 
-#include "monolane/arc_lane.h"
-#include "monolane/builder.h"
-#include "monolane/junction.h"
-#include "monolane/lane.h"
-#include "monolane/line_lane.h"
-#include "monolane/road_geometry.h"
-#include "monolane/segment.h"
+#include "drake/automotive/maliput/monolane/arc_lane.h"
+#include "drake/automotive/maliput/monolane/builder.h"
+#include "drake/automotive/maliput/monolane/junction.h"
+#include "drake/automotive/maliput/monolane/lane.h"
+#include "drake/automotive/maliput/monolane/line_lane.h"
+#include "drake/automotive/maliput/monolane/road_geometry.h"
+#include "drake/automotive/maliput/monolane/segment.h"
 
 #include <iostream>
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 
 namespace maliput {
@@ -20,7 +20,7 @@ namespace utility {
 namespace api = maliput::geometry_api;
 namespace mono = maliput::monolane;
 
-TEST(GenerateObj, Podge) {
+GTEST_TEST(GenerateObj, Podge) {
   mono::CubicPolynomial zp {0., 0., 0., 0.};
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};
@@ -73,7 +73,7 @@ TEST(GenerateObj, Podge) {
 
 
 
-TEST(GenerateObj, Hodge) {
+GTEST_TEST(GenerateObj, Hodge) {
   const double kPi = 3.14159;
   const double kPi2 = kPi / 2.;
   mono::Builder b({-5., 5.}, {-10., 10.});
@@ -99,7 +99,7 @@ TEST(GenerateObj, Hodge) {
 }
 
 
-TEST(GenerateObj, Fig8Builder) {
+GTEST_TEST(GenerateObj, Fig8Builder) {
   const double kPi = 3.14159;
   mono::Builder b({-2., 2.}, {-4., 4.});
 
@@ -131,7 +131,7 @@ TEST(GenerateObj, Fig8Builder) {
 
 
 
-TEST(GenerateObj, DoubleRing) {
+GTEST_TEST(GenerateObj, DoubleRing) {
   const double kPi = 3.14159;
   mono::Builder b({-2., 2.}, {-4., 4.});
 
@@ -161,7 +161,7 @@ TEST(GenerateObj, DoubleRing) {
 
 
 
-TEST(GenerateObj, TeeIntersection) {
+GTEST_TEST(GenerateObj, TeeIntersection) {
   const double kPi = 3.14159;
   mono::Builder b({-2., 2.}, {-4., 4.});
 
@@ -191,7 +191,7 @@ TEST(GenerateObj, TeeIntersection) {
 }
 
 
-TEST(GenerateObj, Helix) {
+GTEST_TEST(GenerateObj, Helix) {
   const double kPi = 3.14159;
   mono::Builder b({-2., 2.}, {-4., 4.});
 

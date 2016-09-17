@@ -14,7 +14,7 @@ class Segment;
 /// connected to one another in the network topology.
 ///
 /// Junctions are owned/managed by RoadGeometry.
-class Junction {
+class DRAKEAUTOMOTIVE_EXPORT Junction {
  public:
   virtual ~Junction() {}
 

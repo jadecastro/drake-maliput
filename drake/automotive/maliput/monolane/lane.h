@@ -1,8 +1,8 @@
 #pragma once
 
-#include "geometry_api/branch_point.h"
-#include "geometry_api/lane.h"
-#include "geometry_api/segment.h"
+#include "drake/automotive/maliput/geometry_api/branch_point.h"
+#include "drake/automotive/maliput/geometry_api/lane.h"
+#include "drake/automotive/maliput/geometry_api/segment.h"
 
 #include "mathiness.h"
 
@@ -15,7 +15,7 @@ class BranchPoint;
 class Segment;
 
 
-class Lane : public api::Lane {
+class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
  public:
   Lane(const api::LaneId& id, Segment* segment,
        const api::RBounds& lane_bounds,

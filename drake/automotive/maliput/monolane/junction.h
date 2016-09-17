@@ -5,9 +5,9 @@
 
 #include "segment.h"
 
-#include "geometry_api/junction.h"
-#include "geometry_api/road_geometry.h"
-#include "geometry_api/segment.h"
+#include "drake/automotive/maliput/geometry_api/junction.h"
+#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/geometry_api/segment.h"
 
 
 namespace maliput {
@@ -17,7 +17,7 @@ namespace api = maliput::geometry_api;
 
 class RoadGeometry;
 
-class Junction : public api::Junction {
+class DRAKEAUTOMOTIVE_EXPORT Junction : public api::Junction {
  public:
   Junction(const api::JunctionId& id, RoadGeometry* rg)
       : id_(id), road_geometry_(rg) {}

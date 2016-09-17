@@ -3,9 +3,9 @@
 #include <map>
 #include <vector>
 
-#include "geometry_api/branch_point.h"
-#include "geometry_api/lane.h"
-#include "geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/geometry_api/branch_point.h"
+#include "drake/automotive/maliput/geometry_api/lane.h"
+#include "drake/automotive/maliput/geometry_api/road_geometry.h"
 
 
 namespace maliput {
@@ -19,7 +19,7 @@ class Lane;
 class RoadGeometry;
 
 
-class SetOfLaneEnds : public api::SetOfLaneEnds {
+class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds : public api::SetOfLaneEnds {
  public:
   virtual ~SetOfLaneEnds() {}
 
@@ -34,7 +34,7 @@ class SetOfLaneEnds : public api::SetOfLaneEnds {
 };
 
 
-class BranchPoint : public api::BranchPoint {
+class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
  public:
   BranchPoint(const api::BranchPointId& id, RoadGeometry* rg)
       : id_(id), road_geometry_(rg) {}

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <functional>
 #include <string>
+
+#include "drake/drakeAutomotive_export.h"
 
 namespace maliput {
 namespace geometry_api {
@@ -29,7 +32,7 @@ struct LaneEnd {
 };
 
 
-struct Rotation {
+struct DRAKEAUTOMOTIVE_EXPORT Rotation {
   Rotation(double r, double p, double y)
       : roll_(r), pitch_(p), yaw_(y) {}
 
@@ -39,7 +42,7 @@ struct Rotation {
 };
 
 
-struct GeoPosition {
+struct DRAKEAUTOMOTIVE_EXPORT GeoPosition {
   GeoPosition() {}
 
   GeoPosition(double x, double y, double z) : x_(x), y_(y), z_(z) {}
@@ -50,7 +53,7 @@ struct GeoPosition {
 };
 
 
-struct LanePosition {
+struct DRAKEAUTOMOTIVE_EXPORT LanePosition {
   LanePosition(double s, double r, double h) : s_(s), r_(r), h_(h) {}
 
   double s_{};
@@ -58,13 +61,13 @@ struct LanePosition {
   double h_{};
 };
 
-struct LaneVelocity {
+struct DRAKEAUTOMOTIVE_EXPORT LaneVelocity {
   double sv_{};
   double rv_{};
   double hv_{};
 };
 
-struct LaneAcceleration {
+struct DRAKEAUTOMOTIVE_EXPORT LaneAcceleration {
   double sa_{};
   double ra_{};
   double ha_{};
@@ -72,36 +75,36 @@ struct LaneAcceleration {
 
 
 
-struct RoadPosition {
+struct DRAKEAUTOMOTIVE_EXPORT RoadPosition {
   Lane* lane_;
   LanePosition pos_;
 };
 
 
-struct RBounds {
+struct DRAKEAUTOMOTIVE_EXPORT RBounds {
   double r_min_;
   double r_max_;
 };
 
 
 
-struct LaneId {
+struct DRAKEAUTOMOTIVE_EXPORT LaneId {
   std::string id_;
 };
 
-struct BranchPointId {
+struct DRAKEAUTOMOTIVE_EXPORT BranchPointId {
   std::string id_;
 };
 
-struct SegmentId {
+struct DRAKEAUTOMOTIVE_EXPORT SegmentId {
   std::string id_;
 };
 
-struct JunctionId {
+struct DRAKEAUTOMOTIVE_EXPORT JunctionId {
   std::string id_;
 };
 
-struct RoadGeometryId {
+struct DRAKEAUTOMOTIVE_EXPORT RoadGeometryId {
   std::string id_;
 };
 
@@ -110,8 +113,6 @@ struct RoadGeometryId {
 } // namespace geometry_api
 } // namespace maliput
 
-
-#include <functional>
 
 namespace std {
 

@@ -4,7 +4,6 @@
 #include "junction.h"
 #include "lane.h"
 #include "line_lane.h"
-#include "make_unique.h"
 
 namespace maliput {
 namespace monolane {
@@ -23,7 +22,7 @@ LineLane* Segment::NewLineLane(api::LaneId id,
                                const CubicPolynomial& elevation,
                                const CubicPolynomial& superelevation) {
   assert(lane_.get() == nullptr);
-  std::unique_ptr<LineLane> lane = make_unique<LineLane>(
+  std::unique_ptr<LineLane> lane = std::make_unique<LineLane>(
       id, this, xy0, dxy,
       lane_bounds, driveable_bounds,
       elevation, superelevation);
@@ -41,7 +40,7 @@ ArcLane* Segment::NewArcLane(api::LaneId id,
                              const CubicPolynomial& elevation,
                              const CubicPolynomial& superelevation) {
   assert(lane_.get() == nullptr);
-  std::unique_ptr<ArcLane> lane = make_unique<ArcLane>(
+  std::unique_ptr<ArcLane> lane = std::make_unique<ArcLane>(
       id, this, center, radius, theta0, d_theta,
       lane_bounds, driveable_bounds,
       elevation, superelevation);

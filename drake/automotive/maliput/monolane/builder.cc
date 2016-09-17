@@ -1,13 +1,15 @@
-#include "builder.h"
+#include "drake/automotive/maliput/monolane/builder.h"
 
 #include <cmath>
 #include <iostream>
 
 #include "arc_lane.h"
 #include "branch_point.h"
+#include "ignore.h"
 #include "line_lane.h"
-#include "make_unique.h"
 #include "road_geometry.h"
+
+#include "drake/common/drake_assert.h"
 
 namespace maliput {
 namespace monolane {
@@ -32,7 +34,7 @@ const Connection* Builder::Connect(
               start.xy_.y_ + (length * std::sin(start.xy_.heading_)),
               start.xy_.heading_),
       z_end);
-  connections_.push_back(make_unique<Connection>(
+  connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kLine, id,
       start, end));
   return connections_.back().get();
@@ -47,7 +49,7 @@ const Connection* Builder::Connect(
     const XYPoint& forced_end) {
   assert(length);  // TODO(maddog)  Validate length vs forced_end.
   const XYZPoint end(forced_end, z_end);
-  connections_.push_back(make_unique<Connection>(
+  connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kLine, id,
       start, end));
   return connections_.back().get();
@@ -71,7 +73,7 @@ const Connection* Builder::Connect(
                              alpha + arc.d_theta_),
                      z_end);
 
-  connections_.push_back(make_unique<Connection>(
+  connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kArc, id,
       start, end, cx, cy, arc.radius_, arc.d_theta_));
   return connections_.back().get();
@@ -93,7 +95,7 @@ const Connection* Builder::Connect(
   const XYZPoint end(forced_end,
                      z_end);
 
-  connections_.push_back(make_unique<Connection>(
+  connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kArc, id,
       start, end, cx, cy, arc.radius_, arc.d_theta_));
   return connections_.back().get();
@@ -112,6 +114,7 @@ BranchPoint* FindOrCreateBranchPoint(
   // TODO(maddog) Generate a real id.
   BranchPoint* bp = rg->NewBranchPoint({"xxx"});
   auto result = bp_map->emplace(point, bp);
+  ignore(result);
   assert(result.second);
   return bp;
 }
@@ -130,7 +133,7 @@ CubicPolynomial MakeCubic(const double dX, const double Y0, const double dY,
 std::unique_ptr<const api::RoadGeometry> Builder::Build(
     const api::RoadGeometryId& id) const {
 
-  auto rg = make_unique<RoadGeometry>(id);
+  auto rg = std::make_unique<RoadGeometry>(id);
 
   std::map<XYZPoint, BranchPoint*> bp_map;
 
@@ -195,7 +198,7 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
         break;
       }
       default: {
-        assert(false);
+        DRAKE_ABORT();
       }
     }
 

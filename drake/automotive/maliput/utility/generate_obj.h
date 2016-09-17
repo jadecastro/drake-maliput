@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/geometry_api/road_geometry.h"
 
 
 namespace maliput {

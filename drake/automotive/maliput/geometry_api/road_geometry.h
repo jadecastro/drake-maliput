@@ -10,7 +10,7 @@ class Junction;
 
 /// Abstract API for the geometry of a road network, including both
 /// the network topology and the geometry of its embedding in 3-space.
-class RoadGeometry {
+class DRAKEAUTOMOTIVE_EXPORT RoadGeometry {
  public:
   virtual ~RoadGeometry() {}
 

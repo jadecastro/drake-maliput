@@ -3,12 +3,12 @@
 #include <memory>
 #include <vector>
 
-#include "branch_point.h"
-#include "junction.h"
+#include "drake/automotive/maliput/monolane/branch_point.h"
+#include "drake/automotive/maliput/monolane/junction.h"
 
-#include "geometry_api/branch_point.h"
-#include "geometry_api/junction.h"
-#include "geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/geometry_api/branch_point.h"
+#include "drake/automotive/maliput/geometry_api/junction.h"
+#include "drake/automotive/maliput/geometry_api/road_geometry.h"
 
 namespace maliput {
 namespace monolane {
@@ -17,7 +17,7 @@ namespace api = maliput::geometry_api;
 
 /// A simple RoadGeometry implementation that only supports a
 /// single lane per segment.
-class RoadGeometry : public api::RoadGeometry {
+class DRAKEAUTOMOTIVE_EXPORT RoadGeometry : public api::RoadGeometry {
  public:
   RoadGeometry(const api::RoadGeometryId& id)
       : id_(id) {}

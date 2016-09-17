@@ -1,10 +1,10 @@
-#include "road_geometry.h"
+#include "drake/automotive/maliput/monolane/road_geometry.h"
 
 #include <cassert>
 
-#include "branch_point.h"
-#include "junction.h"
-#include "make_unique.h"
+#include "drake/automotive/maliput/monolane/branch_point.h"
+#include "drake/automotive/maliput/monolane/ignore.h"
+#include "drake/automotive/maliput/monolane/junction.h"
 
 namespace maliput {
 namespace monolane {
@@ -12,13 +12,13 @@ namespace monolane {
 namespace api = maliput::geometry_api;
 
 Junction* RoadGeometry::NewJunction(api::JunctionId id) {
-  junctions_.push_back(make_unique<Junction>(id, this));
+  junctions_.push_back(std::make_unique<Junction>(id, this));
   return junctions_.back().get();
 }
 
 
 BranchPoint* RoadGeometry::NewBranchPoint(api::BranchPointId id) {
-  branch_points_.push_back(make_unique<BranchPoint>(id, this));
+  branch_points_.push_back(std::make_unique<BranchPoint>(id, this));
   return branch_points_.back().get();
 }
 
@@ -38,9 +38,10 @@ const api::BranchPoint* RoadGeometry::branch_point(int index) const {
 api::RoadPosition RoadGeometry::ToRoadPosition(
     const api::GeoPosition& geo_pos,
     const api::RoadPosition& hint) const {
-  (&geo_pos);
-  (&hint); // TODO maddog temp warning quashing
+  ignore(&geo_pos);
+  ignore(&hint); // TODO maddog temp warning quashing
   assert(0); // TODO maddog Implement me.
+  return api::RoadPosition{nullptr, {0, 0, 0}};
 }
 
 

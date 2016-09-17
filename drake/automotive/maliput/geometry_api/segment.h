@@ -8,7 +8,7 @@ namespace geometry_api {
 class Junction;
 class Lane;
 
-class Segment {
+class DRAKEAUTOMOTIVE_EXPORT Segment {
  public:
   virtual ~Segment() {}
 

@@ -15,7 +15,7 @@ class SetOfLaneEnds;
 class BranchChoices; // TODO maddog define me.
 
 
-class Lane {
+class DRAKEAUTOMOTIVE_EXPORT Lane {
  public:
 
   enum class Endpoint {

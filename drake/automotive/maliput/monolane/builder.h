@@ -9,7 +9,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "geometry_api/state.h"
+#include "drake/automotive/maliput/geometry_api/state.h"
 
 namespace maliput {
 
@@ -91,7 +91,7 @@ struct ArcOffset {
 };
 
 
-class Connection : boost::noncopyable {
+class DRAKEAUTOMOTIVE_EXPORT Connection : boost::noncopyable {
  public:
   enum Type { kLine, kArc };
 
@@ -137,7 +137,7 @@ class Connection : boost::noncopyable {
 };
 
 
-class Builder : boost::noncopyable {
+class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
  public:
   Builder(const api::RBounds& lane_bounds,
           const api::RBounds& driveable_bounds);

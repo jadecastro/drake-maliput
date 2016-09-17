@@ -8,10 +8,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "geometry_api/junction.h"
-#include "geometry_api/lane.h"
-#include "geometry_api/road_geometry.h"
-#include "geometry_api/segment.h"
+#include "drake/automotive/maliput/geometry_api/junction.h"
+#include "drake/automotive/maliput/geometry_api/lane.h"
+#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/geometry_api/segment.h"
 
 namespace maliput {
 namespace utility {
@@ -24,7 +24,7 @@ namespace {
 template <class T> struct LocalHash;
 
 template <class T>
-class IndexMap {
+class DRAKEAUTOMOTIVE_EXPORT IndexMap {
  public:
   IndexMap() {}
 
@@ -50,7 +50,7 @@ class IndexMap {
   std::vector<T> vec_;
 };
 
-struct GeoVertex {
+struct DRAKEAUTOMOTIVE_EXPORT GeoVertex {
   GeoVertex() {}
 
   GeoVertex(const api::GeoPosition& v) : v_(v) {}
@@ -280,9 +280,9 @@ void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
 } // namespace
 
 
-void generate_obj(const api::RoadGeometry* rg,
-                  const std::string& filename,
-                  const double grid_unit) {
+void DRAKEAUTOMOTIVE_EXPORT generate_obj(const api::RoadGeometry* rg,
+                                         const std::string& filename,
+                                         const double grid_unit) {
 
   ObjData obj;
 

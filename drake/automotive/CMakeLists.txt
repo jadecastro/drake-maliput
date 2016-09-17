@@ -14,6 +14,15 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   gen/simple_car_config.cc
   gen/simple_car_state.cc
   idm_with_trajectory_agent.cc
+  maliput/monolane/line_lane.cc
+  maliput/monolane/segment.cc
+  maliput/monolane/junction.cc
+  maliput/monolane/arc_lane.cc
+  maliput/monolane/builder.cc
+  maliput/monolane/branch_point.cc
+  maliput/monolane/lane.cc
+  maliput/monolane/road_geometry.cc
+  maliput/utility/generate_obj.cc
   simple_car.cc
   trajectory_car.cc
   )
@@ -36,6 +45,8 @@ pods_install_pkg_config_file(drake-automotive
   LIBS -ldrakeAutomotive
   REQUIRES
   VERSION 0.0.1)
+
+add_subdirectory(maliput)
 
 if(lcm_FOUND)
   include_directories(${PROJECT_SOURCE_DIR}/pod-build/lcmgen)

@@ -8,7 +8,7 @@ namespace maliput {
 namespace geometry_api {
 
 
-class SetOfLaneEnds {
+class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds {
  public:
   virtual ~SetOfLaneEnds() {}
 
@@ -19,7 +19,7 @@ class SetOfLaneEnds {
 
 
 
-class BranchPoint {
+class DRAKEAUTOMOTIVE_EXPORT BranchPoint {
  public:
   virtual ~BranchPoint() {}
 

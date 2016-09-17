@@ -1,7 +1,9 @@
 #include "lane.h"
 
-#include "branch_point.h"
-#include "segment.h"
+#include "drake/automotive/maliput/monolane/branch_point.h"
+#include "drake/automotive/maliput/monolane/segment.h"
+
+#include "drake/common/drake_assert.h"
 
 namespace maliput {
 namespace monolane {
@@ -17,7 +19,7 @@ const api::BranchPoint* Lane::GetBranchPoint(
     case api::LaneEnd::kStart: { return start_bp_; }
     case api::LaneEnd::kEnd:   { return end_bp_; }
   }
-  assert(0);
+  DRAKE_ABORT();
 }
 
 const api::SetOfLaneEnds* Lane::GetBranches(

@@ -3,14 +3,14 @@
 #include <cassert>
 #include <cmath>
 
-#include "lane.h"
+#include "drake/automotive/maliput/monolane/lane.h"
 
 namespace maliput {
 namespace monolane {
 
 namespace api = maliput::geometry_api;
 
-class ArcLane : public Lane {
+class DRAKEAUTOMOTIVE_EXPORT ArcLane : public Lane {
  public:
   ArcLane(const api::LaneId& id, Segment* segment,
           const V2& center, const double radius,

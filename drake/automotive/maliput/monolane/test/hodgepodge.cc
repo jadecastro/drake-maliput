@@ -1,13 +1,13 @@
-#include "monolane/arc_lane.h"
-#include "monolane/junction.h"
-#include "monolane/lane.h"
-#include "monolane/line_lane.h"
-#include "monolane/road_geometry.h"
-#include "monolane/segment.h"
+#include "drake/automotive/maliput/monolane/arc_lane.h"
+#include "drake/automotive/maliput/monolane/junction.h"
+#include "drake/automotive/maliput/monolane/lane.h"
+#include "drake/automotive/maliput/monolane/line_lane.h"
+#include "drake/automotive/maliput/monolane/road_geometry.h"
+#include "drake/automotive/maliput/monolane/segment.h"
 
 #include <iostream>
 
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 
 namespace maliput {
@@ -15,7 +15,7 @@ namespace monolane {
 
 namespace api = maliput::geometry_api;
 
-TEST(HodgePodge, Podge) {
+GTEST_TEST(HodgePodge, Podge) {
   CubicPolynomial zp {0., 0., 0., 0.};
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};

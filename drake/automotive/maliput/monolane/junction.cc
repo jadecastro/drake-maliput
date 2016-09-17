@@ -1,8 +1,7 @@
-#include "junction.h"
+#include "drake/automotive/maliput/monolane/junction.h"
 
-#include "make_unique.h"
-#include "road_geometry.h"
-#include "segment.h"
+#include "drake/automotive/maliput/monolane/road_geometry.h"
+#include "drake/automotive/maliput/monolane/segment.h"
 
 namespace maliput {
 namespace monolane {
@@ -17,7 +16,7 @@ const api::RoadGeometry* Junction::road_geometry() const {
 
 
 Segment* Junction::NewSegment(api::SegmentId id) {
-  segments_.push_back(make_unique<Segment>(id, this));
+  segments_.push_back(std::make_unique<Segment>(id, this));
   return segments_.back().get();;
 }
 

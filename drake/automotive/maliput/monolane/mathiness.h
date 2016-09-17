@@ -6,7 +6,7 @@ namespace maliput {
 namespace monolane {
 
 
-struct V3 {
+struct DRAKEAUTOMOTIVE_EXPORT V3 {
   V3(double xx, double yy, double zz) : x(xx), y(yy), z(zz) {}
 
   static V3 sum(const V3& a, const V3& b) {
@@ -20,7 +20,7 @@ struct V3 {
   double z;
 };
 
-struct V2 {
+struct DRAKEAUTOMOTIVE_EXPORT V2 {
   V2(double xx, double yy) : x(xx), y(yy) {}
 
   static V2 midpoint(const V2& a, const V2& b) {
@@ -48,7 +48,7 @@ struct V2 {
 };
 
 
-struct Rot3 {
+struct DRAKEAUTOMOTIVE_EXPORT Rot3 {
   Rot3(double yy, double pp, double rr) : yaw(yy), pitch(pp), roll(rr) {}
 
   V3 apply(const V3& in) const {
@@ -80,7 +80,7 @@ struct Rot3 {
 
 
 // parameterized on domain p in [0, 1]
-class CubicPolynomial {
+class DRAKEAUTOMOTIVE_EXPORT CubicPolynomial {
  public:
   CubicPolynomial() : CubicPolynomial(0., 0., 0., 0.) {}
 

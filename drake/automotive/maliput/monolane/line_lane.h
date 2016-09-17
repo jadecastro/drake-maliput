@@ -2,13 +2,12 @@
 
 #include "lane.h"
 
-
 namespace maliput {
 namespace monolane {
 
 namespace api = maliput::geometry_api;
 
-class LineLane : public Lane {
+class DRAKEAUTOMOTIVE_EXPORT LineLane : public Lane {
  public:
   LineLane(const api::LaneId& id, Segment* segment,
            const V2& xy0, const V2& dxy,
