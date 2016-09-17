@@ -47,7 +47,7 @@ const Connection* Builder::Connect(
     const double length,
     const ZPoint& z_end,
     const XYPoint& forced_end) {
-  assert(length);  // TODO(maddog)  Validate length vs forced_end.
+  DRAKE_DEMAND(length);  // TODO(maddog)  Validate length vs forced_end.
   const XYZPoint end(forced_end, z_end);
   connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kLine, id,
@@ -115,7 +115,7 @@ BranchPoint* FindOrCreateBranchPoint(
   BranchPoint* bp = rg->NewBranchPoint({"xxx"});
   auto result = bp_map->emplace(point, bp);
   ignore(result);
-  assert(result.second);
+  DRAKE_DEMAND(result.second);
   return bp;
 }
 

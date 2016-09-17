@@ -1,7 +1,5 @@
 #pragma once
 
-
-#include <cassert>
 #include <cmath>
 #include <memory>
 #include <string>
@@ -10,6 +8,7 @@
 #include <boost/noncopyable.hpp>
 
 #include "drake/automotive/maliput/geometry_api/state.h"
+#include "drake/common/drake_assert.h"
 
 namespace maliput {
 
@@ -83,7 +82,7 @@ struct ArcOffset {
 
   ArcOffset(const double radius, const double d_theta)
       : radius_(radius), d_theta_(d_theta) {
-    assert(radius_ > 0.);
+    DRAKE_DEMAND(radius_ > 0.);
   }
 
   double radius_{};

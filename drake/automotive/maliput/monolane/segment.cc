@@ -5,6 +5,8 @@
 #include "lane.h"
 #include "line_lane.h"
 
+#include "drake/common/drake_assert.h"
+
 namespace maliput {
 namespace monolane {
 
@@ -21,7 +23,7 @@ LineLane* Segment::NewLineLane(api::LaneId id,
                                const api::RBounds& driveable_bounds,
                                const CubicPolynomial& elevation,
                                const CubicPolynomial& superelevation) {
-  assert(lane_.get() == nullptr);
+  DRAKE_DEMAND(lane_.get() == nullptr);
   std::unique_ptr<LineLane> lane = std::make_unique<LineLane>(
       id, this, xy0, dxy,
       lane_bounds, driveable_bounds,
@@ -39,7 +41,7 @@ ArcLane* Segment::NewArcLane(api::LaneId id,
                              const api::RBounds& driveable_bounds,
                              const CubicPolynomial& elevation,
                              const CubicPolynomial& superelevation) {
-  assert(lane_.get() == nullptr);
+  DRAKE_DEMAND(lane_.get() == nullptr);
   std::unique_ptr<ArcLane> lane = std::make_unique<ArcLane>(
       id, this, center, radius, theta0, d_theta,
       lane_bounds, driveable_bounds,
@@ -51,7 +53,7 @@ ArcLane* Segment::NewArcLane(api::LaneId id,
 
 
 const api::Lane* Segment::lane(int index) const {
-  assert(index == 0);
+  DRAKE_DEMAND(index == 0);
   return lane_.get();
 }
 

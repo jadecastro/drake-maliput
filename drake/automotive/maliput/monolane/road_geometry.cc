@@ -1,10 +1,10 @@
 #include "drake/automotive/maliput/monolane/road_geometry.h"
 
-#include <cassert>
-
 #include "drake/automotive/maliput/monolane/branch_point.h"
 #include "drake/automotive/maliput/monolane/ignore.h"
 #include "drake/automotive/maliput/monolane/junction.h"
+
+#include "drake/common/drake_assert.h"
 
 namespace maliput {
 namespace monolane {
@@ -40,8 +40,7 @@ api::RoadPosition RoadGeometry::ToRoadPosition(
     const api::RoadPosition& hint) const {
   ignore(&geo_pos);
   ignore(&hint); // TODO maddog temp warning quashing
-  assert(0); // TODO maddog Implement me.
-  return api::RoadPosition{nullptr, {0, 0, 0}};
+  DRAKE_ABORT(); // TODO maddog Implement me.
 }
 
 

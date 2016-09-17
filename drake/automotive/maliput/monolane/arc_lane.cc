@@ -2,7 +2,6 @@
 
 #include "drake/automotive/maliput/monolane/ignore.h"
 
-#include <cassert>
 #include <cmath>
 
 namespace maliput {
@@ -28,8 +27,7 @@ double ArcLane::heading_of_p_(const double p) const {
 api::LanePosition ArcLane::ToLanePosition(
     const api::GeoPosition& geo_pos) const {
   ignore(geo_pos.x_); // TODO maddog temp warning quashing
-  assert(0); // TODO maddog Implement me.
-  return api::LanePosition(0, 0, 0);
+  DRAKE_ABORT(); // TODO maddog Implement me.
   }
 
 
@@ -50,7 +48,7 @@ void ArcLane::KinematicStep(double delta_t,
   ignore(&new_lane);
   ignore(&new_lane_pos);
   ignore(&new_lane_vel); // TODO maddog temp warning quashing
-  assert(0); // TODO maddog Implement me.
+  DRAKE_ABORT(); // TODO maddog Implement me.
 }
 
 } // namespace monolane

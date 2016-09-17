@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cassert>
 #include <cmath>
 
 #include "drake/automotive/maliput/monolane/lane.h"
+#include "drake/common/drake_assert.h"
 
 namespace maliput {
 namespace monolane {
@@ -25,7 +25,7 @@ class DRAKEAUTOMOTIVE_EXPORT ArcLane : public Lane {
              elevation, superelevation),
         r_(radius), cx_(center.x), cy_(center.y),
         theta0_(theta0), d_theta_(d_theta) {
-    assert(r_ > 0.);
+    DRAKE_DEMAND(r_ > 0.);
   }
 
   virtual api::LanePosition ToLanePosition(

@@ -1,6 +1,5 @@
 #include "generate_obj.h"
 
-#include <cassert>
 #include <fstream>
 #include <functional>
 #include <initializer_list>
@@ -12,6 +11,8 @@
 #include "drake/automotive/maliput/geometry_api/lane.h"
 #include "drake/automotive/maliput/geometry_api/road_geometry.h"
 #include "drake/automotive/maliput/geometry_api/segment.h"
+
+#include "drake/common/drake_assert.h"
 
 namespace maliput {
 namespace utility {
@@ -120,7 +121,7 @@ struct GeoFace {
   GeoFace(const std::vector<GeoVertex>& vs,
           const std::vector<GeoNormal>& ns)
       : vs_(vs), ns_(ns) {
-    assert(vs.size() == ns.size());
+    DRAKE_DEMAND(vs.size() == ns.size());
   }
 
   std::vector<GeoVertex> vs_;
@@ -233,8 +234,8 @@ void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
     {
       double r00 = 0.;
       double r10 = 0.;
-      assert(rb0.r_min_ <= r00);
-      assert(rb1.r_min_ <= r10);
+      DRAKE_DEMAND(rb0.r_min_ <= r00);
+      DRAKE_DEMAND(rb1.r_min_ <= r10);
       while ((r00 < rb0.r_max_) && (r10 < rb1.r_max_)) {
         double r01 = r00 + grid_unit;
         double r11 = r10 + grid_unit;
@@ -256,8 +257,8 @@ void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
     {
       double r00 = 0.;
       double r10 = 0.;
-      assert(rb0.r_max_ >= r00);
-      assert(rb1.r_max_ >= r10);
+      DRAKE_DEMAND(rb0.r_max_ >= r00);
+      DRAKE_DEMAND(rb1.r_max_ >= r10);
       while ((r00 > rb0.r_min_) && (r10 > rb1.r_min_)) {
         double r01 = r00 - grid_unit;
         double r11 = r10 - grid_unit;
