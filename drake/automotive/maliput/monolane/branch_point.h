@@ -36,8 +36,7 @@ class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds : public api::SetOfLaneEnds {
 
 class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
  public:
-  BranchPoint(const api::BranchPointId& id, RoadGeometry* rg)
-      : id_(id), road_geometry_(rg) {}
+  BranchPoint(const api::BranchPointId& id, RoadGeometry* rg);
 
 
   // Provide persistent ID.

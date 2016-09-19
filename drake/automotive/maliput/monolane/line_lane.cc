@@ -24,7 +24,8 @@ api::LanePosition LineLane::ToLanePosition(
     const api::GeoPosition& geo_pos) const {
   ignore(geo_pos.x_); // TODO maddog temp warning quashing
   DRAKE_ABORT(); // TODO maddog Implement me.
-  }
+  return {0,0,0};
+}
 
 
 void LineLane::KinematicStep(double delta_t,

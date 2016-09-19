@@ -2,6 +2,8 @@
 
 #include "lane.h"
 
+#include "ignore.h"
+
 #include "drake/common/drake_assert.h"
 
 namespace maliput {
@@ -12,6 +14,8 @@ namespace api = maliput::geometry_api;
 
 const api::LaneEnd& SetOfLaneEnds::get(int index) const { return ends_[index]; }
 
+BranchPoint::BranchPoint(const api::BranchPointId& id, RoadGeometry* rg)
+      : id_(id), road_geometry_(rg) { ignore(road_geometry_); }
 
 const api::SetOfLaneEnds* BranchPoint::GetBranches(
     const api::LaneEnd& end) const {

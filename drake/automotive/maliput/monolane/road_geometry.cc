@@ -41,6 +41,7 @@ api::RoadPosition RoadGeometry::ToRoadPosition(
   ignore(&geo_pos);
   ignore(&hint); // TODO maddog temp warning quashing
   DRAKE_ABORT(); // TODO maddog Implement me.
+  return {nullptr,{0,0,0}};
 }
 
 
