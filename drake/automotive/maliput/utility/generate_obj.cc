@@ -32,13 +32,13 @@ class DRAKEAUTOMOTIVE_EXPORT IndexMap {
   int push_back(const T& thing) {
     auto mi = map_.find(thing);
     if (mi != map_.end()) {
-      //std::cerr << "found at " << mi->second << "  " << std::endl;
-      //thing.printt(std::cerr);
+      // std::cerr << "found at " << mi->second << "  " << std::endl;
+      // thing.printt(std::cerr);
       return mi->second;
     }
     int index = vec_.size();
-    //std::cerr << "not found, now at " << index << "  " << std::endl;
-    //thing.printt(std::cerr);
+    // std::cerr << "not found, now at " << index << "  " << std::endl;
+    // thing.printt(std::cerr);
     map_[thing] = index;
     vec_.push_back(thing);
     return index;
@@ -54,7 +54,7 @@ class DRAKEAUTOMOTIVE_EXPORT IndexMap {
 struct DRAKEAUTOMOTIVE_EXPORT GeoVertex {
   GeoVertex() {}
 
-  GeoVertex(const api::GeoPosition& v) : v_(v) {}
+  explicit GeoVertex(const api::GeoPosition& v) : v_(v) {}
 
   void printt(std::ostream& os) const {
     os << "v:" << v_.x_ << " " << v_.y_ << " " << v_.z_ << std::endl;
@@ -157,7 +157,6 @@ class ObjData {
 
 
   void dump(std::ostream& os) {
-
     os << "# Vertices" << std::endl;
     for (const GeoVertex& gv : vertices_.vector()) {
       os << "v " << gv.v_.x_ << " " << gv.v_.y_ << " " << gv.v_.z_ << std::endl;
@@ -178,7 +177,6 @@ class ObjData {
       }
       os << std::endl;
     }
-
   }
 
 
@@ -220,7 +218,6 @@ void push_face(ObjData* obj, const api::Lane* lane, const SRFace srface) {
 
 void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
                            const double grid_unit) {
-
   const double s_max = lane->length();
   double s0 = 0.;
   while (s0 < s_max) {
@@ -243,10 +240,10 @@ void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
         if (r01 > rb0.r_max_) { r01 = rb0.r_max_; }
         if (r11 > rb1.r_max_) { r11 = rb0.r_max_; }
 
-        //std::cerr << "{{" << s0 << ", " << r00
-        //          << "}, {" << s1 << ", " << r10 << "}, {"
-        //          << s1 << ", " << r11 << "}, {" << s0 << ", " << r01
-        //          << "}}" << std::endl;
+        // std::cerr << "{{" << s0 << ", " << r00
+        //           << "}, {" << s1 << ", " << r10 << "}, {"
+        //           << s1 << ", " << r11 << "}, {" << s0 << ", " << r01
+        //           << "}}" << std::endl;
         push_face(obj, lane, {{s0, r00}, {s1, r10}, {s1, r11}, {s0, r01}});
 
         r00 += grid_unit;
@@ -278,13 +275,12 @@ void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
 }
 
 
-} // namespace
+}  // namespace
 
 
 void DRAKEAUTOMOTIVE_EXPORT generate_obj(const api::RoadGeometry* rg,
                                          const std::string& filename,
                                          const double grid_unit) {
-
   ObjData obj;
 
   // Walk the network.
@@ -300,12 +296,12 @@ void DRAKEAUTOMOTIVE_EXPORT generate_obj(const api::RoadGeometry* rg,
   }
 
   {
-    //std::cerr << filename << std::endl;
+    // std::cerr << filename << std::endl;
     std::ofstream os(filename);
     obj.dump(os);
   }
 }
 
 
-} // namespace utility
-} // namespace maliput
+}  // namespace utility
+}  // namespace maliput

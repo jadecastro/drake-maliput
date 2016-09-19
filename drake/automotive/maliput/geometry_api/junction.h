@@ -36,5 +36,5 @@ class DRAKEAUTOMOTIVE_EXPORT Junction {
 };
 
 
-} // namespace geometry_api
-} // namespace maliput
+}  // namespace geometry_api
+}  // namespace maliput

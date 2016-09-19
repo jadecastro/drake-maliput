@@ -41,39 +41,39 @@ class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
 
   virtual ~Lane() {}
 
-  virtual const api::LaneId id() const override { return id_; }
+  const api::LaneId id() const override { return id_; }
 
-  virtual const api::Segment* segment() const override;
+  const api::Segment* segment() const override;
 
-  virtual int index() const override { return 0; }  // Only one lane per segment!
+  int index() const override { return 0; }  // Only one lane per segment!
 
-  virtual const api::Lane* to_left() const override { return nullptr; }
+  const api::Lane* to_left() const override { return nullptr; }
 
-  virtual const api::Lane* to_right() const override { return nullptr; }
+  const api::Lane* to_right() const override { return nullptr; }
 
-  virtual const api::BranchPoint* GetBranchPoint(
+  const api::BranchPoint* GetBranchPoint(
       const api::LaneEnd::Which which_end) const override;
 
-  virtual const api::SetOfLaneEnds* GetBranches(
+  const api::SetOfLaneEnds* GetBranches(
       const api::LaneEnd::Which which_end) const override;
 
-  virtual const boost::optional<api::LaneEnd>& GetDefaultBranch(
+  const boost::optional<api::LaneEnd>& GetDefaultBranch(
       const api::LaneEnd::Which which_end) const override;
 
-  virtual double length() const override;
+  double length() const override;
 
-  virtual api::RBounds lane_bounds(double) const override {
+  api::RBounds lane_bounds(double) const override {
     return lane_bounds_;
   }
 
-  virtual api::RBounds driveable_bounds(double) const override {
+  api::RBounds driveable_bounds(double) const override {
     return driveable_bounds_;
   }
 
-  virtual api::GeoPosition ToGeoPosition(
+  api::GeoPosition ToGeoPosition(
       const api::LanePosition& lane_pos) const override;
 
-  virtual api::Rotation GetOrientation(
+  api::Rotation GetOrientation(
       const api::LanePosition& lane_pos) const override;
 
 
@@ -97,9 +97,8 @@ class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
   // Common elevation and superelevation structures.
   const CubicPolynomial elevation_;
   const CubicPolynomial superelevation_;
-
 };
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

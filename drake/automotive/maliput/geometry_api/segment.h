@@ -24,5 +24,5 @@ class DRAKEAUTOMOTIVE_EXPORT Segment {
 
 
 
-} // namespace geometry_api
-} // namespace maliput
+}  // namespace geometry_api
+}  // namespace maliput

@@ -110,8 +110,8 @@ struct DRAKEAUTOMOTIVE_EXPORT RoadGeometryId {
 
 
 
-} // namespace geometry_api
-} // namespace maliput
+}  // namespace geometry_api
+}  // namespace maliput
 
 
 namespace std {
@@ -124,4 +124,4 @@ template <> struct less<LaneEnd> {
         ((lhs.lane_ == rhs.lane_) && (lhs.end_ < rhs.end_));
   }
 };
-} // namespace std
+}  // namespace std

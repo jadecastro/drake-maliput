@@ -39,12 +39,12 @@ api::RoadPosition RoadGeometry::ToRoadPosition(
     const api::GeoPosition& geo_pos,
     const api::RoadPosition& hint) const {
   ignore(&geo_pos);
-  ignore(&hint); // TODO maddog temp warning quashing
-  DRAKE_ABORT(); // TODO maddog Implement me.
-  return {nullptr,{0,0,0}};
+  ignore(&hint);  // TODO(maddog) temp warning quashing
+  DRAKE_ABORT();  // TODO(maddog) Implement me.
+  return {nullptr, {0, 0, 0}};
 }
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

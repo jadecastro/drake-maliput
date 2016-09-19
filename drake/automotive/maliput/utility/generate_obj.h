@@ -14,5 +14,5 @@ void generate_obj(const api::RoadGeometry* rg,
                   double grid_unit);
 
 
-} // namespace utility
-} // namespace maliput
+}  // namespace utility
+}  // namespace maliput

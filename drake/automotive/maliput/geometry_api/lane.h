@@ -12,12 +12,11 @@ class BranchPoint;
 class Segment;
 class SetOfLaneEnds;
 
-class BranchChoices; // TODO maddog define me.
+class BranchChoices;  // TODO(maddog) define me.
 
 
 class DRAKEAUTOMOTIVE_EXPORT Lane {
  public:
-
   enum class Endpoint {
     kStart,
       kEnd,
@@ -38,7 +37,7 @@ class DRAKEAUTOMOTIVE_EXPORT Lane {
 
   virtual const Lane* to_right() const = 0;
 
-  // TODO maddog Accessors for rmin, rmax as function of s.
+  // TODO(maddog) Accessors for rmin, rmax as function of s.
 
   /// Return the arc-length of the lane.
   ///
@@ -84,5 +83,5 @@ class DRAKEAUTOMOTIVE_EXPORT Lane {
 
 
 
-} // namespace geometry_api
-} // namespace maliput
+}  // namespace geometry_api
+}  // namespace maliput

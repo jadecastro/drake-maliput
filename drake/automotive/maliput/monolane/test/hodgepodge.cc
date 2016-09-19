@@ -104,5 +104,5 @@ GTEST_TEST(HodgePodge, Podge) {
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

@@ -75,5 +75,5 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

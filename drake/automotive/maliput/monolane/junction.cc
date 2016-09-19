@@ -21,9 +21,9 @@ Segment* Junction::NewSegment(api::SegmentId id) {
 }
 
 
-const api::Segment* Junction::segment (int index) const {
+const api::Segment* Junction::segment(int index) const {
   return segments_[index].get();
 }
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

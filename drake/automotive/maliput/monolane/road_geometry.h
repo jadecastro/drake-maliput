@@ -19,7 +19,7 @@ namespace api = maliput::geometry_api;
 /// single lane per segment.
 class DRAKEAUTOMOTIVE_EXPORT RoadGeometry : public api::RoadGeometry {
  public:
-  RoadGeometry(const api::RoadGeometryId& id)
+  explicit RoadGeometry(const api::RoadGeometryId& id)
       : id_(id) {}
 
 
@@ -54,5 +54,5 @@ class DRAKEAUTOMOTIVE_EXPORT RoadGeometry : public api::RoadGeometry {
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

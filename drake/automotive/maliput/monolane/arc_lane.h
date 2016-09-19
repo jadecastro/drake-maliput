@@ -28,21 +28,21 @@ class DRAKEAUTOMOTIVE_EXPORT ArcLane : public Lane {
     DRAKE_DEMAND(r_ > 0.);
   }
 
-  virtual api::LanePosition ToLanePosition(
+  api::LanePosition ToLanePosition(
       const api::GeoPosition& geo_pos) const override;
 
-  virtual void KinematicStep(double delta_t,
-                             const api::LanePosition& current_lane_pos,
-                             const api::LaneVelocity& current_lane_vel,
-                             const api::LaneAcceleration& lane_accel,
-                             const api::BranchChoices* choices,
-                             const api::Lane** new_lane,
-                             api::LanePosition* new_lane_pos,
-                             api::LanePosition* new_lane_vel) const override;
+  void KinematicStep(double delta_t,
+                     const api::LanePosition& current_lane_pos,
+                     const api::LaneVelocity& current_lane_vel,
+                     const api::LaneAcceleration& lane_accel,
+                     const api::BranchChoices* choices,
+                     const api::Lane** new_lane,
+                     api::LanePosition* new_lane_pos,
+                     api::LanePosition* new_lane_vel) const override;
 
  private:
-  virtual V2 xy_of_p_(const double p) const override;
-  virtual double heading_of_p_(const double p) const override;
+  V2 xy_of_p_(const double p) const override;
+  double heading_of_p_(const double p) const override;
 
   double r_;
   double cx_;
@@ -53,5 +53,5 @@ class DRAKEAUTOMOTIVE_EXPORT ArcLane : public Lane {
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

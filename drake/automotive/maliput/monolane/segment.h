@@ -56,5 +56,5 @@ class DRAKEAUTOMOTIVE_EXPORT Segment : public api::Segment {
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

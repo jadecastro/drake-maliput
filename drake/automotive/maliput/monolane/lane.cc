@@ -73,5 +73,5 @@ api::Rotation Lane::GetOrientation(const api::LanePosition& lane_pos) const {
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

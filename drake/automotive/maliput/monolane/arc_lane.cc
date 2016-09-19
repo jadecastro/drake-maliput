@@ -26,9 +26,9 @@ double ArcLane::heading_of_p_(const double p) const {
 
 api::LanePosition ArcLane::ToLanePosition(
     const api::GeoPosition& geo_pos) const {
-  ignore(geo_pos.x_); // TODO maddog temp warning quashing
-  DRAKE_ABORT(); // TODO maddog Implement me.
-  return {0,0,0};
+  ignore(geo_pos.x_);  // TODO(maddog) temp warning quashing
+  DRAKE_ABORT();  // TODO(maddog) Implement me.
+  return {0, 0, 0};
 }
 
 
@@ -48,9 +48,9 @@ void ArcLane::KinematicStep(double delta_t,
   ignore(&choices);
   ignore(&new_lane);
   ignore(&new_lane_pos);
-  ignore(&new_lane_vel); // TODO maddog temp warning quashing
-  DRAKE_ABORT(); // TODO maddog Implement me.
+  ignore(&new_lane_vel);  // TODO(maddog) temp warning quashing
+  DRAKE_ABORT();  // TODO(maddog) Implement me.
 }
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

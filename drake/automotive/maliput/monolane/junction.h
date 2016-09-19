@@ -34,7 +34,7 @@ class DRAKEAUTOMOTIVE_EXPORT Junction : public api::Junction {
     return segments_.size();
   }
 
-  virtual const api::Segment* segment (int index) const;
+  virtual const api::Segment* segment(int index) const;
 
  private:
   api::JunctionId id_;
@@ -43,5 +43,5 @@ class DRAKEAUTOMOTIVE_EXPORT Junction : public api::Junction {
 };
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

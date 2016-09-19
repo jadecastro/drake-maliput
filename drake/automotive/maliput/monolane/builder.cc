@@ -127,7 +127,7 @@ CubicPolynomial MakeCubic(const double dX, const double Y0, const double dY,
                          (3. * dY / dX) - (2. * Ydot0) - Ydot1,
                          Ydot0 + Ydot1 - (2. * dY / dX));
 }
-} // namespace
+}  // namespace
 
 
 std::unique_ptr<const api::RoadGeometry> Builder::Build(
@@ -137,7 +137,7 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
 
   std::map<XYZPoint, BranchPoint*> bp_map;
 
-  for (auto& cnx: connections_) {
+  for (auto& cnx : connections_) {
     std::cout << "cnx: " << cnx->id() << std::endl;
     Segment* segment = rg->NewJunction({std::string("j:") + cnx->id()})
         ->NewSegment({std::string("s:") + cnx->id()});
@@ -215,5 +215,5 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
 }
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

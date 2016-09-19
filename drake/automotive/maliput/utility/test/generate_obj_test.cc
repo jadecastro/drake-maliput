@@ -92,7 +92,7 @@ GTEST_TEST(GenerateObj, Hodge) {
   /*auto c6 =*/ b.Connect("6", c5->end(), mono::ArcOffset(50., kPi2),
                       {0., 0., 0., 0.},
                       c1->start().xy_);
-//SOON//  b.Connect("6", c5->end(), c1->begin());
+// SOON//  b.Connect("6", c5->end(), c1->begin());
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"apple"});
   generate_obj(rg.get(), "/tmp/omg2.obj", 1.);
@@ -184,7 +184,7 @@ GTEST_TEST(GenerateObj, TeeIntersection) {
                        ce->start().xy_);
   /*auto cew =*/ b.Connect("east-west",  ce->start().reverse(),
                        20., {0., 0., 0., 0.},
-                       cw->start().xy_ );
+                       cw->start().xy_);
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"tee"});
   generate_obj(rg.get(), "/tmp/tee.obj", 1.);
@@ -204,5 +204,5 @@ GTEST_TEST(GenerateObj, Helix) {
 }
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

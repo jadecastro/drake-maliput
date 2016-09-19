@@ -12,7 +12,7 @@ class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds {
  public:
   virtual ~SetOfLaneEnds() {}
 
-  // TODO maddog  Improve this.
+  // TODO(maddog)  Improve this.
   virtual int count() const = 0;
   virtual const LaneEnd& get(int index) const = 0;
 };
@@ -38,5 +38,5 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint {
 
 
 
-} // namespace geometry_api
-} // namespace maliput
+}  // namespace geometry_api
+}  // namespace maliput

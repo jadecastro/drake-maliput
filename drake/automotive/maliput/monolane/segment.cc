@@ -60,5 +60,5 @@ const api::Lane* Segment::lane(int index) const {
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

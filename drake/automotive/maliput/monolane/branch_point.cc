@@ -51,5 +51,5 @@ void BranchPoint::SetDefault(const api::LaneEnd& lane_end,
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput

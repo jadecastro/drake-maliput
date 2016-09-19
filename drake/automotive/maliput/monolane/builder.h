@@ -45,11 +45,10 @@ struct XYPoint {
 
   double x_{};
   double y_{};
-  double heading_{}; // radians, zero == x direction
+  double heading_{};  // radians, zero == x direction
 };
 
 struct ZPoint {
-
   ZPoint reverse() const {
     return {z_, -zdot_, -theta_, -thetadot_};
   }
@@ -141,11 +140,11 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
   Builder(const api::RBounds& lane_bounds,
           const api::RBounds& driveable_bounds);
 
-//SOON//  // Connect a start point to a specific end point.
-//SOON//  const Connection* Connect(
-//SOON//      const std::string& id,
-//SOON//      const XYZPoint& start,
-//SOON//      const XYZPoint& end);
+// SOON//  // Connect a start point to a specific end point.
+// SOON//  const Connection* Connect(
+// SOON//      const std::string& id,
+// SOON//      const XYZPoint& start,
+// SOON//      const XYZPoint& end);
 
   // TODO(maddog) Provide for grouping within Junctions.
   // TODO(maddog) Provide for explicit branch-point siding of ends...
@@ -194,8 +193,8 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
 
 
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput
 
 
 #include <functional>
@@ -214,4 +213,4 @@ template <> struct less<XYZPoint> {
     return as_tuple(lhs) < as_tuple(rhs);
   }
 };
-} // namespace std
+}  // namespace std

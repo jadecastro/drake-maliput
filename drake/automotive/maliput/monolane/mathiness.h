@@ -122,5 +122,5 @@ class DRAKEAUTOMOTIVE_EXPORT CubicPolynomial {
   double s_1_{};
 };
 
-} // namespace monolane
-} // namespace maliput
+}  // namespace monolane
+}  // namespace maliput
