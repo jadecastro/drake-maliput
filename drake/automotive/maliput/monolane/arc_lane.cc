@@ -18,9 +18,8 @@ V2 ArcLane::xy_of_p_(const double p) const {
 
 
 double ArcLane::heading_of_p_(const double p) const {
-  const double kPi = 3.14159;
   const double theta = theta0_ + (p * d_theta_);
-  return theta + std::copysign(kPi / 2.0, d_theta_);
+  return theta + std::copysign(M_PI / 2.0, d_theta_);
 }
 
 

@@ -5,6 +5,7 @@
 #include "drake/automotive/maliput/monolane/road_geometry.h"
 #include "drake/automotive/maliput/monolane/segment.h"
 
+#include <cmath>
 #include <iostream>
 
 #include "gtest/gtest.h"
@@ -54,26 +55,25 @@ GTEST_TEST(HodgePodge, Podge) {
   EXPECT_NEAR(xyz.y_, 100., 1e-2);
   EXPECT_NEAR(xyz.z_,   0., 1e-2);
 
-  const double kPi = 3.14159;
   Lane* l2 = rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
-      {"l2"}, {200., 200.}, 100., 0., kPi / 2.,
+      {"l2"}, {200., 200.}, 100., 0., M_PI / 2.,
       {-5., 5.}, {-10., 10.}, zp, zp);
-  EXPECT_NEAR(l2->length(), 100. * kPi / 2., 1e-7);
+  EXPECT_NEAR(l2->length(), 100. * M_PI / 2., 1e-7);
 
   xyz = l2->ToGeoPosition({0., 0., 0.});
   EXPECT_NEAR(xyz.x_, 300., 1e-2);
   EXPECT_NEAR(xyz.y_, 200., 1e-2);
   EXPECT_NEAR(xyz.z_,   0., 1e-2);
 
-  xyz = l2->ToGeoPosition({100. * kPi / 2., 0., 0.});
+  xyz = l2->ToGeoPosition({100. * M_PI / 2., 0., 0.});
   EXPECT_NEAR(xyz.x_, 200., 1e-2);
   EXPECT_NEAR(xyz.y_, 300., 1e-2);
   EXPECT_NEAR(xyz.z_,   0., 1e-2);
 
-  rot = l2->GetOrientation({100. * kPi / 2., 0., 0.});
+  rot = l2->GetOrientation({100. * M_PI / 2., 0., 0.});
   EXPECT_NEAR(rot.roll_,   0., 1e-2);
   EXPECT_NEAR(rot.pitch_,  0., 1e-2);
-  EXPECT_NEAR(rot.yaw_,   kPi, 1e-2);
+  EXPECT_NEAR(rot.yaw_,   M_PI, 1e-2);
 
 
   Lane* l3 = rg.NewJunction({"j2"})->NewSegment({"s2"})->NewLineLane(
@@ -97,8 +97,8 @@ GTEST_TEST(HodgePodge, Podge) {
 
   rot = l3->GetOrientation({100. * std::sqrt(2.), 0., 0.});
   EXPECT_NEAR(rot.roll_,         0., 1e-2);
-  EXPECT_NEAR(rot.pitch_, -kPi / 4., 1e-2);
-  EXPECT_NEAR(rot.yaw_,   -kPi / 2., 1e-2);
+  EXPECT_NEAR(rot.pitch_, -M_PI / 4., 1e-2);
+  EXPECT_NEAR(rot.yaw_,   -M_PI / 2., 1e-2);
 }
 
 

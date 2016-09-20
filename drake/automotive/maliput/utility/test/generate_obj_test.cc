@@ -9,6 +9,7 @@
 #include "drake/automotive/maliput/monolane/road_geometry.h"
 #include "drake/automotive/maliput/monolane/segment.h"
 
+#include <cmath>
 #include <iostream>
 
 #include "gtest/gtest.h"
@@ -25,8 +26,7 @@ GTEST_TEST(GenerateObj, Podge) {
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};
 
-  const double kPi = 3.14159;
-  const double kPi2 = kPi / 2.;
+  const double kPi2 = M_PI / 2.;
 
   mono::RoadGeometry rg = mono::RoadGeometry({"apple"});
   auto l0 = rg.NewJunction({"j1"})->NewSegment({"s1"})->NewLineLane(
@@ -62,7 +62,7 @@ GTEST_TEST(GenerateObj, Podge) {
       {0., 0., (1.5 / s50), (-1.0 / s50)});
 
   rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
-      {"l2"}, {0., 50.}, 50., kPi, kPi2,
+      {"l2"}, {0., 50.}, 50., M_PI, kPi2,
       {-5., 5.}, {-10., 10.},
       zp,
       {0.5 / s50, 0., (-1.5 / s50), (1.0 / s50)});
@@ -74,8 +74,7 @@ GTEST_TEST(GenerateObj, Podge) {
 
 
 GTEST_TEST(GenerateObj, Hodge) {
-  const double kPi = 3.14159;
-  const double kPi2 = kPi / 2.;
+  const double kPi2 = M_PI / 2.;
   mono::Builder b({-5., 5.}, {-10., 10.});
 
   mono::XYZPoint start {{0., 0., 0.}, {0., 0., 0., 0.}};
@@ -100,17 +99,16 @@ GTEST_TEST(GenerateObj, Hodge) {
 
 
 GTEST_TEST(GenerateObj, Fig8Builder) {
-  const double kPi = 3.14159;
   mono::Builder b({-2., 2.}, {-4., 4.});
 
-  mono::XYZPoint start {{0., 0., -kPi / 4.}, {0., 0., 0., 0.}};
+  mono::XYZPoint start {{0., 0., -M_PI / 4.}, {0., 0., 0., 0.}};
   auto c0 = b.Connect("0", start,
                       50., {3., 0., 0., 0.});
 
   auto c1 = b.Connect("1", c0->end(),
-                      mono::ArcOffset(50., 0.75 * kPi), {3., 0., 0.4, 0.});
+                      mono::ArcOffset(50., 0.75 * M_PI), {3., 0., 0.4, 0.});
   auto c2 = b.Connect("2", c1->end(),
-                      mono::ArcOffset(50., 0.75 * kPi), {3., 0., 0., 0.});
+                      mono::ArcOffset(50., 0.75 * M_PI), {3., 0., 0., 0.});
 
   auto c3 = b.Connect("3", c2->end(),
                       50., {6., 0., 0., 0.});
@@ -118,9 +116,9 @@ GTEST_TEST(GenerateObj, Fig8Builder) {
                       50., {3., 0., 0., 0.});
 
   auto c5 = b.Connect("5", c4->end(),
-                      mono::ArcOffset(50., -0.75 * kPi), {3., 0., -0.4, 0.});
+                      mono::ArcOffset(50., -0.75 * M_PI), {3., 0., -0.4, 0.});
   auto c6 = b.Connect("6", c5->end(),
-                      mono::ArcOffset(50., -0.75 * kPi), {3., 0., 0., 0.});
+                      mono::ArcOffset(50., -0.75 * M_PI), {3., 0., 0., 0.});
 
   /*auto c6 =*/ b.Connect("6", c6->end(),
                       50., {0., 0., 0., 0.});
@@ -132,27 +130,26 @@ GTEST_TEST(GenerateObj, Fig8Builder) {
 
 
 GTEST_TEST(GenerateObj, DoubleRing) {
-  const double kPi = 3.14159;
   mono::Builder b({-2., 2.}, {-4., 4.});
 
-  mono::XYZPoint start {{0., 0., kPi / 2.}, {0., 0., 0., 0.}};
+  mono::XYZPoint start {{0., 0., M_PI / 2.}, {0., 0., 0., 0.}};
   auto cr0 = b.Connect("r0", start,
-                      mono::ArcOffset(50., -0.25 * kPi), {0., 0., 0.0, 0.});
+                      mono::ArcOffset(50., -0.25 * M_PI), {0., 0., 0.0, 0.});
   auto cr1 = b.Connect("r1", cr0->end(),
-                      mono::ArcOffset(50., -0.75 * kPi), {0., 0., -0.4, 0.});
+                      mono::ArcOffset(50., -0.75 * M_PI), {0., 0., -0.4, 0.});
   auto cr2 = b.Connect("r2", cr1->end(),
-                      mono::ArcOffset(50., -0.75 * kPi), {0., 0., 0.0, 0.});
+                      mono::ArcOffset(50., -0.75 * M_PI), {0., 0., 0.0, 0.});
   auto cr3 = b.Connect("r3", cr2->end(),
-                      mono::ArcOffset(50., -0.25 * kPi), {0., 0., 0.0, 0.});
+                      mono::ArcOffset(50., -0.25 * M_PI), {0., 0., 0.0, 0.});
 
   auto cl0 = b.Connect("l0", cr3->end(),
-                      mono::ArcOffset(50., 0.25 * kPi), {0., 0., 0.0, 0.});
+                      mono::ArcOffset(50., 0.25 * M_PI), {0., 0., 0.0, 0.});
   auto cl1 = b.Connect("l1", cl0->end(),
-                      mono::ArcOffset(50., 0.75 * kPi), {0., 0., 0.4, 0.});
+                      mono::ArcOffset(50., 0.75 * M_PI), {0., 0., 0.4, 0.});
   auto cl2 = b.Connect("l2", cl1->end(),
-                      mono::ArcOffset(50., 0.75 * kPi), {0., 0., 0.0, 0.});
+                      mono::ArcOffset(50., 0.75 * M_PI), {0., 0., 0.0, 0.});
   /*auto cl3 =*/ b.Connect("l3", cl2->end(),
-                      mono::ArcOffset(50., 0.25 * kPi), {0., 0., 0.0, 0.},
+                      mono::ArcOffset(50., 0.25 * M_PI), {0., 0., 0.0, 0.},
                       start.xy_);
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"double-ring"});
@@ -162,25 +159,24 @@ GTEST_TEST(GenerateObj, DoubleRing) {
 
 
 GTEST_TEST(GenerateObj, TeeIntersection) {
-  const double kPi = 3.14159;
   mono::Builder b({-2., 2.}, {-4., 4.});
 
-  mono::XYZPoint start {{0., 0., kPi / 2.}, {0., 0., 0., 0.}};
+  mono::XYZPoint start {{0., 0., M_PI / 2.}, {0., 0., 0., 0.}};
   auto cs = b.Connect("south",
-                      {{0., -10., -kPi / 2.}, {0., 0., 0., 0.}},
+                      {{0., -10., -M_PI / 2.}, {0., 0., 0., 0.}},
                       10., {0., 0., 0.0, 0.});
   auto cw = b.Connect("west",
-                      {{-10., 0., kPi}, {0., 0., 0., 0.}},
+                      {{-10., 0., M_PI}, {0., 0., 0., 0.}},
                       10., {0., 0., 0.0, 0.});
   auto ce = b.Connect("east",
                       {{10., 0., 0.}, {0., 0., 0., 0.}},
                       10., {0., 0., 0.0, 0.});
 
   /*auto csw =*/ b.Connect("south-west", cs->start().reverse(),
-                       mono::ArcOffset(10., kPi / 2.), {0., 0., 0., 0.},
+                       mono::ArcOffset(10., M_PI / 2.), {0., 0., 0., 0.},
                        cw->start().xy_);
   /*auto cse =*/ b.Connect("south-east", cs->start().reverse(),
-                       mono::ArcOffset(10., -kPi / 2.), {0., 0., 0., 0.},
+                       mono::ArcOffset(10., -M_PI / 2.), {0., 0., 0., 0.},
                        ce->start().xy_);
   /*auto cew =*/ b.Connect("east-west",  ce->start().reverse(),
                        20., {0., 0., 0., 0.},
@@ -192,12 +188,11 @@ GTEST_TEST(GenerateObj, TeeIntersection) {
 
 
 GTEST_TEST(GenerateObj, Helix) {
-  const double kPi = 3.14159;
   mono::Builder b({-2., 2.}, {-4., 4.});
 
   mono::XYZPoint start {{0., -10., 0.}, {0., 0., 0.4, 0.}};
   b.Connect("1", start,
-            mono::ArcOffset(10., 4. * kPi), {20., 0., 0.4, 0.});
+            mono::ArcOffset(10., 4. * M_PI), {20., 0., 0.4, 0.});
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"helix"});
   generate_obj(rg.get(), "/tmp/helix.obj", 1.);

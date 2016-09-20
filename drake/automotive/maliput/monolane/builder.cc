@@ -14,9 +14,6 @@
 namespace maliput {
 namespace monolane {
 
-const double kPi = 3.14159;
-
-
 Builder::Builder(const api::RBounds& lane_bounds,
                  const api::RBounds& driveable_bounds)
     : lane_bounds_(lane_bounds),
@@ -62,7 +59,7 @@ const Connection* Builder::Connect(
     const ArcOffset& arc,
     const ZPoint& z_end) {
   const double alpha = start.xy_.heading_;
-  const double theta0 = alpha - std::copysign(kPi / 2., arc.d_theta_);
+  const double theta0 = alpha - std::copysign(M_PI / 2., arc.d_theta_);
   const double theta1 = theta0 + arc.d_theta_;
 
   const double cx = start.xy_.x_ - (arc.radius_ * std::cos(theta0));
@@ -87,7 +84,7 @@ const Connection* Builder::Connect(
     const ZPoint& z_end,
     const XYPoint& forced_end) {
   const double alpha = start.xy_.heading_;
-  const double theta0 = alpha - std::copysign(kPi / 2., arc.d_theta_);
+  const double theta0 = alpha - std::copysign(M_PI / 2., arc.d_theta_);
 
   const double cx = start.xy_.x_ - (arc.radius_ * std::cos(theta0));
   const double cy = start.xy_.y_ - (arc.radius_ * std::sin(theta0));
