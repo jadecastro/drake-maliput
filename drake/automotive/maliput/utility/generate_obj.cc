@@ -1,5 +1,6 @@
 #include "generate_obj.h"
 
+#include <cstddef>
 #include <fstream>
 #include <functional>
 #include <initializer_list>
@@ -95,7 +96,7 @@ bool operator==(const GeoNormal& lhs, const GeoNormal& rhs) {
 
 template<> struct LocalHash<GeoVertex> {
   typedef GeoVertex argument_type;
-  typedef std::size_t result_type;
+  typedef size_t result_type;
   result_type operator()(const argument_type& gv) const {
     const result_type hx(std::hash<double>()(gv.v_.x_));
     const result_type hy(std::hash<double>()(gv.v_.y_));
@@ -105,7 +106,7 @@ template<> struct LocalHash<GeoVertex> {
 };
 template<> struct LocalHash<GeoNormal> {
   typedef GeoNormal argument_type;
-  typedef std::size_t result_type;
+  typedef size_t result_type;
   result_type operator()(const argument_type& gn) const {
     const result_type hx(std::hash<double>()(gn.n_.x_));
     const result_type hy(std::hash<double>()(gn.n_.y_));
