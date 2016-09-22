@@ -84,6 +84,15 @@ class DRAKEAUTOMOTIVE_EXPORT Lane {
   virtual Rotation GetOrientation(const LanePosition& lane_pos) const = 0;
 
 
+  virtual void EvalMotionDerivatives(const LanePosition& position,
+                                     const IsoLaneVelocity& velocity,
+                                     const IsoLaneAcceleration& accel,
+                                     LanePosition* position_dot,
+                                     IsoLaneVelocity* velocity_dot) const = 0;
+
+  // TODO(maddog) virtual void EvalSurfaceDerivatives(...) const = 0;
+
+
   virtual void KinematicStep(double delta_t,
                              const LanePosition& current_lane_pos,
                              const LaneVelocity& current_lane_vel,
