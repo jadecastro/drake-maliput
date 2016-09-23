@@ -63,16 +63,9 @@ struct DRAKEAUTOMOTIVE_EXPORT LanePosition {
 
 struct DRAKEAUTOMOTIVE_EXPORT IsoLaneVelocity {
   double sigma_v_{};
-  double rv_{};
-  double hv_{};
+  double rho_v_{};
+  double eta_v_{};
 };
-
-struct DRAKEAUTOMOTIVE_EXPORT IsoLaneAcceleration {
-  double sigma_a_{};
-  double ra_{};
-  double ha_{};
-};
-
 
 
 struct DRAKEAUTOMOTIVE_EXPORT RoadPosition {

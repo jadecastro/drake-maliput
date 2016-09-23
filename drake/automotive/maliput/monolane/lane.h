@@ -76,15 +76,21 @@ class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
   api::Rotation GetOrientation(
       const api::LanePosition& lane_pos) const override;
 
+  void EvalMotionDerivatives(const api::LanePosition& position,
+                             const api::IsoLaneVelocity& velocity,
+                             api::LanePosition* position_dot) const override;
 
   const CubicPolynomial& elevation() const { return elevation_; }
   const CubicPolynomial& superelevation() const { return superelevation_; }
 
  private:
   virtual V2 xy_of_p_(const double p) const = 0;
+  virtual V2 xy_dot_of_p_(const double p) const = 0;
   virtual double heading_of_p_(const double p) const = 0;
+  virtual double heading_dot_of_p_(const double p) const = 0;
 
   Rot3 rot3_of_p_(const double p) const;
+  double p_from_s_(const double s) const;
 
   const api::LaneId id_;
   const Segment* segment_;

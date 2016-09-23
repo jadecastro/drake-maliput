@@ -15,10 +15,25 @@ struct DRAKEAUTOMOTIVE_EXPORT V3 {
               a.z + b.z);
   }
 
+  double magnitude() const {
+    return std::sqrt((x * x) + (y * y) + (z * z));
+  }
+
+  V3 operator*(const double rhs) const {
+    return V3(x * rhs, y * rhs, z * rhs);
+  }
+
   double x;
   double y;
   double z;
 };
+
+inline
+V3 operator+(const V3& a, const V3& b) {
+  return V3(a.x + b.x,
+            a.y + b.y,
+            a.z + b.z);
+}
 
 struct DRAKEAUTOMOTIVE_EXPORT V2 {
   V2(double xx, double yy) : x(xx), y(yy) {}
@@ -98,6 +113,10 @@ class DRAKEAUTOMOTIVE_EXPORT CubicPolynomial {
 
   double fdot_p(double p) const {
     return b_ + (2. * c_ * p) + (3. * d_ * p * p);
+  }
+
+  double fddot_p(double p) const {
+    return (2. * c_) + (6. * d_ * p);
   }
 
 

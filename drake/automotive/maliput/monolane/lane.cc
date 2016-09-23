@@ -44,10 +44,14 @@ Rot3 Lane::rot3_of_p_(const double p) const {
               superelevation().f_p(p) * p_scale_);
 }
 
+double Lane::p_from_s_(const double s) const {
+  return elevation().p_s(s / p_scale_);
+}
+
 
 api::GeoPosition Lane::ToGeoPosition(const api::LanePosition& lane_pos) const {
   // Recover parameter p from arc-length position s.
-  const double p = elevation().p_s(lane_pos.s_ / p_scale_);
+  const double p = p_from_s_(lane_pos.s_);
   // Calculate z (elevation) of (s,0,0);
   const double z = elevation().f_p(p) * p_scale_;
   // Calculate x,y of (s,0,0).
@@ -61,15 +65,73 @@ api::GeoPosition Lane::ToGeoPosition(const api::LanePosition& lane_pos) const {
   return {xyz.x, xyz.y, xyz.z};
 }
 
+
 api::Rotation Lane::GetOrientation(const api::LanePosition& lane_pos) const {
   // Recover linear parameter p from arc-length position s.
-  const double p = elevation().p_s(lane_pos.s_ / p_scale_);
+  const double p = p_from_s_(lane_pos.s_);
   // Calculate orientation of (s,r,h) basis at (s,0,0).
   const Rot3 ypr = rot3_of_p_(p);
   return api::Rotation(ypr.roll,
                        ypr.pitch,
                        ypr.yaw);
 }
+
+
+void Lane::EvalMotionDerivatives(
+    const api::LanePosition& position,
+    const api::IsoLaneVelocity& velocity,
+    api::LanePosition* position_dot) const {
+
+  const double p = p_from_s_(position.s_);
+  const double r = position.r_;
+  const double h = position.h_;
+
+  const V2 G_prime = xy_dot_of_p_(p);
+  const double g_prime = elevation().fdot_p(p);
+
+  const Rot3 R = rot3_of_p_(p);
+  const double alpha = R.roll;
+  const double beta = R.pitch;
+  const double gamma = R.yaw;
+
+  const double ca = std::cos(alpha);
+  const double cb = std::cos(beta);
+  const double cg = std::cos(gamma);
+  const double sa = std::sin(alpha);
+  const double sb = std::sin(beta);
+  const double sg = std::sin(gamma);
+
+  const double d_alpha = superelevation().fdot_p(p) * p_scale_; // TODO(maddog)
+  const double d_beta = cb * cb * elevation().fddot_p(p);
+  const double d_gamma = heading_dot_of_p_(p);
+
+  const V3 W_prime =
+      V3(G_prime.x,
+         G_prime.y,
+         p_scale_ * g_prime) +
+
+      V3((((-ca*sg)+(ca*sb*cg))*r + ((ca*sg)+(sa*sb*cg))*h),
+         (((-sa*cg)-(ca*sb*sg))*r + ((ca*cg)-(sa*sb*sg))*h),
+         ((-ca*cb)*r + (-sa*cb)*h)
+         ) * d_alpha +
+
+      V3((( sa*cb*cg)*r + (-ca*cb*cg)*h),
+         ((-sa*cb*sg)*r + ( ca*cb*sg)*h),
+         (( sa*sb)*r + (-ca*sb)*h)
+         ) * d_beta +
+
+      V3(((( ca*cg)-(sa*sb*sg))*r + (( sa*cg)+(ca*sb*sg))*h),
+         (((-ca*sg)-(sa*sb*cg))*r + ((-sa*sg)+(ca*sb*cg))*h),
+         0
+         ) * d_gamma;
+
+  const double d_s = p_scale_ * std::sqrt(1 + (g_prime * g_prime));
+
+  *position_dot = {d_s / W_prime.magnitude() * velocity.sigma_v_,
+                   velocity.rho_v_,
+                   velocity.eta_v_};
+}
+
 
 
 

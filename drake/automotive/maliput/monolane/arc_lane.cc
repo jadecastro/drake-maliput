@@ -17,9 +17,21 @@ V2 ArcLane::xy_of_p_(const double p) const {
 }
 
 
+V2 ArcLane::xy_dot_of_p_(const double p) const {
+  const double theta = theta0_ + (p * d_theta_);
+  return V2(-r_ * d_theta_ * std::sin(theta),
+            r_ * d_theta_ * std::cos(theta));
+}
+
+
 double ArcLane::heading_of_p_(const double p) const {
   const double theta = theta0_ + (p * d_theta_);
   return theta + std::copysign(M_PI / 2.0, d_theta_);
+}
+
+
+double ArcLane::heading_dot_of_p_(const double p) const {
+  return d_theta_;
 }
 
 
@@ -30,20 +42,6 @@ api::LanePosition ArcLane::ToLanePosition(
 }
 
 
-
-void ArcLane::EvalMotionDerivatives(
-    const api::LanePosition& position,
-    const api::IsoLaneVelocity& velocity,
-    const api::IsoLaneAcceleration& accel,
-    api::LanePosition* position_dot,
-    api::IsoLaneVelocity* velocity_dot) const {
-  ignore(&position);
-  ignore(&velocity);
-  ignore(&accel);
-  ignore(&position_dot);
-  ignore(&velocity_dot);  // TODO(maddog) temp warning quashing
-  DRAKE_ABORT();  // TODO(maddog) Implement me.
-}
 
 }  // namespace monolane
 }  // namespace maliput

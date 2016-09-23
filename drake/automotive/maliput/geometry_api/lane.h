@@ -86,9 +86,7 @@ class DRAKEAUTOMOTIVE_EXPORT Lane {
 
   virtual void EvalMotionDerivatives(const LanePosition& position,
                                      const IsoLaneVelocity& velocity,
-                                     const IsoLaneAcceleration& accel,
-                                     LanePosition* position_dot,
-                                     IsoLaneVelocity* velocity_dot) const = 0;
+                                     LanePosition* position_dot) const = 0;
 
   // TODO(maddog) virtual void EvalSurfaceDerivatives(...) const = 0;
 
