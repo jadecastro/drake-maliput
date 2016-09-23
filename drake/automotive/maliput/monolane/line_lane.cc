@@ -27,22 +27,17 @@ api::LanePosition LineLane::ToLanePosition(
 }
 
 
-void LineLane::KinematicStep(double delta_t,
-                             const api::LanePosition& current_lane_pos,
-                             const api::LaneVelocity& current_lane_vel,
-                             const api::LaneAcceleration& lane_accel,
-                             const api::BranchChoices* choices,
-                             const api::Lane** new_lane,
-                             api::LanePosition* new_lane_pos,
-                             api::LanePosition* new_lane_vel) const {
-  ignore(&delta_t);
-  ignore(&current_lane_pos);
-  ignore(&current_lane_vel);
-  ignore(&lane_accel);
-  ignore(&choices);
-  ignore(&new_lane);
-  ignore(&new_lane_pos);
-  ignore(&new_lane_vel);  // TODO(maddog) temp warning quashing
+void LineLane::EvalMotionDerivatives(
+    const api::LanePosition& position,
+    const api::IsoLaneVelocity& velocity,
+    const api::IsoLaneAcceleration& accel,
+    api::LanePosition* position_dot,
+    api::IsoLaneVelocity* velocity_dot) const {
+  ignore(&position);
+  ignore(&velocity);
+  ignore(&accel);
+  ignore(&position_dot);
+  ignore(&velocity_dot);  // TODO(maddog) temp warning quashing
   DRAKE_ABORT();  // TODO(maddog) Implement me.
 }
 

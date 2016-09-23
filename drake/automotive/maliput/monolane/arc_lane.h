@@ -31,14 +31,11 @@ class DRAKEAUTOMOTIVE_EXPORT ArcLane : public Lane {
   api::LanePosition ToLanePosition(
       const api::GeoPosition& geo_pos) const override;
 
-  void KinematicStep(double delta_t,
-                     const api::LanePosition& current_lane_pos,
-                     const api::LaneVelocity& current_lane_vel,
-                     const api::LaneAcceleration& lane_accel,
-                     const api::BranchChoices* choices,
-                     const api::Lane** new_lane,
-                     api::LanePosition* new_lane_pos,
-                     api::LanePosition* new_lane_vel) const override;
+  void EvalMotionDerivatives(const api::LanePosition& position,
+                             const api::IsoLaneVelocity& velocity,
+                             const api::IsoLaneAcceleration& accel,
+                             api::LanePosition* position_dot,
+                             api::IsoLaneVelocity* velocity_dot) const override;
 
  private:
   V2 xy_of_p_(const double p) const override;

@@ -93,15 +93,6 @@ class DRAKEAUTOMOTIVE_EXPORT Lane {
   // TODO(maddog) virtual void EvalSurfaceDerivatives(...) const = 0;
 
 
-  virtual void KinematicStep(double delta_t,
-                             const LanePosition& current_lane_pos,
-                             const LaneVelocity& current_lane_vel,
-                             const LaneAcceleration& lane_accel,
-                             const BranchChoices* choices,
-                             const Lane** new_lane,
-                             LanePosition* new_lane_pos,
-                             LanePosition* new_lane_vel) const = 0;
-
   /// Returns the lane's BranchPoint for the end specificed by @p which_end.
   virtual const BranchPoint* GetBranchPoint(
       const LaneEnd::Which which_end) const = 0;
