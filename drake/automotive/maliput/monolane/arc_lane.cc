@@ -31,6 +31,8 @@ double ArcLane::heading_of_p_(const double p) const {
 
 
 double ArcLane::heading_dot_of_p_(const double p) const {
+  // TODO(maddog)  Does this still hold if r exceeds radius r_, e.g. if r
+  //               approaches/crosses the singularity at center of arc?
   return d_theta_;
 }
 

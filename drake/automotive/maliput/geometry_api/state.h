@@ -33,12 +33,14 @@ struct LaneEnd {
 
 
 struct DRAKEAUTOMOTIVE_EXPORT Rotation {
+  Rotation() {}
+
   Rotation(double r, double p, double y)
       : roll_(r), pitch_(p), yaw_(y) {}
 
-  double roll_;
-  double pitch_;
-  double yaw_;
+  double roll_{};
+  double pitch_{};
+  double yaw_{};
 };
 
 
@@ -54,6 +56,8 @@ struct DRAKEAUTOMOTIVE_EXPORT GeoPosition {
 
 
 struct DRAKEAUTOMOTIVE_EXPORT LanePosition {
+  LanePosition() {}
+
   LanePosition(double s, double r, double h) : s_(s), r_(r), h_(h) {}
 
   double s_{};
