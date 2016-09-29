@@ -110,18 +110,18 @@ void Lane::EvalMotionDerivatives(
          G_prime.y,
          p_scale_ * g_prime) +
 
-      V3((((-ca*sg)+(ca*sb*cg))*r + ((ca*sg)+(sa*sb*cg))*h),
-         (((-sa*cg)-(ca*sb*sg))*r + ((ca*cg)-(sa*sb*sg))*h),
+      V3((((sa*sg)+(ca*sb*cg))*r + ((-ca*sg)+(sa*sb*cg))*h),
+         (((-sa*cg)+(ca*sb*sg))*r + ((ca*cg)+(sa*sb*sg))*h),
          ((-ca*cb)*r + (-sa*cb)*h)
          ) * d_alpha +
 
-      V3((( sa*cb*cg)*r + (-ca*cb*cg)*h),
-         ((-sa*cb*sg)*r + ( ca*cb*sg)*h),
-         (( sa*sb)*r + (-ca*sb)*h)
+      V3(((sa*cb*cg)*r - (ca*cb*cg)*h),
+         ((sa*cb*sg)*r - (ca*cb*sg)*h),
+         (( sa*sb)*r - (ca*sb)*h)
          ) * d_beta +
 
-      V3(((( ca*cg)-(sa*sb*sg))*r + (( sa*cg)+(ca*sb*sg))*h),
-         (((-ca*sg)-(sa*sb*cg))*r + ((-sa*sg)+(ca*sb*cg))*h),
+      V3((((-ca*cg)-(sa*sb*sg))*r + ((-sa*cg)+(ca*sb*sg))*h),
+         (((-ca*sg)+(sa*sb*cg))*r + ((-sa*sg)-(ca*sb*cg))*h),
          0
          ) * d_gamma;
 
