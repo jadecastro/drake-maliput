@@ -17,7 +17,7 @@ maliput_monolane_builder:
     1:
       start: "connections.0.end"
       arc: [50, 135]
-      z_end: [3, 0, 0.4, 0]
+      z_end: [3, 0, 22.9, 0]
     2:
       start: "connections.1.end"
       arc: [50, 135]
@@ -33,7 +33,7 @@ maliput_monolane_builder:
     5:
       start: "connections.4.end"
       arc: [50, -135]
-      z_end: [3, 0, -0.4, 0]
+      z_end: [3, 0, -22.9, 0]
     6:
       start: "connections.5.end"
       arc: [50, -135]

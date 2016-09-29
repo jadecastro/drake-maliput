@@ -8,7 +8,7 @@ maliput_monolane_builder:
   points:
     start:
       xypoint: [0, 45, 0]  # x,y, heading
-      zpoint: [0, 0, 0.4, 0]  # z, zdot, theta (superelevation), thetadot
+      zpoint: [0, 0, 22.9, 0]  # z, zdot, theta (superelevation), thetadot
   connections:
     # TODO(rico) I don't quite know how this should look yet.
         

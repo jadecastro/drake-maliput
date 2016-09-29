@@ -8,12 +8,12 @@ maliput_monolane_builder:
   points:
     start:
       xypoint: [0, -10, 0]  # x,y, heading
-      zpoint: [0, 0, 0.4, 0]  # z, zdot, theta (superelevation), thetadot
+      zpoint: [0, 0, 22.9, 0]  # z, zdot, theta (superelevation), thetadot
   connections:
     0:
       start: "points.start"
       arc: [10, 720]
-      z_end: [20, 0, 0.4, 0]
+      z_end: [20, 0, 22.9, 0]
     
         
   
