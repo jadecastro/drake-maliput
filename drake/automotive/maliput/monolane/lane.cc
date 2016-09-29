@@ -49,6 +49,61 @@ double Lane::p_from_s_(const double s) const {
 }
 
 
+V3 Lane::W_prime_of_prh_(const double p, const double r, const double h,
+                         const Rot3& gba) const {
+  const V2 G_prime = xy_dot_of_p_(p);
+  const double g_prime = elevation().fdot_p(p);
+
+  const Rot3& R = gba;
+  const double alpha = R.roll;
+  const double beta = R.pitch;
+  const double gamma = R.yaw;
+
+  const double ca = std::cos(alpha);
+  const double cb = std::cos(beta);
+  const double cg = std::cos(gamma);
+  const double sa = std::sin(alpha);
+  const double sb = std::sin(beta);
+  const double sg = std::sin(gamma);
+
+  const double d_alpha = superelevation().fdot_p(p) * p_scale_; // TODO(maddog)
+  const double d_beta = cb * cb * elevation().fddot_p(p);
+  const double d_gamma = heading_dot_of_p_(p);
+
+  return
+      V3(G_prime.x,
+         G_prime.y,
+         p_scale_ * g_prime) +
+
+      V3((((sa*sg)+(ca*sb*cg))*r + ((-ca*sg)+(sa*sb*cg))*h),
+         (((-sa*cg)+(ca*sb*sg))*r + ((ca*cg)+(sa*sb*sg))*h),
+         ((-ca*cb)*r + (-sa*cb)*h)
+         ) * d_alpha +
+
+      V3(((sa*cb*cg)*r - (ca*cb*cg)*h),
+         ((sa*cb*sg)*r - (ca*cb*sg)*h),
+         (( sa*sb)*r - (ca*sb)*h)
+         ) * d_beta +
+
+      V3((((-ca*cg)-(sa*sb*sg))*r + ((-sa*cg)+(ca*sb*sg))*h),
+         (((-ca*sg)+(sa*sb*cg))*r + ((-sa*sg)-(ca*sb*cg))*h),
+         0
+         ) * d_gamma;
+}
+
+
+V3 Lane::s_hat_of_prh_(const double p, const double r, const double h,
+                       const Rot3& gba) const {
+  const V3 W_prime = W_prime_of_prh_(p, r, h, gba);
+  return W_prime * (1.0 / W_prime.magnitude());
+}
+
+
+V3 Lane::r_hat_of_gba_(const Rot3& gba) const {
+  return gba.apply({0., 1., 0.});
+}
+
+
 api::GeoPosition Lane::ToGeoPosition(const api::LanePosition& lane_pos) const {
   // Recover parameter p from arc-length position s.
   const double p = p_from_s_(lane_pos.s_);
@@ -69,11 +124,24 @@ api::GeoPosition Lane::ToGeoPosition(const api::LanePosition& lane_pos) const {
 api::Rotation Lane::GetOrientation(const api::LanePosition& lane_pos) const {
   // Recover linear parameter p from arc-length position s.
   const double p = p_from_s_(lane_pos.s_);
+  const double r = lane_pos.r_;
+  const double h = lane_pos.h_;
   // Calculate orientation of (s,r,h) basis at (s,0,0).
-  const Rot3 ypr = rot3_of_p_(p);
-  return api::Rotation(ypr.roll,
-                       ypr.pitch,
-                       ypr.yaw);
+  const Rot3 gba = rot3_of_p_(p);
+
+  // Calculate s,r basis vectors at (s,r,h)...
+  const V3 s_hat = s_hat_of_prh_(p, r, h, gba);
+  const V3 r_hat = r_hat_of_gba_(gba);
+  // ...and then derive orientation from those basis vectors.
+  const double gamma = std::atan2(s_hat.y,
+                                  s_hat.x);
+  const double beta = std::atan2(-s_hat.z,
+                                 V2(s_hat.x, s_hat.y).length());
+  const double cb = std::cos(beta);
+  const double alpha =
+      std::atan2(-r_hat.z / cb,
+                 ((r_hat.y * s_hat.x) - (r_hat.x * s_hat.y)) / cb);
+  return api::Rotation(alpha, beta, gamma);
 }
 
 
@@ -86,44 +154,10 @@ void Lane::EvalMotionDerivatives(
   const double r = position.r_;
   const double h = position.h_;
 
-  const V2 G_prime = xy_dot_of_p_(p);
   const double g_prime = elevation().fdot_p(p);
 
   const Rot3 R = rot3_of_p_(p);
-  const double alpha = R.roll;
-  const double beta = R.pitch;
-  const double gamma = R.yaw;
-
-  const double ca = std::cos(alpha);
-  const double cb = std::cos(beta);
-  const double cg = std::cos(gamma);
-  const double sa = std::sin(alpha);
-  const double sb = std::sin(beta);
-  const double sg = std::sin(gamma);
-
-  const double d_alpha = superelevation().fdot_p(p) * p_scale_; // TODO(maddog)
-  const double d_beta = cb * cb * elevation().fddot_p(p);
-  const double d_gamma = heading_dot_of_p_(p);
-
-  const V3 W_prime =
-      V3(G_prime.x,
-         G_prime.y,
-         p_scale_ * g_prime) +
-
-      V3((((sa*sg)+(ca*sb*cg))*r + ((-ca*sg)+(sa*sb*cg))*h),
-         (((-sa*cg)+(ca*sb*sg))*r + ((ca*cg)+(sa*sb*sg))*h),
-         ((-ca*cb)*r + (-sa*cb)*h)
-         ) * d_alpha +
-
-      V3(((sa*cb*cg)*r - (ca*cb*cg)*h),
-         ((sa*cb*sg)*r - (ca*cb*sg)*h),
-         (( sa*sb)*r - (ca*sb)*h)
-         ) * d_beta +
-
-      V3((((-ca*cg)-(sa*sb*sg))*r + ((-sa*cg)+(ca*sb*sg))*h),
-         (((-ca*sg)+(sa*sb*cg))*r + ((-sa*sg)-(ca*sb*cg))*h),
-         0
-         ) * d_gamma;
+  const V3 W_prime = W_prime_of_prh_(p, r, h, R);
 
   const double d_s = p_scale_ * std::sqrt(1 + (g_prime * g_prime));
 

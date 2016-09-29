@@ -91,6 +91,11 @@ class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
 
   Rot3 rot3_of_p_(const double p) const;
   double p_from_s_(const double s) const;
+  V3 W_prime_of_prh_(const double p, const double r, const double h,
+                     const Rot3& gba) const;
+  V3 s_hat_of_prh_(const double p, const double r, const double h,
+                   const Rot3& gba) const;
+  V3 r_hat_of_gba_(const Rot3& gba) const;
 
   const api::LaneId id_;
   const Segment* segment_;
