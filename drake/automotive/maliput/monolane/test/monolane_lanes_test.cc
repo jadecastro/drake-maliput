@@ -18,8 +18,8 @@ namespace api = maliput::geometry_api;
 
 GTEST_TEST(MonolaneLanesTest, FlatLineLane) {
   CubicPolynomial zp {0., 0., 0., 0.};
-  api::GeoPosition xyz;
-  api::Rotation rot;
+  api::GeoPosition xyz {0., 0., 0.};
+  api::Rotation rot {0., 0., 0.};
 
   RoadGeometry rg = RoadGeometry({"apple"});
   Segment* s1 = rg.NewJunction({"j1"})->NewSegment({"s1"});
@@ -119,59 +119,115 @@ GTEST_TEST(MonolaneLanesTest, FlatLineLane) {
 }
 
 
-
 GTEST_TEST(MonolaneLanesTest, FlatArcLane) {
   CubicPolynomial zp {0., 0., 0., 0.};
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};
 
   RoadGeometry rg = RoadGeometry({"apple"});
-  Lane* l2 = rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
-      {"l2"}, {200., 200.}, 100., 0., M_PI / 2.,
-      {-5., 5.}, {-10., 10.}, zp, zp);
-  EXPECT_NEAR(l2->length(), 100. * M_PI / 2., 1e-7);
+  Segment* s1 = rg.NewJunction({"j1"})->NewSegment({"s1"});
+  Lane* l2 = s1->NewArcLane(
+      {"l2"},
+      {100., -75.}, 100., 0.25 * M_PI, 1.5 * M_PI,
+      {-5., 5.}, {-10., 10.},
+      // Zero elevation, zero superelevation == flat.
+      zp, zp);
+
+  EXPECT_EQ(l2->id().id_, "l2");
+  EXPECT_EQ(l2->segment(), s1);
+  EXPECT_EQ(l2->index(), 0);
+  EXPECT_EQ(l2->to_left(), nullptr);
+  EXPECT_EQ(l2->to_right(), nullptr);
+
+  EXPECT_NEAR(l2->length(), 100. * 1.5 * M_PI, 1e-7);
+
+  EXPECT_NEAR(l2->lane_bounds(0.).r_min_, -5., 1e-7);
+  EXPECT_NEAR(l2->lane_bounds(0.).r_max_,  5., 1e-7);
+  EXPECT_NEAR(l2->driveable_bounds(0.).r_min_, -10., 1e-7);
+  EXPECT_NEAR(l2->driveable_bounds(0.).r_max_,  10., 1e-7);
 
   xyz = l2->ToGeoPosition({0., 0., 0.});
-  EXPECT_NEAR(xyz.x_, 300., 1e-2);
-  EXPECT_NEAR(xyz.y_, 200., 1e-2);
+  EXPECT_NEAR(xyz.x_, 100. + (100. * std::cos(0.25 * M_PI)), 1e-2);
+  EXPECT_NEAR(xyz.y_, -75. + (100. * std::sin(0.25 * M_PI)), 1e-2);
   EXPECT_NEAR(xyz.z_,   0., 1e-2);
 
-  xyz = l2->ToGeoPosition({100. * M_PI / 2., 0., 0.});
-  EXPECT_NEAR(xyz.x_, 200., 1e-2);
-  EXPECT_NEAR(xyz.y_, 300., 1e-2);
-  EXPECT_NEAR(xyz.z_,   0., 1e-2);
+  xyz = l2->ToGeoPosition({1., 0., 0.});
+  EXPECT_NEAR(xyz.x_, 100. + (100. * std::cos((0.25 * M_PI) + (1.5 / l2->length() * M_PI))), 1e-2);
+  EXPECT_NEAR(xyz.y_, -75. + (100. * std::sin((0.25 * M_PI) + (1.5 / l2->length() * M_PI))), 1e-2);
+  EXPECT_NEAR(xyz.z_, 0., 1e-2);
 
-  rot = l2->GetOrientation({100. * M_PI / 2., 0., 0.});
-  EXPECT_NEAR(rot.roll_,   0., 1e-2);
-  EXPECT_NEAR(rot.pitch_,  0., 1e-2);
-  EXPECT_NEAR(rot.yaw_,   M_PI, 1e-2);
+  xyz = l2->ToGeoPosition({0., 1., 0.});
+  EXPECT_NEAR(xyz.x_, 100. + (100. * std::cos(0.25 * M_PI)) + (1. * std::cos(1.25 * M_PI)), 1e-2);
+  EXPECT_NEAR(xyz.y_, -75. + (100. * std::sin(0.25 * M_PI)) + (1. * std::sin(1.25 * M_PI)), 1e-2);
+  EXPECT_NEAR(xyz.z_, 0., 1e-2);
 
+  xyz = l2->ToGeoPosition({l2->length(), 0., 0.});
+  EXPECT_NEAR(xyz.x_, 100. + (100. * std::cos(1.75 * M_PI)), 1e-2);
+  EXPECT_NEAR(xyz.y_, -75. + (100. * std::sin(1.75 * M_PI)), 1e-2);
+  EXPECT_NEAR(xyz.z_, 0., 1e-2);
 
-  Lane* l3 = rg.NewJunction({"j2"})->NewSegment({"s2"})->NewLineLane(
-      {"l3"}, {0., 200.}, {0., -100.},
-      {-5., 5.}, {-10., 10.},
-      // elevation = (7 + 1.*p) * 100.
-      //  [100. is the scale factor derived from xy projection of path.]
-      {7., 1., 0., 0.},
-      zp);
-  EXPECT_NEAR(l3->length(), 100. * std::sqrt(2.), 1e-7);
+  // TODO(maddog) Test ToLanePosition().
 
-  xyz = l3->ToGeoPosition({0., 0., 0.});
-  EXPECT_NEAR(xyz.x_,   0., 1e-2);
-  EXPECT_NEAR(xyz.y_, 200., 1e-2);
-  EXPECT_NEAR(xyz.z_, 700., 1e-2);
+  rot = l2->GetOrientation({0., 0., 0.});
+  EXPECT_NEAR(rot.yaw_, (0.25 + 0.5) * M_PI, 1e-6);
+  EXPECT_NEAR(rot.pitch_, 0., 1e-6);
+  EXPECT_NEAR(rot.roll_, 0., 1e-6);
 
-  xyz = l3->ToGeoPosition({50. * std::sqrt(2.), 0., 0.});
-  EXPECT_NEAR(xyz.x_,   0., 1e-2);
-  EXPECT_NEAR(xyz.y_, 150., 1e-2);
-  EXPECT_NEAR(xyz.z_, 750., 1e-2);
+  rot = l2->GetOrientation({0., 1., 0.});
+  EXPECT_NEAR(rot.yaw_, (0.25 + 0.5) * M_PI, 1e-6);
+  EXPECT_NEAR(rot.pitch_, 0., 1e-6);
+  EXPECT_NEAR(rot.roll_, 0., 1e-6);
 
-  rot = l3->GetOrientation({100. * std::sqrt(2.), 0., 0.});
-  EXPECT_NEAR(rot.roll_,         0., 1e-2);
-  EXPECT_NEAR(rot.pitch_, -M_PI / 4., 1e-2);
-  EXPECT_NEAR(rot.yaw_,   -M_PI / 2., 1e-2);
+  rot = l2->GetOrientation({l2->length(), 0., 0.});
+  EXPECT_NEAR(rot.yaw_, (0.25 + 1.5 + 0.5) * M_PI, 1e-6);
+  EXPECT_NEAR(rot.pitch_, 0., 1e-6);
+  EXPECT_NEAR(rot.roll_, 0., 1e-6);
+
+  api::LanePosition pdot;
+  // For r=0, derivative map should be identity.
+  l2->EvalMotionDerivatives({0., 0., 0.}, {0., 0., 0.}, &pdot);
+  EXPECT_NEAR(pdot.s_, 0., 1e-6);
+  EXPECT_NEAR(pdot.r_, 0., 1e-6);
+  EXPECT_NEAR(pdot.h_, 0., 1e-6);
+
+  l2->EvalMotionDerivatives({0., 0., 0.}, {1., 0., 0.}, &pdot);
+  EXPECT_NEAR(pdot.s_, 1., 1e-6);
+  EXPECT_NEAR(pdot.r_, 0., 1e-6);
+  EXPECT_NEAR(pdot.h_, 0., 1e-6);
+
+  l2->EvalMotionDerivatives({0., 0., 0.}, {0., 1., 0.}, &pdot);
+  EXPECT_NEAR(pdot.s_, 0., 1e-6);
+  EXPECT_NEAR(pdot.r_, 1., 1e-6);
+  EXPECT_NEAR(pdot.h_, 0., 1e-6);
+
+  l2->EvalMotionDerivatives({0., 0., 0.}, {0., 0., 1.}, &pdot);
+  EXPECT_NEAR(pdot.s_, 0., 1e-6);
+  EXPECT_NEAR(pdot.r_, 0., 1e-6);
+  EXPECT_NEAR(pdot.h_, 1., 1e-6);
+
+  l2->EvalMotionDerivatives({l2->length(), 0., 0.}, {1., 1., 1.}, &pdot);
+  EXPECT_NEAR(pdot.s_, 1., 1e-6);
+  EXPECT_NEAR(pdot.r_, 1., 1e-6);
+  EXPECT_NEAR(pdot.h_, 1., 1e-6);
+
+  // For a left-turning curve, r = +10 will decrease the radius of the path
+  // from the original 100 down to 90.
+  l2->EvalMotionDerivatives({0., 10., 0.}, {1., 1., 1.}, &pdot);
+  EXPECT_NEAR(pdot.s_, (100. / 90.) * 1., 1e-6);
+  EXPECT_NEAR(pdot.r_, 1., 1e-6);
+  EXPECT_NEAR(pdot.h_, 1., 1e-6);
+  // Likewise, r = -10 will increase the radius of the path from the
+  // original 100 up to 110.
+  l2->EvalMotionDerivatives({0., -10., 0.}, {1., 1., 1.}, &pdot);
+  EXPECT_NEAR(pdot.s_, (100. / 110.) * 1., 1e-6);
+  EXPECT_NEAR(pdot.r_, 1., 1e-6);
+  EXPECT_NEAR(pdot.h_, 1., 1e-6);
+  // ...and only r should matter for an otherwise flat arc.
+  l2->EvalMotionDerivatives({l2->length(), -10., 100.}, {1., 1., 1.}, &pdot);
+  EXPECT_NEAR(pdot.s_, (100. / 110.) * 1., 1e-6);
+  EXPECT_NEAR(pdot.r_, 1., 1e-6);
+  EXPECT_NEAR(pdot.h_, 1., 1e-6);
 }
-
 
 
 
