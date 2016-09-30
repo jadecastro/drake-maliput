@@ -326,6 +326,83 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
 }
 
 
+namespace {
+
+api::LanePosition IntegrateTrivially(const api::Lane* lane,
+                                     const api::LanePosition& lp_initial,
+                                     const api::IsoLaneVelocity& velocity,
+                                     const double time_step,
+                                     const int step_count) {
+  api::LanePosition lp_current = lp_initial;
+  api::LanePosition lp_dot {};
+
+  for (int i = 0; i < step_count; ++i) {
+    lane->EvalMotionDerivatives(lp_current, velocity, &lp_dot);
+    lp_current.s_ += lp_dot.s_ * time_step;
+    lp_current.r_ += lp_dot.r_ * time_step;
+    lp_current.h_ += lp_dot.h_ * time_step;
+  }
+  return lp_current;
+}
+
+} // namespace
+
+GTEST_TEST(MonolaneLanesTest, HillIntegration) {
+  CubicPolynomial zp {0., 0., 0., 0.};
+  api::GeoPosition xyz {0., 0., 0.};
+  api::Rotation rot {0., 0., 0.};
+
+  RoadGeometry rg = RoadGeometry({"apple"});
+  Segment* s1 = rg.NewJunction({"j1"})->NewSegment({"s1"});
+  const double theta0 = 0.25 * M_PI;
+  const double d_theta = 0.5 * M_PI;
+  const double theta1 = theta0 + d_theta;
+  const double p_scale = 100. * d_theta;
+  const double z0 = 0.;
+  const double z1 = 20.;
+  Lane* l1 = s1->NewArcLane(
+      {"l2"},
+      {-100., -100.}, 100., theta0, d_theta,
+      {-5., 5.}, {-10., 10.},
+      {z0, 0., (3. * (z1 - z0) / p_scale), (-2. * (z1 - z0) / p_scale)},
+      zp);
+
+  const api::IsoLaneVelocity kVelocity { 1., 0., 0. };
+  const double kTimeStep = 0.01;
+  const int kStepsForZeroR = 15835;
+
+  const api::LanePosition kLpInitialA { 0., 0., 0. };
+  xyz = l1->ToGeoPosition(kLpInitialA);
+  EXPECT_NEAR(xyz.x_, -100. + (100. * std::cos(theta0)), 1e-2);
+  EXPECT_NEAR(xyz.y_, -100. + (100. * std::sin(theta0)), 1e-2);
+  EXPECT_NEAR(xyz.z_,  z0, 1e-2);
+  api::LanePosition lp_final_a =
+      IntegrateTrivially(l1, kLpInitialA, kVelocity, kTimeStep,
+                         kStepsForZeroR);
+
+  xyz = l1->ToGeoPosition(lp_final_a);
+  EXPECT_NEAR(xyz.x_, -100. + (100. * std::cos(theta1)), 1e-2);
+  EXPECT_NEAR(xyz.y_, -100. + (100. * std::sin(theta1)), 1e-2);
+  EXPECT_NEAR(xyz.z_,  z1, 1e-2);
+
+  const api::LanePosition kLpInitialB { 0., -10., 0. };
+  xyz = l1->ToGeoPosition(kLpInitialB);
+  EXPECT_NEAR(xyz.x_, -100. + ((100. + 10.) * std::cos(theta0)), 1e-2);
+  EXPECT_NEAR(xyz.y_, -100. + ((100. + 10.) * std::sin(theta0)), 1e-2);
+  EXPECT_NEAR(xyz.z_,  z0, 1e-2);
+
+  // NB:  '27' is a fudge-factor.  We know the steps should scale roughly
+  //      as (r / r0), but not exactly because of the elevation curve.
+  const int kStepsForR10 = ((100. + 10.) / 100. * kStepsForZeroR) - 27;
+  api::LanePosition lp_final_b =
+      IntegrateTrivially(l1, kLpInitialB, kVelocity, kTimeStep,
+                         kStepsForR10);
+  xyz = l1->ToGeoPosition(lp_final_b);
+  EXPECT_NEAR(xyz.x_, -100. + ((100. + 10.) * std::cos(theta1)), 1e-2);
+  EXPECT_NEAR(xyz.y_, -100. + ((100. + 10.) * std::sin(theta1)), 1e-2);
+  EXPECT_NEAR(xyz.z_,  z1, 1e-2);
+}
+
 
 }  // namespace monolane
 }  // namespace maliput
