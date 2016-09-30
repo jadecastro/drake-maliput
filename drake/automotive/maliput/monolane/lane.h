@@ -41,49 +41,48 @@ class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
 
   virtual ~Lane() {}
 
-  const api::LaneId id() const override { return id_; }
-
-  const api::Segment* segment() const override;
-
-  int index() const override { return 0; }  // Only one lane per segment!
-
-  const api::Lane* to_left() const override { return nullptr; }
-
-  const api::Lane* to_right() const override { return nullptr; }
-
-  const api::BranchPoint* GetBranchPoint(
-      const api::LaneEnd::Which which_end) const override;
-
-  const api::SetOfLaneEnds* GetBranches(
-      const api::LaneEnd::Which which_end) const override;
-
-  const boost::optional<api::LaneEnd>& GetDefaultBranch(
-      const api::LaneEnd::Which which_end) const override;
-
-  double length() const override;
-
-  api::RBounds lane_bounds(double) const override {
-    return lane_bounds_;
-  }
-
-  api::RBounds driveable_bounds(double) const override {
-    return driveable_bounds_;
-  }
-
-  api::GeoPosition ToGeoPosition(
-      const api::LanePosition& lane_pos) const override;
-
-  api::Rotation GetOrientation(
-      const api::LanePosition& lane_pos) const override;
-
-  void EvalMotionDerivatives(const api::LanePosition& position,
-                             const api::IsoLaneVelocity& velocity,
-                             api::LanePosition* position_dot) const override;
-
   const CubicPolynomial& elevation() const { return elevation_; }
+
   const CubicPolynomial& superelevation() const { return superelevation_; }
 
  private:
+  const api::LaneId do_id() const override { return id_; }
+
+  const api::Segment* do_segment() const override;
+
+  int do_index() const override { return 0; }  // Only one lane per segment!
+
+  const api::Lane* do_to_left() const override { return nullptr; }
+
+  const api::Lane* do_to_right() const override { return nullptr; }
+
+  const api::BranchPoint* DoGetBranchPoint(
+      const api::LaneEnd::Which which_end) const override;
+
+  const api::SetOfLaneEnds* DoGetBranches(
+      const api::LaneEnd::Which which_end) const override;
+
+  const boost::optional<api::LaneEnd>& DoGetDefaultBranch(
+      const api::LaneEnd::Which which_end) const override;
+
+  double do_length() const override;
+
+  api::RBounds do_lane_bounds(double) const override { return lane_bounds_; }
+
+  api::RBounds do_driveable_bounds(double) const override {
+    return driveable_bounds_;
+  }
+
+  api::GeoPosition DoToGeoPosition(
+      const api::LanePosition& lane_pos) const override;
+
+  api::Rotation DoGetOrientation(
+      const api::LanePosition& lane_pos) const override;
+
+  void DoEvalMotionDerivatives(const api::LanePosition& position,
+                               const api::IsoLaneVelocity& velocity,
+                               api::LanePosition* position_dot) const override;
+
   virtual V2 xy_of_p_(const double p) const = 0;
   virtual V2 xy_dot_of_p_(const double p) const = 0;
   virtual double heading_of_p_(const double p) const = 0;

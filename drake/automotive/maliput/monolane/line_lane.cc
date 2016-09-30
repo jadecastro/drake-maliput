@@ -29,7 +29,7 @@ double LineLane::heading_of_p_(const double) const { return heading_; }
 double LineLane::heading_dot_of_p_(const double) const { return 0.; }
 
 
-api::LanePosition LineLane::ToLanePosition(
+api::LanePosition LineLane::DoToLanePosition(
     const api::GeoPosition& geo_pos) const {
   ignore(geo_pos.x_);  // TODO(maddog) temp warning quashing
   DRAKE_ABORT();  // TODO(maddog) Implement me.

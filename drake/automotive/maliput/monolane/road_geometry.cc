@@ -23,19 +23,19 @@ BranchPoint* RoadGeometry::NewBranchPoint(api::BranchPointId id) {
 }
 
 
-const api::Junction* RoadGeometry::junction(int index) const {
+const api::Junction* RoadGeometry::do_junction(int index) const {
   return junctions_[index].get();
 }
 
 
-const api::BranchPoint* RoadGeometry::branch_point(int index) const {
+const api::BranchPoint* RoadGeometry::do_branch_point(int index) const {
   return branch_points_[index].get();
 }
 
 
 
 
-api::RoadPosition RoadGeometry::ToRoadPosition(
+api::RoadPosition RoadGeometry::DoToRoadPosition(
     const api::GeoPosition& geo_pos,
     const api::RoadPosition& hint) const {
   ignore(&geo_pos);

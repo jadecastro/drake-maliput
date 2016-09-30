@@ -17,28 +17,57 @@ class DRAKEAUTOMOTIVE_EXPORT RoadGeometry {
   /// @return the persistent identifier.
   ///
   // TODO(maddog)  Tie id into a tiling mechanism?
-  virtual const RoadGeometryId id() const = 0;
+  const RoadGeometryId id() const { return do_id(); }
 
   // TODO(maddog)  Real iteration support over junctions and branch-points.
 
   /// @return the number of Junctions in the RoadGeometry.
-  virtual int num_junctions() const = 0;
+  int num_junctions() const { return do_num_junctions(); }
 
   /// @return the Junction indexed by @param index.
-  virtual const Junction* junction(int index) const = 0;
+  const Junction* junction(int index) const { return do_junction(index); }
 
   /// @return the number of BrancPoints n the RoadGeometry.
-  virtual int num_branch_points() const = 0;
+  int num_branch_points() const { return do_num_branch_points(); }
 
   /// @return the BranchPoint indexed by @param index.
-  virtual const BranchPoint* branch_point(int index) const = 0;
-
+  const BranchPoint* branch_point(int index) const {
+    return do_branch_point(index);
+  }
 
   /// Figure out the RoadPosition corresponding to GeoPosition @param geo_pos,
   /// potentially using @param hint to guide the search.
   // TODO(maddog)  UNDER CONSTRUCTION
   virtual RoadPosition ToRoadPosition(const GeoPosition& geo_pos,
-                                      const RoadPosition& hint) const = 0;
+                                      const RoadPosition& hint) const {
+    return DoToRoadPosition(geo_pos, hint);
+  }
+
+ private:
+  /// @return the persistent identifier.
+  ///
+  // TODO(maddog)  Tie id into a tiling mechanism?
+  virtual const RoadGeometryId do_id() const = 0;
+
+  // TODO(maddog)  Real iteration support over junctions and branch-points.
+
+  /// @return the number of Junctions in the RoadGeometry.
+  virtual int do_num_junctions() const = 0;
+
+  /// @return the Junction indexed by @param index.
+  virtual const Junction* do_junction(int index) const = 0;
+
+  /// @return the number of BrancPoints n the RoadGeometry.
+  virtual int do_num_branch_points() const = 0;
+
+  /// @return the BranchPoint indexed by @param index.
+  virtual const BranchPoint* do_branch_point(int index) const = 0;
+
+  /// Figure out the RoadPosition corresponding to GeoPosition @param geo_pos,
+  /// potentially using @param hint to guide the search.
+  // TODO(maddog)  UNDER CONSTRUCTION
+  virtual RoadPosition DoToRoadPosition(const GeoPosition& geo_pos,
+                                        const RoadPosition& hint) const = 0;
 };
 
 

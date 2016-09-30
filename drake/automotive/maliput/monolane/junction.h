@@ -24,24 +24,19 @@ class DRAKEAUTOMOTIVE_EXPORT Junction : public api::Junction {
 
   Segment* NewSegment(api::SegmentId id);
 
-  virtual const api::JunctionId id() const {
-    return id_;
-  }
-
-  virtual const api::RoadGeometry* road_geometry() const;
-
-  virtual int num_segments() const {
-    return segments_.size();
-  }
-
-  virtual const api::Segment* segment(int index) const;
-
  private:
+  const api::JunctionId do_id() const override { return id_; }
+
+  const api::RoadGeometry* do_road_geometry() const override;
+
+  int do_num_segments() const override { return segments_.size(); }
+
+  const api::Segment* do_segment(int index) const override;
+
   api::JunctionId id_;
   RoadGeometry* road_geometry_;
   std::vector<std::unique_ptr<Segment>> segments_;
 };
-
 
 }  // namespace monolane
 }  // namespace maliput

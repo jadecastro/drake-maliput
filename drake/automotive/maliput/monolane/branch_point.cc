@@ -12,17 +12,18 @@ namespace monolane {
 namespace api = maliput::geometry_api;
 
 
-const api::LaneEnd& SetOfLaneEnds::get(int index) const { return ends_[index]; }
+const api::LaneEnd& SetOfLaneEnds::do_get(int index) const {
+  return ends_[index]; }
 
 BranchPoint::BranchPoint(const api::BranchPointId& id, RoadGeometry* rg)
       : id_(id), road_geometry_(rg) { ignore(road_geometry_); }
 
-const api::SetOfLaneEnds* BranchPoint::GetBranches(
+const api::SetOfLaneEnds* BranchPoint::DoGetBranches(
     const api::LaneEnd& end) const {
   return branches_.at(end);
 }
 
-const boost::optional<api::LaneEnd>& BranchPoint::GetDefaultBranch(
+const boost::optional<api::LaneEnd>& BranchPoint::DoGetDefaultBranch(
     const api::LaneEnd& end) const {
   return defaults_.find(end)->second;
 }

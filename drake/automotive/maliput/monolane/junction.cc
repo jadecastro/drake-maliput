@@ -10,7 +10,7 @@ namespace api = maliput::geometry_api;
 
 
 
-const api::RoadGeometry* Junction::road_geometry() const {
+const api::RoadGeometry* Junction::do_road_geometry() const {
   return road_geometry_;
 }
 
@@ -21,7 +21,7 @@ Segment* Junction::NewSegment(api::SegmentId id) {
 }
 
 
-const api::Segment* Junction::segment(int index) const {
+const api::Segment* Junction::do_segment(int index) const {
   return segments_[index].get();
 }
 

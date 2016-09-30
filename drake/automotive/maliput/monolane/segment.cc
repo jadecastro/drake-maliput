@@ -12,7 +12,7 @@ namespace monolane {
 
 namespace api = maliput::geometry_api;
 
-const api::Junction* Segment::junction() const {
+const api::Junction* Segment::do_junction() const {
   return junction_;
 }
 
@@ -52,7 +52,7 @@ ArcLane* Segment::NewArcLane(api::LaneId id,
 }
 
 
-const api::Lane* Segment::lane(int index) const {
+const api::Lane* Segment::do_lane(int index) const {
   DRAKE_DEMAND(index == 0);
   return lane_.get();
 }

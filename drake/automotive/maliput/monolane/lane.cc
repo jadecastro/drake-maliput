@@ -11,9 +11,9 @@ namespace monolane {
 namespace api = maliput::geometry_api;
 
 
-const api::Segment* Lane::segment() const { return segment_; }
+const api::Segment* Lane::do_segment() const { return segment_; }
 
-const api::BranchPoint* Lane::GetBranchPoint(
+const api::BranchPoint* Lane::DoGetBranchPoint(
     const api::LaneEnd::Which which_end) const {
   switch (which_end) {
     case api::LaneEnd::kStart: { return start_bp_; }
@@ -22,18 +22,18 @@ const api::BranchPoint* Lane::GetBranchPoint(
   DRAKE_ABORT();
 }
 
-const api::SetOfLaneEnds* Lane::GetBranches(
+const api::SetOfLaneEnds* Lane::DoGetBranches(
     api::LaneEnd::Which which_end) const {
   return GetBranchPoint(which_end)->GetBranches({this, which_end});
 }
 
-const boost::optional<api::LaneEnd>& Lane::GetDefaultBranch(
+const boost::optional<api::LaneEnd>& Lane::DoGetDefaultBranch(
     api::LaneEnd::Which which_end) const {
   return GetBranchPoint(which_end)->GetDefaultBranch({this, which_end});
 }
 
 
-double Lane::length() const {
+double Lane::do_length() const {
   return elevation().s_p(1.0) * p_scale_;
 }
 
@@ -104,7 +104,8 @@ V3 Lane::r_hat_of_gba_(const Rot3& gba) const {
 }
 
 
-api::GeoPosition Lane::ToGeoPosition(const api::LanePosition& lane_pos) const {
+api::GeoPosition Lane::DoToGeoPosition(
+    const api::LanePosition& lane_pos) const {
   // Recover parameter p from arc-length position s.
   const double p = p_from_s_(lane_pos.s_);
   // Calculate z (elevation) of (s,0,0);
@@ -121,7 +122,7 @@ api::GeoPosition Lane::ToGeoPosition(const api::LanePosition& lane_pos) const {
 }
 
 
-api::Rotation Lane::GetOrientation(const api::LanePosition& lane_pos) const {
+api::Rotation Lane::DoGetOrientation(const api::LanePosition& lane_pos) const {
   // Recover linear parameter p from arc-length position s.
   const double p = p_from_s_(lane_pos.s_);
   const double r = lane_pos.r_;
@@ -145,7 +146,7 @@ api::Rotation Lane::GetOrientation(const api::LanePosition& lane_pos) const {
 }
 
 
-void Lane::EvalMotionDerivatives(
+void Lane::DoEvalMotionDerivatives(
     const api::LanePosition& position,
     const api::IsoLaneVelocity& velocity,
     api::LanePosition* position_dot) const {

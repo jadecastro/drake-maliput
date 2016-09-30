@@ -13,8 +13,15 @@ class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds {
   virtual ~SetOfLaneEnds() {}
 
   // TODO(maddog)  Improve this.
-  virtual int count() const = 0;
-  virtual const LaneEnd& get(int index) const = 0;
+  int count() const { return do_count(); }
+
+  const LaneEnd& get(int index) const { return do_get(index); }
+
+ private:
+  // TODO(maddog)  Improve this.
+  virtual int do_count() const = 0;
+
+  virtual const LaneEnd& do_get(int index) const = 0;
 };
 
 
@@ -24,16 +31,32 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint {
   virtual ~BranchPoint() {}
 
   // Provide persistent ID.
-  virtual const BranchPointId id() const = 0;
+  const BranchPointId id() const { return do_id(); }
 
-  virtual const SetOfLaneEnds* GetBranches(const LaneEnd& end) const = 0;
+  const SetOfLaneEnds* GetBranches(const LaneEnd& end) const {
+    return DoGetBranches(end);
+  }
 
-  virtual const boost::optional<LaneEnd>& GetDefaultBranch(
+  const boost::optional<LaneEnd>& GetDefaultBranch(const LaneEnd& end) const {
+    return DoGetDefaultBranch(end);
+  }
+
+  const SetOfLaneEnds* GetASide() const { return DoGetASide(); }
+
+  const SetOfLaneEnds* GetBSide() const { return DoGetBSide(); }
+
+ private:
+  // Provide persistent ID.
+  virtual const BranchPointId do_id() const = 0;
+
+  virtual const SetOfLaneEnds* DoGetBranches(const LaneEnd& end) const = 0;
+
+  virtual const boost::optional<LaneEnd>& DoGetDefaultBranch(
       const LaneEnd& end) const = 0;
 
-  virtual const SetOfLaneEnds* GetASide() const = 0;
+  virtual const SetOfLaneEnds* DoGetASide() const = 0;
 
-  virtual const SetOfLaneEnds* GetBSide() const = 0;
+  virtual const SetOfLaneEnds* DoGetBSide() const = 0;
 };
 
 

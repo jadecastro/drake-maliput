@@ -28,10 +28,10 @@ class DRAKEAUTOMOTIVE_EXPORT ArcLane : public Lane {
     DRAKE_DEMAND(r_ > 0.);
   }
 
-  api::LanePosition ToLanePosition(
+ private:
+  api::LanePosition DoToLanePosition(
       const api::GeoPosition& geo_pos) const override;
 
- private:
   V2 xy_of_p_(const double p) const override;
   V2 xy_dot_of_p_(const double p) const override;
   double heading_of_p_(const double p) const override;

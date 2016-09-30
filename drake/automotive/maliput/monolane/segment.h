@@ -40,21 +40,19 @@ class DRAKEAUTOMOTIVE_EXPORT Segment : public api::Segment {
                       const CubicPolynomial& elevation,
                       const CubicPolynomial& superelevation);
 
-  virtual const api::SegmentId id() const { return id_; }
-
-  virtual const api::Junction* junction() const;
-
-  virtual int num_lanes() const { return 1; }
-
-  virtual const api::Lane* lane(int index) const;
-
  private:
+  const api::SegmentId do_id() const override { return id_; }
+
+  const api::Junction* do_junction() const override;
+
+  int do_num_lanes() const override { return 1; }
+
+  const api::Lane* do_lane(int index) const override;
+
   api::SegmentId id_;
   Junction* junction_;
   std::unique_ptr<Lane> lane_;
 };
-
-
 
 }  // namespace monolane
 }  // namespace maliput

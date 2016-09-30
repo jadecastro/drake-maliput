@@ -22,37 +22,29 @@ class DRAKEAUTOMOTIVE_EXPORT RoadGeometry : public api::RoadGeometry {
   explicit RoadGeometry(const api::RoadGeometryId& id)
       : id_(id) {}
 
-
   Junction* NewJunction(api::JunctionId id);
 
   BranchPoint* NewBranchPoint(api::BranchPointId id);
 
-  virtual const api::RoadGeometryId id() const {
-    return id_;
-  }
-
-  virtual int num_junctions() const {
-    return junctions_.size();
-  }
-
-  virtual const api::Junction* junction(int index) const;
-
-  virtual int num_branch_points() const {
-    return branch_points_.size();
-  }
-
-  virtual const api::BranchPoint* branch_point(int index) const;
-
-  virtual api::RoadPosition ToRoadPosition(const api::GeoPosition& geo_pos,
-                                           const api::RoadPosition& hint) const;
-
  private:
+  const api::RoadGeometryId do_id() const override { return id_; }
+
+  int do_num_junctions() const override { return junctions_.size(); }
+
+  const api::Junction* do_junction(int index) const override;
+
+  int do_num_branch_points() const override { return branch_points_.size(); }
+
+  const api::BranchPoint* do_branch_point(int index) const override;
+
+  api::RoadPosition DoToRoadPosition(
+      const api::GeoPosition& geo_pos,
+      const api::RoadPosition& hint) const override;
+
   api::RoadGeometryId id_;
   std::vector<std::unique_ptr<Junction>> junctions_;
   std::vector<std::unique_ptr<BranchPoint>> branch_points_;
 };
-
-
 
 }  // namespace monolane
 }  // namespace maliput

@@ -13,13 +13,25 @@ class DRAKEAUTOMOTIVE_EXPORT Segment {
   virtual ~Segment() {}
 
   // Provide persistent ID.
-  virtual const SegmentId id() const = 0;
+  const SegmentId id() const { return do_id(); }
 
-  virtual const Junction* junction() const = 0;
+  const Junction* junction() const { return do_junction(); }
 
-  virtual int num_lanes() const = 0;
+  int num_lanes() const { return do_num_lanes(); }
+
   // index order is meaningful == adjacency.
-  virtual const Lane* lane(int index) const = 0;
+  const Lane* lane(int index) const { return do_lane(index); }
+
+ private:
+  // Provide persistent ID.
+  virtual const SegmentId do_id() const = 0;
+
+  virtual const Junction* do_junction() const = 0;
+
+  virtual int do_num_lanes() const = 0;
+
+  // index order is meaningful == adjacency.
+  virtual const Lane* do_lane(int index) const = 0;
 };
 
 

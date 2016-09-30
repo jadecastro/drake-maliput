@@ -23,13 +23,13 @@ class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds : public api::SetOfLaneEnds {
  public:
   virtual ~SetOfLaneEnds() {}
 
-  virtual int count() const { return ends_.size(); }
-
-  virtual const api::LaneEnd& get(int index) const;
-
   void add(const api::LaneEnd& end) { ends_.push_back(end); }
 
  private:
+  int do_count() const override { return ends_.size(); }
+
+  const api::LaneEnd& do_get(int index) const override;
+
   std::vector<api::LaneEnd> ends_;
 };
 
@@ -37,24 +37,6 @@ class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds : public api::SetOfLaneEnds {
 class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
  public:
   BranchPoint(const api::BranchPointId& id, RoadGeometry* rg);
-
-
-  // Provide persistent ID.
-  virtual const api::BranchPointId id() const { return id_; }
-
-  virtual const api::SetOfLaneEnds* GetBranches(
-      const api::LaneEnd& end) const;
-
-  virtual const boost::optional<api::LaneEnd>& GetDefaultBranch(
-      const api::LaneEnd& end) const;
-
-  virtual const api::SetOfLaneEnds* GetASide() const {
-    return &a_side_;
-  }
-
-  virtual const api::SetOfLaneEnds* GetBSide() const {
-    return &b_side_;
-  }
 
   const api::LaneEnd& AddABranch(const api::LaneEnd& lane_end);
 
@@ -64,6 +46,18 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
                   const api::LaneEnd& default_branch);
 
  private:
+  const api::BranchPointId do_id() const override { return id_; }
+
+  const api::SetOfLaneEnds* DoGetBranches(
+      const api::LaneEnd& end) const override;
+
+  const boost::optional<api::LaneEnd>& DoGetDefaultBranch(
+      const api::LaneEnd& end) const override;
+
+  const api::SetOfLaneEnds* DoGetASide() const override { return &a_side_; }
+
+  const api::SetOfLaneEnds* DoGetBSide() const override { return &b_side_; }
+
   api::BranchPointId id_;
   RoadGeometry* road_geometry_;
   SetOfLaneEnds a_side_;
@@ -72,8 +66,6 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
   std::map<api::LaneEnd, SetOfLaneEnds*> branches_;
   std::map<api::LaneEnd, boost::optional<api::LaneEnd>> defaults_;
 };
-
-
 
 }  // namespace monolane
 }  // namespace maliput
