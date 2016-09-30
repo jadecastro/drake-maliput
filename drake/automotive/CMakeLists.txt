@@ -14,14 +14,15 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   gen/simple_car_config.cc
   gen/simple_car_state.cc
   idm_with_trajectory_agent.cc
-  maliput/monolane/line_lane.cc
-  maliput/monolane/segment.cc
-  maliput/monolane/junction.cc
   maliput/monolane/arc_lane.cc
-  maliput/monolane/builder.cc
   maliput/monolane/branch_point.cc
+  maliput/monolane/builder.cc
+  maliput/monolane/junction.cc
   maliput/monolane/lane.cc
+  maliput/monolane/line_lane.cc
+  maliput/monolane/loader.cc
   maliput/monolane/road_geometry.cc
+  maliput/monolane/segment.cc
   maliput/utility/generate_obj.cc
   simple_car.cc
   trajectory_car.cc
@@ -30,6 +31,7 @@ target_link_libraries(drakeAutomotive
   drakeCommon
   drakeSystemAnalysis
   drakeSystemFramework
+  yaml-cpp
   )
 pods_install_libraries(drakeAutomotive)
 drake_install_headers(
