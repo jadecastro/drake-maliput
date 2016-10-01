@@ -171,15 +171,16 @@ GTEST_TEST(GenerateObj, TeeIntersection) {
                       {{10., 0., 0.}, {0., 0., 0., 0.}},
                       10., {0., 0., 0.0, 0.});
 
-  /*auto csw =*/ b.Connect("south-west", cs->start().reverse(),
+  auto csw = b.Connect("south-west", cs->start().reverse(),
                        mono::ArcOffset(10., M_PI / 2.),
                        cw->start());
-  /*auto cse =*/ b.Connect("south-east", cs->start().reverse(),
+  auto cse = b.Connect("south-east", cs->start().reverse(),
                        mono::ArcOffset(10., -M_PI / 2.),
                        ce->start());
-  /*auto cew =*/ b.Connect("east-west",  ce->start().reverse(),
+  auto cew = b.Connect("east-west",  ce->start().reverse(),
                        20.,
                        cw->start());
+  b.MakeGroup("intersection", {csw, cse, cew});
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"tee"});
   generate_obj(rg.get(), "/tmp/tee.obj", 1.);

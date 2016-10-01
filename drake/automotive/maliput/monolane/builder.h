@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cmath>
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -10,6 +12,8 @@
 
 #include "drake/automotive/maliput/geometry_api/state.h"
 #include "drake/common/drake_assert.h"
+
+#include "drake/automotive/maliput/monolane/junction.h"
 
 namespace maliput {
 
@@ -136,6 +140,26 @@ class DRAKEAUTOMOTIVE_EXPORT Connection : boost::noncopyable {
 };
 
 
+class DRAKEAUTOMOTIVE_EXPORT Group : boost::noncopyable {
+ public:
+  Group(const std::string& id) : id_(id) {}
+
+  Group(const std::string& id,
+        const std::vector<const Connection*>& connections)
+      : id_(id), connections_(connections) {}
+
+  void Add(Connection* connection);
+
+  const std::string& id() const { return id_; }
+
+  const std::vector<const Connection*>& connections() const { return connections_; }
+
+ private:
+  std::string id_;
+  std::vector<const Connection*> connections_;
+};
+
+
 class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
  public:
   Builder(const api::RBounds& lane_bounds,
@@ -147,7 +171,6 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
 // SOON//      const XYZPoint& start,
 // SOON//      const XYZPoint& end);
 
-  // TODO(maddog) Provide for grouping within Junctions.
   // TODO(maddog) Provide for explicit branch-point siding of ends...
   //              e.g. to allow 3-way intersection.
 
@@ -180,14 +203,25 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
       const ArcOffset& arc,
       const XYZPoint& explicit_end);
 
+  Group* MakeGroup(const std::string& id);
+
+  Group* MakeGroup(const std::string& id,
+                   const std::vector<const Connection*>& connections);
+
   // Produce a RoadGeometry.
   std::unique_ptr<const api::RoadGeometry> Build(
       const api::RoadGeometryId& id) const;
 
  private:
+   void BuildConnection(const Connection* const cnx,
+                        Junction* const junction,
+                        RoadGeometry* const rg,
+                        std::map<XYZPoint, BranchPoint*>* const bp_map) const;
+
   api::RBounds lane_bounds_;
   api::RBounds driveable_bounds_;
   std::vector<std::unique_ptr<Connection>> connections_;
+  std::vector<std::unique_ptr<Group>> groups_;
 };
 
 
