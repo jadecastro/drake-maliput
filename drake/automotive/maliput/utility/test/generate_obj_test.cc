@@ -89,8 +89,7 @@ GTEST_TEST(GenerateObj, Hodge) {
   auto c5 = b.Connect("5", c4->end(), mono::ArcOffset(50., kPi2),
                       {0., 0., 0.5, 0.});
   /*auto c6 =*/ b.Connect("6", c5->end(), mono::ArcOffset(50., kPi2),
-                      {0., 0., 0., 0.},
-                      c1->start().xy_);
+                          c1->start());
 // SOON//  b.Connect("6", c5->end(), c1->begin());
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"apple"});
@@ -149,8 +148,8 @@ GTEST_TEST(GenerateObj, DoubleRing) {
   auto cl2 = b.Connect("l2", cl1->end(),
                       mono::ArcOffset(50., 0.75 * M_PI), {0., 0., 0.0, 0.});
   /*auto cl3 =*/ b.Connect("l3", cl2->end(),
-                      mono::ArcOffset(50., 0.25 * M_PI), {0., 0., 0.0, 0.},
-                      start.xy_);
+                           mono::ArcOffset(50., 0.25 * M_PI),
+                           start);
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"double-ring"});
   generate_obj(rg.get(), "/tmp/double-ring.obj", 1.);
@@ -173,14 +172,14 @@ GTEST_TEST(GenerateObj, TeeIntersection) {
                       10., {0., 0., 0.0, 0.});
 
   /*auto csw =*/ b.Connect("south-west", cs->start().reverse(),
-                       mono::ArcOffset(10., M_PI / 2.), {0., 0., 0., 0.},
-                       cw->start().xy_);
+                       mono::ArcOffset(10., M_PI / 2.),
+                       cw->start());
   /*auto cse =*/ b.Connect("south-east", cs->start().reverse(),
-                       mono::ArcOffset(10., -M_PI / 2.), {0., 0., 0., 0.},
-                       ce->start().xy_);
+                       mono::ArcOffset(10., -M_PI / 2.),
+                       ce->start());
   /*auto cew =*/ b.Connect("east-west",  ce->start().reverse(),
-                       20., {0., 0., 0., 0.},
-                       cw->start().xy_);
+                       20.,
+                       cw->start());
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"tee"});
   generate_obj(rg.get(), "/tmp/tee.obj", 1.);

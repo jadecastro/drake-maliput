@@ -42,13 +42,11 @@ const Connection* Builder::Connect(
     const std::string& id,
     const XYZPoint& start,
     const double length,
-    const ZPoint& z_end,
-    const XYPoint& forced_end) {
+    const XYZPoint& explicit_end) {
   DRAKE_DEMAND(length);  // TODO(maddog)  Validate length vs forced_end.
-  const XYZPoint end(forced_end, z_end);
   connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kLine, id,
-      start, end));
+      start, explicit_end));
   return connections_.back().get();
 }
 
@@ -81,20 +79,16 @@ const Connection* Builder::Connect(
     const std::string& id,
     const XYZPoint& start,
     const ArcOffset& arc,
-    const ZPoint& z_end,
-    const XYPoint& forced_end) {
+    const XYZPoint& explicit_end) {
   const double alpha = start.xy_.heading_;
   const double theta0 = alpha - std::copysign(M_PI / 2., arc.d_theta_);
 
   const double cx = start.xy_.x_ - (arc.radius_ * std::cos(theta0));
   const double cy = start.xy_.y_ - (arc.radius_ * std::sin(theta0));
 
-  const XYZPoint end(forced_end,
-                     z_end);
-
   connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kArc, id,
-      start, end, cx, cy, arc.radius_, arc.d_theta_));
+      start, explicit_end, cx, cy, arc.radius_, arc.d_theta_));
   return connections_.back().get();
 }
 

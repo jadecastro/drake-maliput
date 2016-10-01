@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 #include "drake/automotive/maliput/geometry_api/state.h"
 #include "drake/common/drake_assert.h"
@@ -162,8 +163,7 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
       const std::string& id,
       const XYZPoint& start,
       const double length,
-      const ZPoint& z_end,
-      const XYPoint& forced_end);
+      const XYZPoint& explicit_end);
 
   // Connect a start point to an end point relative to the start,
   // with an arc displacement.
@@ -178,8 +178,7 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
       const std::string& id,
       const XYZPoint& start,
       const ArcOffset& arc,
-      const ZPoint& z_end,
-      const XYPoint& forced_end);
+      const XYZPoint& explicit_end);
 
   // Produce a RoadGeometry.
   std::unique_ptr<const api::RoadGeometry> Build(
