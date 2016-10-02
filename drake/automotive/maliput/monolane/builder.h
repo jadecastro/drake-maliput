@@ -5,6 +5,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include <boost/noncopyable.hpp>
@@ -76,6 +77,16 @@ struct XYZPoint {
 
   XYPoint xy_;
   ZPoint z_;
+
+  struct strict_order {
+    bool operator()(const XYZPoint& lhs, const XYZPoint& rhs) const {
+      auto as_tuple = [](const XYZPoint& p) {
+        return std::tie(p.xy_.x_, p.xy_.y_, p.xy_.heading_,
+                        p.z_.z_, p.z_.zdot_, p.z_.theta_, p.z_.thetadot_);
+      };
+      return as_tuple(lhs) < as_tuple(rhs);
+    }
+  };
 };
 
 // radius_ must be non-negative.
@@ -213,10 +224,11 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
       const api::RoadGeometryId& id) const;
 
  private:
-   void BuildConnection(const Connection* const cnx,
-                        Junction* const junction,
-                        RoadGeometry* const rg,
-                        std::map<XYZPoint, BranchPoint*>* const bp_map) const;
+   void BuildConnection(
+       const Connection* const cnx,
+       Junction* const junction,
+       RoadGeometry* const rg,
+       std::map<XYZPoint, BranchPoint*, XYZPoint::strict_order>* const bp_map) const;
 
   api::RBounds lane_bounds_;
   api::RBounds driveable_bounds_;
@@ -228,22 +240,3 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
 
 }  // namespace monolane
 }  // namespace maliput
-
-
-#include <functional>
-#include <tuple>
-
-namespace std {
-
-using XYZPoint = maliput::monolane::XYZPoint;
-
-template <> struct less<XYZPoint> {
-  bool operator()(const XYZPoint& lhs, const XYZPoint& rhs) const {
-    auto as_tuple = [](const XYZPoint& p) {
-      return std::tie(p.xy_.x_, p.xy_.y_, p.xy_.heading_,
-                      p.z_.z_, p.z_.zdot_, p.z_.theta_, p.z_.thetadot_);
-    };
-    return as_tuple(lhs) < as_tuple(rhs);
-  }
-};
-}  // namespace std

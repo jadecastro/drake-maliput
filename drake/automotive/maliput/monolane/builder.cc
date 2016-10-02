@@ -110,7 +110,7 @@ namespace {
 BranchPoint* FindOrCreateBranchPoint(
     const XYZPoint& point,
     RoadGeometry* rg,
-    std::map<XYZPoint, BranchPoint*>* bp_map) {
+    std::map<XYZPoint, BranchPoint*, XYZPoint::strict_order>* bp_map) {
   auto ibp = bp_map->find(point);
   if (ibp != bp_map->end()) {
     return ibp->second;
@@ -139,7 +139,7 @@ void Builder::BuildConnection(
     const Connection* const cnx,
     Junction* const junction,
     RoadGeometry* const rg,
-    std::map<XYZPoint, BranchPoint*>* const bp_map) const {
+    std::map<XYZPoint, BranchPoint*, XYZPoint::strict_order>* const bp_map) const {
   Segment* segment = junction->NewSegment({std::string("s:") + cnx->id()});
   Lane* lane;
   api::LaneId lane_id({std::string("l:") + cnx->id()});
@@ -215,7 +215,7 @@ void Builder::BuildConnection(
 std::unique_ptr<const api::RoadGeometry> Builder::Build(
     const api::RoadGeometryId& id) const {
   auto rg = std::make_unique<RoadGeometry>(id);
-  std::map<XYZPoint, BranchPoint*> bp_map;
+  std::map<XYZPoint, BranchPoint*, XYZPoint::strict_order> bp_map;
   std::set<const Connection*> remaining_connections;
 
   for (auto& cnx : connections_) {
