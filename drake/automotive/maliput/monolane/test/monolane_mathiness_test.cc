@@ -17,7 +17,6 @@ namespace monolane {
 namespace api = maliput::geometry_api;
 
 GTEST_TEST(MonolaneMathinessTest, Rot3) {
-
   Rot3 yaw90 {M_PI / 2., 0., 0.};
   EXPECT_NEAR(yaw90.apply({1., 0., 0.}).x, 0., 1e-6);
   EXPECT_NEAR(yaw90.apply({1., 0., 0.}).y, 1., 1e-6);
@@ -26,8 +25,6 @@ GTEST_TEST(MonolaneMathinessTest, Rot3) {
   EXPECT_NEAR(yaw90.apply({0., 1., 0.}).x, -1., 1e-6);
   EXPECT_NEAR(yaw90.apply({0., 1., 0.}).y,  0., 1e-6);
   EXPECT_NEAR(yaw90.apply({0., 1., 0.}).z,  0., 1e-6);
-
-
 }
 
 }

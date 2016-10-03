@@ -53,7 +53,7 @@ GTEST_TEST(MonolaneLanesTest, FlatLineLane) {
 
   xyz = l1->ToGeoPosition({1., 0., 0.});
   EXPECT_NEAR(xyz.x_, 100 + (100. * (1. / l1->length())), kPositionPrecision);
-  EXPECT_NEAR(xyz.y_, -75 + ( 50. * (1. / l1->length())), kPositionPrecision);
+  EXPECT_NEAR(xyz.y_, -75 + (50. * (1. / l1->length())), kPositionPrecision);
   EXPECT_NEAR(xyz.z_, 0., kPositionPrecision);
 
   xyz = l1->ToGeoPosition({0., 1., 0.});
@@ -351,7 +351,7 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
   EXPECT_NEAR(pdot.s_,
               (100. / (100
                        + (10. * std::cos(0.10 * M_PI))
-                       - ( 8. * std::sin(0.10 * M_PI)))) * 1., kVeryExact);
+                       - (8. * std::sin(0.10 * M_PI)))) * 1., kVeryExact);
   EXPECT_NEAR(pdot.r_, 1., kVeryExact);
   EXPECT_NEAR(pdot.h_, 1., kVeryExact);
 }
@@ -376,7 +376,7 @@ api::LanePosition IntegrateTrivially(const api::Lane* lane,
   return lp_current;
 }
 
-} // namespace
+}  // namespace
 
 GTEST_TEST(MonolaneLanesTest, HillIntegration) {
   CubicPolynomial zp {0., 0., 0., 0.};

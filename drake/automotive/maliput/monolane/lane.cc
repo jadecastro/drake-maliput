@@ -66,7 +66,8 @@ V3 Lane::W_prime_of_prh_(const double p, const double r, const double h,
   const double sb = std::sin(beta);
   const double sg = std::sin(gamma);
 
-  const double d_alpha = superelevation().fdot_p(p) * p_scale_; // TODO(maddog)
+  // TODO(maddog)  Hmm... is d_alpha scaled correctly?
+  const double d_alpha = superelevation().fdot_p(p) * p_scale_;
   const double d_beta = cb * cb * elevation().fddot_p(p);
   const double d_gamma = heading_dot_of_p_(p);
 
@@ -77,18 +78,18 @@ V3 Lane::W_prime_of_prh_(const double p, const double r, const double h,
 
       V3((((sa*sg)+(ca*sb*cg))*r + ((-ca*sg)+(sa*sb*cg))*h),
          (((-sa*cg)+(ca*sb*sg))*r + ((ca*cg)+(sa*sb*sg))*h),
-         ((-ca*cb)*r + (-sa*cb)*h)
-         ) * d_alpha +
+         ((-ca*cb)*r + (-sa*cb)*h))
+      * d_alpha +
 
       V3(((sa*cb*cg)*r - (ca*cb*cg)*h),
          ((sa*cb*sg)*r - (ca*cb*sg)*h),
-         (( sa*sb)*r - (ca*sb)*h)
-         ) * d_beta +
+         ((sa*sb)*r - (ca*sb)*h))
+      * d_beta +
 
       V3((((-ca*cg)-(sa*sb*sg))*r + ((-sa*cg)+(ca*sb*sg))*h),
          (((-ca*sg)+(sa*sb*cg))*r + ((-sa*sg)-(ca*sb*cg))*h),
-         0
-         ) * d_gamma;
+         0)
+      * d_gamma;
 }
 
 

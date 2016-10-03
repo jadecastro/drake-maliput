@@ -146,7 +146,7 @@ class DRAKEAUTOMOTIVE_EXPORT Connection : boost::noncopyable {
 
 class DRAKEAUTOMOTIVE_EXPORT Group : boost::noncopyable {
  public:
-  Group(const std::string& id) : id_(id) {}
+  explicit Group(const std::string& id) : id_(id) {}
 
   Group(const std::string& id,
         const std::vector<const Connection*>& connections)
@@ -156,7 +156,9 @@ class DRAKEAUTOMOTIVE_EXPORT Group : boost::noncopyable {
 
   const std::string& id() const { return id_; }
 
-  const std::vector<const Connection*>& connections() const { return connections_; }
+  const std::vector<const Connection*>& connections() const {
+    return connections_;
+  }
 
  private:
   std::string id_;
