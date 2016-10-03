@@ -87,8 +87,7 @@ const mono::Connection* maybe_make_connection(
     case line: {
       if (forced_end) {
         return builder->Connect(
-            id, it_start->second, node["length"].as<double>(),
-            zpoint(node["z_end"]), it_fe->second.xy_);
+            id, it_start->second, node["length"].as<double>(), it_fe->second);
       } else {
         return builder->Connect(
             id, it_start->second, node["length"].as<double>(),
@@ -98,7 +97,7 @@ const mono::Connection* maybe_make_connection(
     case arc: {
       if (forced_end) {
         return builder->Connect(id, it_start->second, arc_offset(node["arc"]),
-                                zpoint(node["z_end"]), it_fe->second.xy_);
+                                it_fe->second);
       } else {
         return builder->Connect(id, it_start->second, arc_offset(node["arc"]),
                                 zpoint(node["z_end"]));
@@ -120,7 +119,9 @@ std::unique_ptr<const api::RoadGeometry> BuildFrom(YAML::Node node) {
   DRAKE_DEMAND(mmb.IsMap());
 
   mono::Builder b(rbounds(mmb["lane_bounds"]),
-                  rbounds(mmb["driveable_bounds"]));
+                  rbounds(mmb["driveable_bounds"]),
+                  mmb["position_precision"].as<double>(),
+                  d2r(mmb["orientation_precision"].as<double>()));
 
   std::cerr << "loading points !\n";
   YAML::Node points = mmb["points"];
