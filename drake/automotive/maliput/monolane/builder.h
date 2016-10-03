@@ -221,9 +221,7 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
   class XYZPointFuzzyOrder {
    public:
     XYZPointFuzzyOrder(const double position_precision,
-                       const double orientation_precision)
-        : pos_pre_(position_precision),
-          ori_pre_(orientation_precision) {}
+                       const double orientation_precision);
 
     // TODO(maddog) This should perhaps incorporate heading/anti-heading.
     // TODO(maddog) This should perhaps incorporate position_precision.

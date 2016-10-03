@@ -14,6 +14,15 @@
 namespace maliput {
 namespace monolane {
 
+Builder::XYZPointFuzzyOrder::
+XYZPointFuzzyOrder(const double position_precision,
+                   const double orientation_precision)
+        : pos_pre_(position_precision),
+          ori_pre_(orientation_precision) {
+      ignore(pos_pre_);
+      ignore(ori_pre_);
+    }
+
 Builder::Builder(const api::RBounds& lane_bounds,
                  const api::RBounds& driveable_bounds,
                  const double position_precision,
