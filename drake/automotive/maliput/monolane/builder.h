@@ -54,6 +54,7 @@ struct XYPoint {
   double heading_{};  // radians, zero == x direction
 };
 
+
 struct ZPoint {
   ZPoint reverse() const {
     return {z_, -zdot_, -theta_, -thetadot_};
@@ -66,6 +67,7 @@ struct ZPoint {
   double thetadot_;
 };
 
+
 struct XYZPoint {
   XYZPoint() {}
 
@@ -77,17 +79,8 @@ struct XYZPoint {
 
   XYPoint xy_;
   ZPoint z_;
-
-  struct strict_order {
-    bool operator()(const XYZPoint& lhs, const XYZPoint& rhs) const {
-      auto as_tuple = [](const XYZPoint& p) {
-        return std::tie(p.xy_.x_, p.xy_.y_, p.xy_.heading_,
-                        p.z_.z_, p.z_.zdot_, p.z_.theta_, p.z_.thetadot_);
-      };
-      return as_tuple(lhs) < as_tuple(rhs);
-    }
-  };
 };
+
 
 // radius_ must be non-negative.
 // d_theta_ > 0. is counterclockwise ('veer to left').
@@ -174,16 +167,13 @@ class DRAKEAUTOMOTIVE_EXPORT Group : boost::noncopyable {
 class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
  public:
   Builder(const api::RBounds& lane_bounds,
-          const api::RBounds& driveable_bounds);
-
-// SOON//  // Connect a start point to a specific end point.
-// SOON//  const Connection* Connect(
-// SOON//      const std::string& id,
-// SOON//      const XYZPoint& start,
-// SOON//      const XYZPoint& end);
+          const api::RBounds& driveable_bounds,
+          const double position_precision,
+          const double orientation_precision);
 
   // TODO(maddog) Provide for explicit branch-point siding of ends...
   //              e.g. to allow 3-way intersection.
+  // TODO(maddog) Handle setting default branch-points.
 
   // Connect a start point to an end point relative to the start,
   // with a linear displacement.
@@ -214,6 +204,10 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
       const ArcOffset& arc,
       const XYZPoint& explicit_end);
 
+  void SetDefaultBranch(
+      const Connection* in, const api::LaneEnd::Which in_end,
+      const Connection* out, const api::LaneEnd::Which out_end);
+
   Group* MakeGroup(const std::string& id);
 
   Group* MakeGroup(const std::string& id,
@@ -224,15 +218,63 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
       const api::RoadGeometryId& id) const;
 
  private:
-   void BuildConnection(
-       const Connection* const cnx,
-       Junction* const junction,
-       RoadGeometry* const rg,
-       std::map<XYZPoint, BranchPoint*, XYZPoint::strict_order>* const bp_map) const;
+  class XYZPointFuzzyOrder {
+   public:
+    XYZPointFuzzyOrder(const double position_precision,
+                       const double orientation_precision)
+        : pos_pre_(position_precision),
+          ori_pre_(orientation_precision) {}
+
+    // TODO(maddog) This should perhaps incorporate heading/anti-heading.
+    // TODO(maddog) This should perhaps incorporate position_precision.
+    bool operator()(const XYZPoint& lhs, const XYZPoint& rhs) const {
+      auto as_tuple = [](const XYZPoint& p) {
+        return std::tie(p.xy_.x_, p.xy_.y_, p.z_.z_);
+      };
+      return as_tuple(lhs) < as_tuple(rhs);
+    }
+
+   private:
+    const double pos_pre_;
+    const double ori_pre_;
+  };
+
+  struct DefaultBranch {
+    DefaultBranch() {}
+
+    DefaultBranch(
+        const Connection* in, const api::LaneEnd::Which in_end,
+        const Connection* out, const api::LaneEnd::Which out_end)
+        : in_(in), in_end_(in_end), out_(out), out_end_(out_end) {}
+
+    const Connection* in_;
+    api::LaneEnd::Which in_end_;
+    const Connection* out_;
+    api::LaneEnd::Which out_end_;
+  };
+
+  Lane* BuildConnection(
+      const Connection* const cnx,
+      Junction* const junction,
+      RoadGeometry* const rg,
+      std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder>* const bp_map) const;
+
+  BranchPoint* FindOrCreateBranchPoint(
+      const XYZPoint& point,
+      RoadGeometry* rg,
+      std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder>* const bp_map) const;
+
+  void AttachBranchPoint(
+      const XYZPoint& point, Lane* const lane, const api::LaneEnd::Which end,
+      RoadGeometry* rg,
+      std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder>* bp_map) const;
 
   api::RBounds lane_bounds_;
   api::RBounds driveable_bounds_;
+  double position_precision_;
+  double orientation_precision_;
   std::vector<std::unique_ptr<Connection>> connections_;
+  std::vector<DefaultBranch> default_branches_;
   std::vector<std::unique_ptr<Group>> groups_;
 };
 

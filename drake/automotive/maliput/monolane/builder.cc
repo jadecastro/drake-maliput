@@ -15,10 +15,13 @@ namespace maliput {
 namespace monolane {
 
 Builder::Builder(const api::RBounds& lane_bounds,
-                 const api::RBounds& driveable_bounds)
+                 const api::RBounds& driveable_bounds,
+                 const double position_precision,
+                 const double orientation_precision)
     : lane_bounds_(lane_bounds),
-      driveable_bounds_(driveable_bounds) {}
-
+      driveable_bounds_(driveable_bounds),
+      position_precision_(position_precision),
+      orientation_precision_(orientation_precision) {}
 
 const Connection* Builder::Connect(
     const std::string& id,
@@ -93,6 +96,13 @@ const Connection* Builder::Connect(
 }
 
 
+void Builder::SetDefaultBranch(
+    const Connection* in, const api::LaneEnd::Which in_end,
+    const Connection* out, const api::LaneEnd::Which out_end) {
+  default_branches_.push_back({in, in_end, out, out_end});
+}
+
+
 Group* Builder::MakeGroup(const std::string& id) {
   groups_.push_back(std::make_unique<Group>(id));
   return groups_.back().get();
@@ -107,23 +117,6 @@ Group* Builder::MakeGroup(const std::string& id,
 
 
 namespace {
-BranchPoint* FindOrCreateBranchPoint(
-    const XYZPoint& point,
-    RoadGeometry* rg,
-    std::map<XYZPoint, BranchPoint*, XYZPoint::strict_order>* bp_map) {
-  auto ibp = bp_map->find(point);
-  if (ibp != bp_map->end()) {
-    return ibp->second;
-  }
-  // TODO(maddog) Generate a real id.
-  BranchPoint* bp = rg->NewBranchPoint({"xxx"});
-  auto result = bp_map->emplace(point, bp);
-  ignore(result);
-  DRAKE_DEMAND(result.second);
-  return bp;
-}
-
-
 CubicPolynomial MakeCubic(const double dX, const double Y0, const double dY,
                           const double Ydot0, const double Ydot1) {
   return CubicPolynomial(Y0 / dX,
@@ -131,15 +124,90 @@ CubicPolynomial MakeCubic(const double dX, const double Y0, const double dY,
                          (3. * dY / dX) - (2. * Ydot0) - Ydot1,
                          Ydot0 + Ydot1 - (2. * dY / dX));
 }
+
+/// Determine the heading (in xy-plane) along the centerline when
+/// travelling towards/into the lane, from the specified end.
+double HeadingIntoLane(const api::Lane* const lane,
+                       const api::LaneEnd::Which end) {
+  switch (end) {
+    case api::LaneEnd::kStart: {
+      return lane->GetOrientation({0., 0., 0.}).yaw_;
+    }
+    case api::LaneEnd::kEnd: {
+      return -lane->GetOrientation({lane->length(), 0., 0.}).yaw_;
+    }
+    default: { DRAKE_ABORT(); }
+  }
+}
 }  // namespace
 
 
 
-void Builder::BuildConnection(
+BranchPoint* Builder::FindOrCreateBranchPoint(
+    const XYZPoint& point,
+    RoadGeometry* rg,
+    std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder>* bp_map) const {
+  auto ibp = bp_map->find(point);
+  if (ibp != bp_map->end()) {
+    return ibp->second;
+  }
+  // TODO(maddog) Generate a real id.
+  BranchPoint* bp = rg->NewBranchPoint(
+      {"bp:" + std::to_string(rg->num_branch_points())});
+  auto result = bp_map->emplace(point, bp);
+  ignore(result);
+  DRAKE_DEMAND(result.second);
+  return bp;
+}
+
+
+void Builder::AttachBranchPoint(
+    const XYZPoint& point, Lane* const lane, const api::LaneEnd::Which end,
+    RoadGeometry* rg,
+    std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder>* bp_map) const {
+  BranchPoint* bp = FindOrCreateBranchPoint(point, rg, bp_map);
+  // Is this the first lane-end added to the branch-point?
+  // If so, just stick it on Side-A.
+  // (NB: We just test size of A-Side, since A-Side is always populated first.)
+  if (bp->GetASide()->count() == 0) {
+    bp->AddABranch({lane, end});
+    return;
+  }
+  // Otherwise, assess if this new lane-end is parallel or
+  // anti-parallel to the first lane-end.  Parallel: go to same,
+  // A-side; anti-parallel: other, B-side.  Do this by examining
+  // dot-product of heading vectors (rather than goofing around with
+  // cyclic angle arithmetic).
+  const double new_h = HeadingIntoLane(lane, end);
+  const api::LaneEnd old_le = bp->GetASide()->get(0);
+  const double old_h = HeadingIntoLane(old_le.lane_, old_le.end_);
+  if (((std::cos(new_h) * std::cos(old_h)) +
+       (std::sin(new_h) * std::cos(old_h))) > 0.) {
+    bp->AddABranch({lane, end});
+  } else {
+    bp->AddBBranch({lane, end});
+  }
+  // Make sure the lane knows its branch-points, too!
+  switch (end) {
+    case api::LaneEnd::kStart: {
+      lane->SetStartBp(bp);
+      break;
+    }
+    case api::LaneEnd::kEnd: {
+      lane->SetEndBp(bp);
+      break;
+    }
+    default: { DRAKE_ABORT(); }
+  }
+}
+
+
+
+Lane* Builder::BuildConnection(
     const Connection* const cnx,
     Junction* const junction,
     RoadGeometry* const rg,
-    std::map<XYZPoint, BranchPoint*, XYZPoint::strict_order>* const bp_map) const {
+    std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder>* const bp_map) const {
   Segment* segment = junction->NewSegment({std::string("s:") + cnx->id()});
   Lane* lane;
   api::LaneId lane_id({std::string("l:") + cnx->id()});
@@ -202,20 +270,18 @@ void Builder::BuildConnection(
     }
   }
 
-  // 'start' ends by default plug onto 'A' side of branch-points.
-  BranchPoint* bp0 = FindOrCreateBranchPoint(cnx->start(), rg, bp_map);
-  bp0->AddABranch(api::LaneEnd(lane, api::LaneEnd::kStart));
-
-  // 'end' ends by default plug onto 'B' side of branch-points.
-  BranchPoint* bp1 = FindOrCreateBranchPoint(cnx->end(), rg, bp_map);
-  bp1->AddBBranch(api::LaneEnd(lane, api::LaneEnd::kEnd));
+  AttachBranchPoint(cnx->start(), lane, api::LaneEnd::kStart, rg, bp_map);
+  AttachBranchPoint(cnx->end(), lane, api::LaneEnd::kEnd, rg, bp_map);
+  return lane;
 }
 
 
 std::unique_ptr<const api::RoadGeometry> Builder::Build(
     const api::RoadGeometryId& id) const {
   auto rg = std::make_unique<RoadGeometry>(id);
-  std::map<XYZPoint, BranchPoint*, XYZPoint::strict_order> bp_map;
+  std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder> bp_map(
+      XYZPointFuzzyOrder(position_precision_, orientation_precision_));
+  std::map<const Connection*, Lane*> lane_map;
   std::set<const Connection*> remaining_connections;
 
   for (auto& cnx : connections_) {
@@ -228,7 +294,7 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
     for (auto& cnx : grp->connections()) {
       std::cout << "cnx: " << cnx->id() << std::endl;
       remaining_connections.erase(cnx);
-      BuildConnection(cnx, junction, rg.get(), &bp_map);
+      lane_map[cnx] = BuildConnection(cnx, junction, rg.get(), &bp_map);
     }
   }
 
@@ -236,7 +302,18 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
     Junction* junction = rg->NewJunction({std::string("j:") + cnx->id()});
     std::cout << "jnx: " << junction->id().id_ << std::endl;
     std::cout << "cnx: " << cnx->id() << std::endl;
-    BuildConnection(cnx, junction, rg.get(), &bp_map);
+    lane_map[cnx] = BuildConnection(cnx, junction, rg.get(), &bp_map);
+  }
+
+  for (auto& def : default_branches_) {
+    Lane* in_lane = lane_map[def.in_];
+    Lane* out_lane = lane_map[def.out_];
+    DRAKE_DEMAND((def.in_end_ == api::LaneEnd::kStart) ||
+                 (def.in_end_ == api::LaneEnd::kEnd));
+    ((def.in_end_ == api::LaneEnd::kStart) ?
+     in_lane->start_bp() : in_lane->end_bp())
+        ->SetDefault({in_lane, def.in_end_},
+                     {out_lane, def.out_end_});
   }
 
   return rg;

@@ -26,9 +26,6 @@ struct LaneEnd {
 
   const Lane* lane_{};
   Which end_{};
-
-  // NB:  See specialization of std::less<> at end of file, providing
-  //      a total ordering used by, e.g., std::map.
 };
 
 
@@ -109,16 +106,3 @@ struct DRAKEAUTOMOTIVE_EXPORT RoadGeometryId {
 
 }  // namespace geometry_api
 }  // namespace maliput
-
-
-namespace std {
-
-using LaneEnd = maliput::geometry_api::LaneEnd;
-
-template <> struct less<LaneEnd> {
-  bool operator()(const LaneEnd& lhs, const LaneEnd& rhs) const {
-    return std::less<const void*>()(lhs.lane_, rhs.lane_) ||
-        ((lhs.lane_ == rhs.lane_) && (lhs.end_ < rhs.end_));
-  }
-};
-}  // namespace std

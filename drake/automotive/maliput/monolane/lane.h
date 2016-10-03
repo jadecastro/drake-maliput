@@ -45,6 +45,14 @@ class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
 
   const CubicPolynomial& superelevation() const { return superelevation_; }
 
+  void SetStartBp(BranchPoint* bp) { start_bp_ = bp; }
+
+  void SetEndBp(BranchPoint* bp) { end_bp_ = bp; }
+
+  BranchPoint* start_bp() { return start_bp_; }
+
+  BranchPoint* end_bp() { return end_bp_; }
+
  private:
   const api::LaneId do_id() const override { return id_; }
 

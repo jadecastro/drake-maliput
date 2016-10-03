@@ -17,11 +17,6 @@ class BranchChoices;  // TODO(maddog) define me.
 
 class DRAKEAUTOMOTIVE_EXPORT Lane {
  public:
-  enum class Endpoint {
-    kStart,
-      kEnd,
-      };
-
   virtual ~Lane() {}
 
   /// Returns a persistent identifier for this Lane.

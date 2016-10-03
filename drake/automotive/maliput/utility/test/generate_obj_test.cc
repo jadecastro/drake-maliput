@@ -75,7 +75,9 @@ GTEST_TEST(GenerateObj, Podge) {
 
 GTEST_TEST(GenerateObj, Hodge) {
   const double kPi2 = M_PI / 2.;
-  mono::Builder b({-5., 5.}, {-10., 10.});
+  const double kPosPrecision = 0.01;
+  const double kOriPrecision = 0.01 * M_PI;
+  mono::Builder b({-5., 5.}, {-10., 10.}, kPosPrecision, kOriPrecision);
 
   mono::XYZPoint start {{0., 0., 0.}, {0., 0., 0., 0.}};
   auto c1 = b.Connect("1", start, 100,
@@ -98,7 +100,9 @@ GTEST_TEST(GenerateObj, Hodge) {
 
 
 GTEST_TEST(GenerateObj, Fig8Builder) {
-  mono::Builder b({-2., 2.}, {-4., 4.});
+  const double kPosPrecision = 0.01;
+  const double kOriPrecision = 0.01 * M_PI;
+  mono::Builder b({-2., 2.}, {-4., 4.}, kPosPrecision, kOriPrecision);
 
   mono::XYZPoint start {{0., 0., -M_PI / 4.}, {0., 0., 0., 0.}};
   auto c0 = b.Connect("0", start,
@@ -129,7 +133,9 @@ GTEST_TEST(GenerateObj, Fig8Builder) {
 
 
 GTEST_TEST(GenerateObj, DoubleRing) {
-  mono::Builder b({-2., 2.}, {-4., 4.});
+  const double kPosPrecision = 0.01;
+  const double kOriPrecision = 0.01 * M_PI;
+  mono::Builder b({-2., 2.}, {-4., 4.}, kPosPrecision, kOriPrecision);
 
   mono::XYZPoint start {{0., 0., M_PI / 2.}, {0., 0., 0., 0.}};
   auto cr0 = b.Connect("r0", start,
@@ -158,7 +164,9 @@ GTEST_TEST(GenerateObj, DoubleRing) {
 
 
 GTEST_TEST(GenerateObj, TeeIntersection) {
-  mono::Builder b({-2., 2.}, {-4., 4.});
+  const double kPosPrecision = 0.01;
+  const double kOriPrecision = 0.01 * M_PI;
+  mono::Builder b({-2., 2.}, {-4., 4.}, kPosPrecision, kOriPrecision);
 
   mono::XYZPoint start {{0., 0., M_PI / 2.}, {0., 0., 0., 0.}};
   auto cs = b.Connect("south",
@@ -182,13 +190,20 @@ GTEST_TEST(GenerateObj, TeeIntersection) {
                        cw->start());
   b.MakeGroup("intersection", {csw, cse, cew});
 
+  b.SetDefaultBranch(ce, api::LaneEnd::kStart, cew, api::LaneEnd::kStart);
+  b.SetDefaultBranch(cew, api::LaneEnd::kStart, ce, api::LaneEnd::kStart);
+  b.SetDefaultBranch(cw, api::LaneEnd::kStart, cew, api::LaneEnd::kEnd);
+  b.SetDefaultBranch(cew, api::LaneEnd::kEnd, cw, api::LaneEnd::kStart);
+
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"tee"});
   generate_obj(rg.get(), "/tmp/tee.obj", 1.);
 }
 
 
 GTEST_TEST(GenerateObj, Helix) {
-  mono::Builder b({-2., 2.}, {-4., 4.});
+  const double kPosPrecision = 0.01;
+  const double kOriPrecision = 0.01 * M_PI;
+  mono::Builder b({-2., 2.}, {-4., 4.}, kPosPrecision, kOriPrecision);
 
   mono::XYZPoint start {{0., -10., 0.}, {0., 0., 0.4, 0.}};
   b.Connect("1", start,

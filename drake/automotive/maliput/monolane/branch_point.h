@@ -46,6 +46,15 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
                   const api::LaneEnd& default_branch);
 
  private:
+  struct LaneEndStrictOrder {
+    bool operator()(const api::LaneEnd& lhs, const api::LaneEnd& rhs) const {
+      auto as_tuple = [](const api::LaneEnd& le) {
+        return std::tie(le.lane_, le.end_);
+      };
+      return as_tuple(lhs) < as_tuple(rhs);
+    }
+  };
+
   const api::BranchPointId do_id() const override { return id_; }
 
   const api::SetOfLaneEnds* DoGetBranches(
@@ -63,8 +72,9 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
   SetOfLaneEnds a_side_;
   SetOfLaneEnds b_side_;
 
-  std::map<api::LaneEnd, SetOfLaneEnds*> branches_;
-  std::map<api::LaneEnd, boost::optional<api::LaneEnd>> defaults_;
+  std::map<api::LaneEnd, SetOfLaneEnds*, LaneEndStrictOrder> branches_;
+  std::map<api::LaneEnd, boost::optional<api::LaneEnd>,
+           LaneEndStrictOrder> defaults_;
 };
 
 }  // namespace monolane
