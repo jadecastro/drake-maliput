@@ -1,9 +1,14 @@
 #include "drake/automotive/automotive_simulator.h"
 
+#include <limits>
+
+#include <lcm/lcm-cpp.hpp>
+
 #include "drake/automotive/gen/driving_command_translator.h"
 #include "drake/automotive/gen/euler_floating_joint_state_translator.h"
 #include "drake/automotive/gen/simple_car_state_translator.h"
 #include "drake/automotive/simple_car.h"
+#include "drake/automotive/road_car_to_euler_floating_joint.h"
 #include "drake/automotive/simple_car_to_euler_floating_joint.h"
 #include "drake/automotive/trajectory_car.h"
 #include "drake/common/drake_throw.h"
@@ -99,6 +104,31 @@ int AutomotiveSimulator<T>::AddTrajectoryCarFromSdf(
 }
 
 template <typename T>
+void AutomotiveSimulator<T>::AddTrajectoryRoadCar(
+    const maliput::geometry_api::RoadGeometry& road, double lateral_offset,
+    double speed, double start_time){
+  DRAKE_DEMAND(!started_);
+  const int vehicle_number = allocate_vehicle_number();
+
+  // The internal trajectory car just forever pursues the X axis.
+  auto curve = Curve2<double>({
+      {0, 0},
+      {std::numeric_limits<double>::infinity(), 0},
+    });
+  auto trajectory_car = builder_->template AddSystem<TrajectoryCar<T>>(
+      curve, speed, start_time);
+  auto coord_transform =
+      builder_->template AddSystem<RoadCarToEulerFloatingJoint<T>>(
+          road, lateral_offset);
+
+  builder_->Connect(*trajectory_car, *coord_transform);
+  AddPublisher(*trajectory_car, vehicle_number);
+  AddPublisher(*coord_transform, vehicle_number);
+  AddBoxcar(coord_transform);
+}
+
+
+template <typename T>
 int AutomotiveSimulator<T>::AddSdfModel(
     const std::string& sdf_filename,
     const SimpleCarToEulerFloatingJoint<T>* coord_transform) {
@@ -113,6 +143,22 @@ int AutomotiveSimulator<T>::AddSdfModel(
   rigid_body_tree_publisher_inputs_.push_back(
       std::make_pair(model_instance_id, coord_transform));
   return model_instance_id;
+}
+
+template <typename T>
+void AutomotiveSimulator<T>::AddSdfModel(
+    const std::string& sdf_filename,
+    const RoadCarToEulerFloatingJoint<T>* coord_transform) {
+  const parsers::ModelInstanceIdTable table =
+      parsers::sdf::AddModelInstancesFromSdfFileInWorldFrame(
+          sdf_filename, kRollPitchYaw, rigid_body_tree_.get());
+
+  // TODO(liang.fok): Add support for SDF files containing more than one model.
+  DRAKE_DEMAND(table.size() == 1);
+
+  const int model_instance_id = table.begin()->second;
+  rigid_body_tree_publisher_inputs_.push_back(
+      std::make_pair(model_instance_id, coord_transform));
 }
 
 template <typename T>
@@ -148,6 +194,19 @@ void AutomotiveSimulator<T>::AddPublisher(
       builder_->template AddSystem<systems::lcm::LcmPublisherSystem>(
           std::to_string(vehicle_number) + "_FLOATING_JOINT_STATE", translator,
           lcm_.get());
+  builder_->Connect(system, *publisher);
+}
+
+template <typename T>
+void AutomotiveSimulator<T>::AddPublisher(
+    const RoadCarToEulerFloatingJoint<T>& system,
+    int vehicle_number) {
+  DRAKE_DEMAND(!started_);
+  static const EulerFloatingJointStateTranslator translator;
+  auto publisher =
+      builder_->template AddSystem<systems::lcm::LcmPublisherSystem>(
+          std::to_string(vehicle_number) + "_FLOATING_JOINT_STATE",
+          translator, lcm_.get());
   builder_->Connect(system, *publisher);
 }
 

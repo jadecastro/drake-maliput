@@ -5,7 +5,9 @@
 #include <vector>
 
 #include "drake/automotive/curve2.h"
+#include "drake/automotive/maliput/geometry_api/road_geometry.h"
 #include "drake/automotive/simple_car.h"
+#include "drake/automotive/road_car_to_euler_floating_joint.h"
 #include "drake/automotive/simple_car_to_euler_floating_joint.h"
 #include "drake/automotive/trajectory_car.h"
 #include "drake/lcm/drake_lcm_interface.h"
@@ -81,6 +83,13 @@ class AutomotiveSimulator {
                               const Curve2<double>& curve, double speed,
                               double start_time);
 
+  /// Adds a TrajectoryRoadCar system to this simulation, including its
+  /// EulerFloatingJoint output.
+  /// @pre Start() has NOT been called.
+  void AddTrajectoryRoadCar(
+      const maliput::geometry_api::RoadGeometry& road, double lateral_offset,
+      double speed, double start_time);
+
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
   void AddPublisher(const SimpleCar<T>& system, int vehicle_number);
@@ -92,6 +101,11 @@ class AutomotiveSimulator {
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
   void AddPublisher(const SimpleCarToEulerFloatingJoint<T>& system,
+                    int vehicle_number);
+
+  /// Adds an LCM publisher for the given @p system.
+  /// @pre Start() has NOT been called.
+  void AddPublisher(const RoadCarToEulerFloatingJoint<T>& system,
                     int vehicle_number);
 
   /// Take ownership of the given @p system.
@@ -135,6 +149,9 @@ class AutomotiveSimulator {
   int allocate_vehicle_number();
   int AddSdfModel(const std::string& sdf_filename,
                   const SimpleCarToEulerFloatingJoint<T>*);
+
+  void AddSdfModel(const std::string& sdf_filename,
+                   const RoadCarToEulerFloatingJoint<T>*);
 
   // Connects the systems that output the pose of each vehicle to the
   // visualizer. This is done by using multiplexers to connect systems that
