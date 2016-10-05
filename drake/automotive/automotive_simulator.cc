@@ -7,6 +7,7 @@
 #include "drake/automotive/gen/driving_command_translator.h"
 #include "drake/automotive/gen/euler_floating_joint_state_translator.h"
 #include "drake/automotive/gen/simple_car_state_translator.h"
+#include "drake/automotive/maliput/utility/generate_urdf.h"
 #include "drake/automotive/simple_car.h"
 #include "drake/automotive/road_car_to_euler_floating_joint.h"
 #include "drake/automotive/simple_car_to_euler_floating_joint.h"
@@ -125,6 +126,23 @@ void AutomotiveSimulator<T>::AddTrajectoryRoadCar(
   AddPublisher(*trajectory_car, vehicle_number);
   AddPublisher(*coord_transform, vehicle_number);
   AddBoxcar(coord_transform);
+}
+
+template <typename T>
+void AutomotiveSimulator<T>::SetRoadGeometry(
+    std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road) {
+  DRAKE_DEMAND(!started_);
+  road_ = std::move(*road);
+
+  // TODO(maddog)  Uh, if someone calls this twice, how do we discard the
+  //               first road from the RBT?
+  const double kGridUnit = 1.;  // meter
+  maliput::utility::generate_urdf("/tmp", road_->id().id_,
+                                  road_.get(), kGridUnit);
+  std::string urdf_filepath = std::string("/tmp/") + road_->id().id_ + ".urdf";
+  parsers::urdf::AddModelInstanceFromUrdfFile(urdf_filepath,
+                                              rigid_body_tree_.get());
+  // NB:  The road doesn't move, so we don't need to connect anything to its joint.
 }
 
 

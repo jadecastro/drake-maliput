@@ -8,10 +8,10 @@ namespace utility {
 
 namespace api = maliput::geometry_api;
 
-
-void generate_obj(const api::RoadGeometry* rg,
-                  const std::string& filename,
-                  double grid_unit);
+void generate_urdf(const std::string& dirname,
+                   const std::string& fileroot,
+                   const api::RoadGeometry* rg,
+                   const double grid_unit);
 
 }  // namespace utility
 }  // namespace maliput

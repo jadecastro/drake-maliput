@@ -90,6 +90,12 @@ class AutomotiveSimulator {
       const maliput::geometry_api::RoadGeometry& road, double lateral_offset,
       double speed, double start_time);
 
+  /// Sets the RoadGeometry for this simulation.
+  /// (This simulation takes ownership of the RoadGeometry*.)
+  /// @pre Start() has NOT been called.
+  void SetRoadGeometry(
+      std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road);
+
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
   void AddPublisher(const SimpleCar<T>& system, int vehicle_number);
@@ -174,6 +180,7 @@ class AutomotiveSimulator {
       std::make_unique<RigidBodyTree<T>>()};
 
   std::unique_ptr<lcm::DrakeLcmInterface> lcm_{};
+  std::unique_ptr<const maliput::geometry_api::RoadGeometry> road_{};
 
   // === Start for building. ===
   std::unique_ptr<systems::DiagramBuilder<T>> builder_{
