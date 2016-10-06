@@ -63,6 +63,11 @@ struct DRAKEAUTOMOTIVE_EXPORT LanePosition {
 };
 
 struct DRAKEAUTOMOTIVE_EXPORT IsoLaneVelocity {
+  IsoLaneVelocity() {}
+
+  IsoLaneVelocity(double sigma_v, double rho_v, double eta_v)
+      : sigma_v_(sigma_v), rho_v_(rho_v), eta_v_(eta_v) {}
+
   double sigma_v_{};
   double rho_v_{};
   double eta_v_{};
@@ -70,7 +75,12 @@ struct DRAKEAUTOMOTIVE_EXPORT IsoLaneVelocity {
 
 
 struct DRAKEAUTOMOTIVE_EXPORT RoadPosition {
-  Lane* lane_;
+  RoadPosition() {}
+
+  RoadPosition(const Lane* lane, const LanePosition& pos)
+      : lane_(lane), pos_(pos) {}
+
+  const Lane* lane_;
   LanePosition pos_;
 };
 

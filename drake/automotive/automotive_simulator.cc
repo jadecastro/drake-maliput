@@ -8,6 +8,7 @@
 #include "drake/automotive/gen/euler_floating_joint_state_translator.h"
 #include "drake/automotive/gen/simple_car_state_translator.h"
 #include "drake/automotive/maliput/utility/generate_urdf.h"
+#include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/automotive/simple_car.h"
 #include "drake/automotive/road_car_to_euler_floating_joint.h"
 #include "drake/automotive/simple_car_to_euler_floating_joint.h"
@@ -142,7 +143,14 @@ void AutomotiveSimulator<T>::SetRoadGeometry(
   std::string urdf_filepath = std::string("/tmp/") + road_->id().id_ + ".urdf";
   parsers::urdf::AddModelInstanceFromUrdfFile(urdf_filepath,
                                               rigid_body_tree_.get());
-  // NB:  The road doesn't move, so we don't need to connect anything to its joint.
+  // NB: The road doesn't move, so we don't need to connect anything
+  // to its joint.
+
+  maliput::utility::InfiniteCircuitRoad(
+      {"ForeverRoad"}, road_.get(),
+      { road_->junction(0)->segment(0)->lane(0),
+            maliput::geometry_api::LaneEnd::kStart });
+
 }
 
 

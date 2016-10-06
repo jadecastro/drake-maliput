@@ -16,6 +16,7 @@ DEFINE_string(map_file, "",
               "yaml input file defining a maliput monolane road geometry");
 DEFINE_string(road_yaml_file, "",
               "yaml input file defining a maliput monolane road geometry");
+DEFINE_int32(num_circuit_car, 1, "Number of InfiniteCircuitCar vehicles");
 
 namespace drake {
 namespace automotive {
@@ -70,6 +71,9 @@ int main(int argc, char* argv[]) {
     std::cerr << "building road from " << FLAGS_road_yaml_file << std::endl;
     auto road = maliput::monolane::LoadFile(FLAGS_road_yaml_file);
     simulator->SetRoadGeometry(&road);
+  }
+  if (FLAGS_num_circuit_car) {
+    // TODO(maddog)  create appropriate cars, etc.
   }
 
   simulator->Start();
