@@ -71,50 +71,55 @@ const mono::Connection* maybe_make_connection(
   if (it_start == xyzpoints.end()) { return nullptr; }
 
   // Discover segment type.
-  bool forced_end = false;
-  auto it_fe = xyzpoints.end();
-  enum SegmentType{ line, arc } segment_type{};
+  bool explicit_end = false;
+  auto it_ee = xyzpoints.end();
+  enum SegmentType{ kLine, kArc } segment_type{};
   for (const auto& kv : node) {
     std::string key = kv.first.as<std::string>();
 
     if (key == "length") {
-      segment_type = line;
+      segment_type = kLine;
     } else if (key == "arc") {
-      segment_type = arc;
-    } else if (key == "forced_end") {
-      forced_end = true;
+      segment_type = kArc;
+    } else if (key == "explicit_end") {
+      explicit_end = true;
       // More symbol resolution.
       // TODO(rico): fold this and above into a function.
-      auto fe_symbol = node["forced_end"].as<std::string>();
-      it_fe = xyzpoints.find(fe_symbol);
-      if (it_fe == xyzpoints.end()) { return nullptr; }
+      auto ee_symbol = node["explicit_end"].as<std::string>();
+      it_ee = xyzpoints.find(ee_symbol);
+      if (it_ee == xyzpoints.end()) {
+        // Skip this connection for now; maybe we can resolve this later.
+        return nullptr;
+      }
     }
   }
+  // TODO(maddog)  Ensure explicit_end and z_end are mutually exclusive.
 
   // Call appropriate method.
   switch (segment_type) {
-    case line: {
-      if (forced_end) {
+    case kLine: {
+      if (explicit_end) {
         return builder->Connect(
-            id, it_start->second, node["length"].as<double>(), it_fe->second);
+            id, it_start->second, node["length"].as<double>(), it_ee->second);
       } else {
         return builder->Connect(
             id, it_start->second, node["length"].as<double>(),
             zpoint(node["z_end"]));
       }
     }
-    case arc: {
-      if (forced_end) {
+    case kArc: {
+      if (explicit_end) {
         return builder->Connect(id, it_start->second, arc_offset(node["arc"]),
-                                it_fe->second);
+                                it_ee->second);
       } else {
         return builder->Connect(id, it_start->second, arc_offset(node["arc"]),
                                 zpoint(node["z_end"]));
       }
     }
+    default: {
+      DRAKE_ABORT();
+    }
   }
-
-  return nullptr;
 }
 
 
@@ -155,8 +160,13 @@ std::unique_ptr<const api::RoadGeometry> BuildFrom(YAML::Node node) {
       std::string id = r.first;
       const mono::Connection* conn =
           maybe_make_connection(id, r.second, xyzpoints, &b);
-      if (!conn) { continue; }
+      if (!conn) {
+        std::cerr << "...skipping '" << id << "'" << std::endl;
+        continue;
+      }
+      std::cerr << "...cooked '" << id << "'" << std::endl;
       cooked_connections[id] = conn;
+      xyzpoints[std::string("connections.") + id + ".start"] = conn->start();
       xyzpoints[std::string("connections.") + id + ".end"] = conn->end();
     }
     DRAKE_DEMAND(cooked_connections.size() > cooked_before_this_pass);

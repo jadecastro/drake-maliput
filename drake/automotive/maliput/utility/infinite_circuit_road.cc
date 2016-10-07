@@ -1,6 +1,7 @@
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 
 #include <cmath>
+#include <iostream>
 
 #include "drake/automotive/maliput/monolane/branch_point.h"
 #include "drake/automotive/maliput/monolane/ignore.h"
@@ -44,16 +45,26 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
   api::LaneEnd current = start;
 
   while (!seen_lane_index.count(current.lane_)) {
+    std::cerr << "walk lane " << current.lane_->id().id_
+              << "  end " << current.end_
+              << "   length " << current.lane_->length() << std::endl;
     const double end_s = start_s + current.lane_->length();
     seen_lane_index[current.lane_] = records_.size();
     records_.push_back(Record {
         current.lane_, start_s, end_s, (current.end_ == api::LaneEnd::kEnd)});
 
-    const api::SetOfLaneEnds* branches =
-        current.lane_->GetBranches(current.end_);
+    api::LaneEnd::Which other_end =
+        (current.end_ == api::LaneEnd::kStart) ?
+        api::LaneEnd::kEnd :
+        api::LaneEnd::kStart;
+    const api::SetOfLaneEnds* branches = current.lane_->GetBranches(other_end);
     DRAKE_DEMAND(branches->count() > 0);
     // Use the first branch every time == simple.
     current = branches->get(0);
+    std::cerr << branches->count() << " branches, "
+              << " 0 ---> lane " << current.lane_->id().id_
+              << ", end " << current.end_
+              << std::endl;
 
     start_s = end_s;
   }

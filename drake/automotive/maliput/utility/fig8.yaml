@@ -43,7 +43,4 @@ maliput_monolane_builder:
     7:
       start: "connections.6.end"
       length: 50
-      z_end: [0, 0, 0, 0]
-    
-        
-  
+      explicit_end: "connections.0.start"
