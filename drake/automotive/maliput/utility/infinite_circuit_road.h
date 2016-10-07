@@ -9,6 +9,7 @@
 #include "drake/automotive/maliput/geometry_api/junction.h"
 #include "drake/automotive/maliput/geometry_api/road_geometry.h"
 #include "drake/automotive/maliput/geometry_api/segment.h"
+#include "drake/automotive/maliput/geometry_api/state.h"
 
 #include "drake/common/drake_assert.h"
 
@@ -36,6 +37,9 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
                       const api::LaneEnd& start);
 
   virtual ~InfiniteCircuitRoad();
+
+  // Direct access to the sole Lane component.
+  const api::Lane* lane() const { return &lane_; }
 
  private:
   class Junction;

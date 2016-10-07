@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
     simulator->AddSimpleCarFromSdf(kSdfFile);
   }
   if (FLAGS_map_file.empty()) {
+#if 0
     for (int i = 0; i < FLAGS_num_trajectory_car; ++i) {
       const auto& params = CreateTrajectoryParams(i);
       simulator->AddTrajectoryCarFromSdf(kSdfFile,
@@ -52,25 +53,29 @@ int main(int argc, char* argv[]) {
                                          std::get<1>(params),
                                          std::get<2>(params));
     }
+#endif
   } else {
-    for (int i = 0; i < FLAGS_num_trajectory_car; ++i) {
-      auto road = maliput::monolane::LoadFile(FLAGS_map_file);
-      std::string obj_file = std::string("/tmp/") + road->id().id_ + ".obj";
-      maliput::utility::generate_obj(road.get(), obj_file, 1.);
-      // TODO(rico) jam the obj file path into RigidBodyTree for viz.
-
-      const auto& params = CreateTrajectoryRoadParams(*road, i);
-      simulator->AddTrajectoryRoadCar(
-          *std::get<0>(params),
-          std::get<1>(params),
-          std::get<2>(params),
-          std::get<3>(params));
-    }
+    DRAKE_ABORT();
+//XXX    for (int i = 0; i < FLAGS_num_trajectory_car; ++i) {
+//XXX      auto road = maliput::monolane::LoadFile(FLAGS_map_file);
+//XXX      std::string obj_file = std::string("/tmp/") + road->id().id_ + ".obj";
+//XXX      maliput::utility::generate_obj(road.get(), obj_file, 1.);
+//XXX      // TODO(rico) jam the obj file path into RigidBodyTree for viz.
+//XXX
+//XXX      const auto& params = CreateTrajectoryRoadParams(*road, i);
+//XXX      simulator->AddTrajectoryRoadCar(
+//XXX          *std::get<0>(params),
+//XXX          std::get<1>(params),
+//XXX          std::get<2>(params),
+//XXX          std::get<3>(params));
+//XXX    }
   }
   if (!FLAGS_road_yaml_file.empty()) {
     std::cerr << "building road from " << FLAGS_road_yaml_file << std::endl;
     auto road = maliput::monolane::LoadFile(FLAGS_road_yaml_file);
     simulator->SetRoadGeometry(&road);
+
+    simulator->AddEndlessRoadCar(0., 0., 1.);
   }
   if (FLAGS_num_circuit_car) {
     // TODO(maddog)  create appropriate cars, etc.

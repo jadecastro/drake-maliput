@@ -5,9 +5,11 @@
 #include <vector>
 
 #include "drake/automotive/curve2.h"
+#include "drake/automotive/endless_road_car_to_euler_floating_joint.h"
+#include "drake/automotive/endless_road_car.h"
 #include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/automotive/simple_car.h"
-#include "drake/automotive/road_car_to_euler_floating_joint.h"
 #include "drake/automotive/simple_car_to_euler_floating_joint.h"
 #include "drake/automotive/trajectory_car.h"
 #include "drake/lcm/drake_lcm_interface.h"
@@ -83,12 +85,19 @@ class AutomotiveSimulator {
                               const Curve2<double>& curve, double speed,
                               double start_time);
 
-  /// Adds a TrajectoryRoadCar system to this simulation, including its
+//XXX  /// Adds a TrajectoryRoadCar system to this simulation, including its
+//XXX  /// EulerFloatingJoint output.
+//XXX  /// @pre Start() has NOT been called.
+//XXX  void AddTrajectoryRoadCar(
+//XXX      const maliput::geometry_api::RoadGeometry& road, double lateral_offset,
+//XXX      double speed, double start_time);
+
+  /// Adds an EndlessRoadCar system to this simulation, including its
   /// EulerFloatingJoint output.
   /// @pre Start() has NOT been called.
-  void AddTrajectoryRoadCar(
-      const maliput::geometry_api::RoadGeometry& road, double lateral_offset,
-      double speed, double start_time);
+  /// @pre SetRoadGeometry() HAS been called.
+  void AddEndlessRoadCar(
+      double longitudinal_start, double lateral_offset, double speed);
 
   /// Sets the RoadGeometry for this simulation.
   /// (This simulation takes ownership of the RoadGeometry*.)
@@ -106,12 +115,16 @@ class AutomotiveSimulator {
 
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
+  void AddPublisher(const EndlessRoadCar<T>& system, int vehicle_number);
+
+  /// Adds an LCM publisher for the given @p system.
+  /// @pre Start() has NOT been called.
   void AddPublisher(const SimpleCarToEulerFloatingJoint<T>& system,
                     int vehicle_number);
 
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
-  void AddPublisher(const RoadCarToEulerFloatingJoint<T>& system,
+  void AddPublisher(const EndlessRoadCarToEulerFloatingJoint<T>& system,
                     int vehicle_number);
 
   /// Take ownership of the given @p system.
@@ -157,7 +170,7 @@ class AutomotiveSimulator {
                   const SimpleCarToEulerFloatingJoint<T>*);
 
   void AddSdfModel(const std::string& sdf_filename,
-                   const RoadCarToEulerFloatingJoint<T>*);
+                   const EndlessRoadCarToEulerFloatingJoint<T>*);
 
   // Connects the systems that output the pose of each vehicle to the
   // visualizer. This is done by using multiplexers to connect systems that
@@ -181,6 +194,8 @@ class AutomotiveSimulator {
 
   std::unique_ptr<lcm::DrakeLcmInterface> lcm_{};
   std::unique_ptr<const maliput::geometry_api::RoadGeometry> road_{};
+  std::unique_ptr<const maliput::utility::InfiniteCircuitRoad> endless_road_{};
+  EndlessRoadCar<T>* THE_ENDLESS_ROAD_CAR_{};
 
   // === Start for building. ===
   std::unique_ptr<systems::DiagramBuilder<T>> builder_{

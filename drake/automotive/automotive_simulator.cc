@@ -4,13 +4,15 @@
 
 #include <lcm/lcm-cpp.hpp>
 
+#include "drake/automotive/endless_road_car.h"
+#include "drake/automotive/endless_road_car_to_euler_floating_joint.h"
 #include "drake/automotive/gen/driving_command_translator.h"
+#include "drake/automotive/gen/endless_road_car_state_translator.h"
 #include "drake/automotive/gen/euler_floating_joint_state_translator.h"
 #include "drake/automotive/gen/simple_car_state_translator.h"
 #include "drake/automotive/maliput/utility/generate_urdf.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/automotive/simple_car.h"
-#include "drake/automotive/road_car_to_euler_floating_joint.h"
 #include "drake/automotive/simple_car_to_euler_floating_joint.h"
 #include "drake/automotive/trajectory_car.h"
 #include "drake/common/drake_throw.h"
@@ -105,26 +107,25 @@ int AutomotiveSimulator<T>::AddTrajectoryCarFromSdf(
   return AddSdfModel(sdf_filename, coord_transform);
 }
 
+
 template <typename T>
-void AutomotiveSimulator<T>::AddTrajectoryRoadCar(
-    const maliput::geometry_api::RoadGeometry& road, double lateral_offset,
-    double speed, double start_time){
+void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
+                                               double lateral_offset,
+                                               double speed) {
   DRAKE_DEMAND(!started_);
+  DRAKE_DEMAND(endless_road_.get()); // TODO(maddog)  Why is the get() needed?
   const int vehicle_number = allocate_vehicle_number();
 
-  // The internal trajectory car just forever pursues the X axis.
-  auto curve = Curve2<double>({
-      {0, 0},
-      {std::numeric_limits<double>::infinity(), 0},
-    });
-  auto trajectory_car = builder_->template AddSystem<TrajectoryCar<T>>(
-      curve, speed, start_time);
+  auto endless_road_car = builder_->template AddSystem<EndlessRoadCar<T>>(
+      endless_road_.get(), longitudinal_start, lateral_offset, speed);
   auto coord_transform =
-      builder_->template AddSystem<RoadCarToEulerFloatingJoint<T>>(
-          road, lateral_offset);
+      builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
+          endless_road_.get());
 
-  builder_->Connect(*trajectory_car, *coord_transform);
-  AddPublisher(*trajectory_car, vehicle_number);
+  THE_ENDLESS_ROAD_CAR_ = endless_road_car;
+
+  builder_->Connect(*endless_road_car, *coord_transform);
+  AddPublisher(*endless_road_car, vehicle_number);
   AddPublisher(*coord_transform, vehicle_number);
   AddBoxcar(coord_transform);
 }
@@ -134,7 +135,7 @@ void AutomotiveSimulator<T>::SetRoadGeometry(
     std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road) {
   DRAKE_DEMAND(!started_);
   road_ = std::move(*road);
-
+#if 0
   // TODO(maddog)  Uh, if someone calls this twice, how do we discard the
   //               first road from the RBT?
   const double kGridUnit = 1.;  // meter
@@ -145,12 +146,12 @@ void AutomotiveSimulator<T>::SetRoadGeometry(
                                               rigid_body_tree_.get());
   // NB: The road doesn't move, so we don't need to connect anything
   // to its joint.
-
-  maliput::utility::InfiniteCircuitRoad(
-      {"ForeverRoad"}, road_.get(),
-      { road_->junction(0)->segment(0)->lane(0),
-            maliput::geometry_api::LaneEnd::kStart });
-
+#endif
+  endless_road_ = std::make_unique<maliput::utility::InfiniteCircuitRoad>(
+      maliput::geometry_api::RoadGeometryId({"ForeverRoad"}),
+      road_.get(),
+      maliput::geometry_api::LaneEnd(road_->junction(0)->segment(0)->lane(0),
+                                     maliput::geometry_api::LaneEnd::kStart));
 }
 
 
@@ -174,7 +175,7 @@ int AutomotiveSimulator<T>::AddSdfModel(
 template <typename T>
 void AutomotiveSimulator<T>::AddSdfModel(
     const std::string& sdf_filename,
-    const RoadCarToEulerFloatingJoint<T>* coord_transform) {
+    const EndlessRoadCarToEulerFloatingJoint<T>* coord_transform) {
   const parsers::ModelInstanceIdTable table =
       parsers::sdf::AddModelInstancesFromSdfFileInWorldFrame(
           sdf_filename, kRollPitchYaw, rigid_body_tree_.get());
@@ -212,6 +213,18 @@ void AutomotiveSimulator<T>::AddPublisher(const TrajectoryCar<T>& system,
 }
 
 template <typename T>
+void AutomotiveSimulator<T>::AddPublisher(const EndlessRoadCar<T>& system,
+                                          int vehicle_number) {
+  DRAKE_DEMAND(!started_);
+  static const EndlessRoadCarStateTranslator translator;
+  auto publisher =
+      builder_->template AddSystem<systems::lcm::LcmPublisherSystem>(
+          std::to_string(vehicle_number) + "_ENDLESS_ROAD_CAR_STATE",
+          translator, lcm_.get());
+  builder_->Connect(system, *publisher);
+}
+
+template <typename T>
 void AutomotiveSimulator<T>::AddPublisher(
     const SimpleCarToEulerFloatingJoint<T>& system, int vehicle_number) {
   DRAKE_DEMAND(!started_);
@@ -225,7 +238,7 @@ void AutomotiveSimulator<T>::AddPublisher(
 
 template <typename T>
 void AutomotiveSimulator<T>::AddPublisher(
-    const RoadCarToEulerFloatingJoint<T>& system,
+    const EndlessRoadCarToEulerFloatingJoint<T>& system,
     int vehicle_number) {
   DRAKE_DEMAND(!started_);
   static const EulerFloatingJointStateTranslator translator;
@@ -389,6 +402,20 @@ void AutomotiveSimulator<T>::ConnectJointStateSourcesToVisualizer() {
 template <typename T>
 void AutomotiveSimulator<T>::Start() {
   DRAKE_DEMAND(!started_);
+  // TODO(maddog)  This is hackery.
+  // After all the moving parts (boxcars) have been added finally add
+  // the static road (if any) to the RBT.
+  if (road_) {
+    const double kGridUnit = 1.;  // meter
+    maliput::utility::generate_urdf("/tmp", road_->id().id_,
+                                    road_.get(), kGridUnit);
+    std::string urdf_filepath = std::string("/tmp/") + road_->id().id_ + ".urdf";
+    parsers::urdf::AddModelInstanceFromUrdfFile(urdf_filepath,
+                                                rigid_body_tree_.get());
+    // NB: The road doesn't move, so we don't need to connect anything
+    // to its joint.
+  }
+
   // By this time, all model instances should have been added to the tree. Thus,
   // it should be safe to compile the tree.
   rigid_body_tree_->compile();
@@ -397,6 +424,24 @@ void AutomotiveSimulator<T>::Start() {
 
   diagram_ = builder_->Build();
   simulator_ = std::make_unique<systems::Simulator<T>>(*diagram_);
+
+  // TODO(maddog) HACKERY.
+  {
+    systems::Context<T>* context =
+        diagram_->GetMutableSubsystemContext(simulator_->get_mutable_context(),
+                                             THE_ENDLESS_ROAD_CAR_);
+
+    systems::VectorBase<T>* context_state =
+        context->get_mutable_continuous_state()->get_mutable_state();
+    EndlessRoadCarState<T>* const state =
+        dynamic_cast<EndlessRoadCarState<T>*>(context_state);
+    DRAKE_ASSERT(state);
+    state->set_s(0.);
+    state->set_r(-2.);
+    state->set_sigma_dot(1.);
+    state->set_rho_dot(0.);
+  }
+
   lcm_->StartReceiveThread();
 
   simulator_->Initialize();
