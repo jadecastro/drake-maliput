@@ -175,6 +175,20 @@ void Builder::AttachBranchPoint(
     RoadGeometry* rg,
     std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder>* bp_map) const {
   BranchPoint* bp = FindOrCreateBranchPoint(point, rg, bp_map);
+  // Tell the lane about its branch-point.
+  switch (end) {
+    case api::LaneEnd::kStart: {
+      lane->SetStartBp(bp);
+      break;
+    }
+    case api::LaneEnd::kEnd: {
+      lane->SetEndBp(bp);
+      break;
+    }
+    default: { DRAKE_ABORT(); }
+  }
+  // Now, tell the branch-point about the lane.
+  //
   // Is this the first lane-end added to the branch-point?
   // If so, just stick it on Side-A.
   // (NB: We just test size of A-Side, since A-Side is always populated first.)
@@ -195,18 +209,6 @@ void Builder::AttachBranchPoint(
     bp->AddABranch({lane, end});
   } else {
     bp->AddBBranch({lane, end});
-  }
-  // Make sure the lane knows its branch-points, too!
-  switch (end) {
-    case api::LaneEnd::kStart: {
-      lane->SetStartBp(bp);
-      break;
-    }
-    case api::LaneEnd::kEnd: {
-      lane->SetEndBp(bp);
-      break;
-    }
-    default: { DRAKE_ABORT(); }
   }
 }
 
