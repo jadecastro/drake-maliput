@@ -22,9 +22,11 @@ api::RBounds rbounds(const YAML::Node& node) {
   return {node[0].as<double>(), node[1].as<double>()};
 }
 
+
 double d2r(double degrees) {
   return degrees * M_PI / 180.;
 }
+
 
 mono::XYPoint xypoint(const YAML::Node& node) {
   DRAKE_DEMAND(node.IsSequence());
@@ -32,6 +34,7 @@ mono::XYPoint xypoint(const YAML::Node& node) {
   return {
     node[0].as<double>(), node[1].as<double>(), d2r(node[2].as<double>())};
 }
+
 
 mono::ZPoint zpoint(const YAML::Node& node) {
   DRAKE_DEMAND(node.IsSequence());
@@ -41,12 +44,18 @@ mono::ZPoint zpoint(const YAML::Node& node) {
         d2r(node[2].as<double>()), d2r(node[3].as<double>())};
 }
 
+
+mono::XYZPoint xyzpoint(const YAML::Node& node) {
+  DRAKE_DEMAND(node.IsMap());
+  return {xypoint(node["xypoint"]), zpoint(node["zpoint"])};
+}
+
+
 mono::ArcOffset arc_offset(const YAML::Node& node) {
   DRAKE_DEMAND(node.IsSequence());
   DRAKE_DEMAND(node.size() == 2);
   return {node[0].as<double>(), d2r(node[1].as<double>())};
 }
-
 
 
 const mono::Connection* maybe_make_connection(
@@ -108,10 +117,6 @@ const mono::Connection* maybe_make_connection(
   return nullptr;
 }
 
-mono::XYZPoint xyzpoint(const YAML::Node& node) {
-  DRAKE_DEMAND(node.IsMap());
-  return {xypoint(node["xypoint"]), zpoint(node["zpoint"])};
-}
 
 std::unique_ptr<const api::RoadGeometry> BuildFrom(YAML::Node node) {
   DRAKE_DEMAND(node.IsMap());
@@ -164,7 +169,8 @@ std::unique_ptr<const api::RoadGeometry> BuildFrom(YAML::Node node) {
   return b.Build({mmb["id"].Scalar()});
 }
 
-}
+}  // namespace
+
 
 namespace maliput {
 namespace monolane {
@@ -172,6 +178,7 @@ namespace monolane {
 std::unique_ptr<const api::RoadGeometry> Load(const std::string& input) {
   return BuildFrom(YAML::Load(input));
 }
+
 
 std::unique_ptr<const api::RoadGeometry> LoadFile(const std::string& filename) {
   return BuildFrom(YAML::LoadFile(filename));
