@@ -6,3 +6,6 @@ target_link_libraries(monolane_lanes_test drakeAutomotive)
 
 drake_add_cc_test(monolane_mathiness_test)
 target_link_libraries(monolane_mathiness_test drakeAutomotive)
+
+drake_add_cc_test(monolane_builder_test)
+target_link_libraries(monolane_builder_test drakeAutomotive)

@@ -143,7 +143,7 @@ double HeadingIntoLane(const api::Lane* const lane,
       return lane->GetOrientation({0., 0., 0.}).yaw_;
     }
     case api::LaneEnd::kEnd: {
-      return -lane->GetOrientation({lane->length(), 0., 0.}).yaw_;
+      return lane->GetOrientation({lane->length(), 0., 0.}).yaw_ + M_PI;
     }
     default: { DRAKE_ABORT(); }
   }
@@ -196,16 +196,15 @@ void Builder::AttachBranchPoint(
     bp->AddABranch({lane, end});
     return;
   }
-  // Otherwise, assess if this new lane-end is parallel or
-  // anti-parallel to the first lane-end.  Parallel: go to same,
-  // A-side; anti-parallel: other, B-side.  Do this by examining
-  // dot-product of heading vectors (rather than goofing around with
-  // cyclic angle arithmetic).
+  // Otherwise, assess if this new lane-end is parallel or anti-parallel to
+  // the first lane-end.  Parallel: go to same, A-side; anti-parallel:
+  // other, B-side.  Do this by examining dot-product of heading vectors
+  // (rather than goofing around with cyclic angle arithmetic).
   const double new_h = HeadingIntoLane(lane, end);
   const api::LaneEnd old_le = bp->GetASide()->get(0);
   const double old_h = HeadingIntoLane(old_le.lane_, old_le.end_);
   if (((std::cos(new_h) * std::cos(old_h)) +
-       (std::sin(new_h) * std::cos(old_h))) > 0.) {
+       (std::sin(new_h) * std::sin(old_h))) > 0.) {
     bp->AddABranch({lane, end});
   } else {
     bp->AddBBranch({lane, end});
