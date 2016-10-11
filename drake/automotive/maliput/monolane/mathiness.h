@@ -125,6 +125,11 @@ class DRAKEAUTOMOTIVE_EXPORT CubicPolynomial {
     return s_1_ * p;
   }
 
+  double fake_gprime(double p) const {
+    // return df;  which is...
+    return f_p(1.) - f_p(0.);
+  }
+
   double p_s(double s) const {
     return s / s_1_;
   }

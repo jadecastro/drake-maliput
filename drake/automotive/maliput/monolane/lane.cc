@@ -52,7 +52,9 @@ double Lane::p_from_s_(const double s) const {
 V3 Lane::W_prime_of_prh_(const double p, const double r, const double h,
                          const Rot3& gba) const {
   const V2 G_prime = xy_dot_of_p_(p);
+  // TODO(maddog)  Until s(p) is integrated properly.
   const double g_prime = elevation().fdot_p(p);
+  //const double g_prime = elevation().fake_gprime(p);
 
   const Rot3& R = gba;
   const double alpha = R.roll;
@@ -156,7 +158,9 @@ void Lane::DoEvalMotionDerivatives(
   const double r = position.r_;
   const double h = position.h_;
 
-  const double g_prime = elevation().fdot_p(p);
+  // TODO(maddog)  Until s(p) is integrated properly.
+  // const double g_prime = elevation().fdot_p(p);
+  const double g_prime = elevation().fake_gprime(p);
 
   const Rot3 R = rot3_of_p_(p);
   const V3 W_prime = W_prime_of_prh_(p, r, h, R);
