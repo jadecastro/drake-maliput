@@ -122,7 +122,13 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
       builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
           endless_road_.get());
 
-  THE_ENDLESS_ROAD_CAR_ = endless_road_car;
+  // Save the desired initial state in order to initialize the Simulator later,
+  // when we have a Simulator to initialize.
+  EndlessRoadCarState<T>& initial_state = endless_road_cars_[endless_road_car];
+  initial_state.set_s(longitudinal_start);
+  initial_state.set_r(lateral_offset);
+  initial_state.set_sigma_dot(speed);
+  initial_state.set_rho_dot(0.);
 
   builder_->Connect(*endless_road_car, *coord_transform);
   AddPublisher(*endless_road_car, vehicle_number);
@@ -131,27 +137,17 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
 }
 
 template <typename T>
-void AutomotiveSimulator<T>::SetRoadGeometry(
+const maliput::utility::InfiniteCircuitRoad*
+AutomotiveSimulator<T>::SetRoadGeometry(
     std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road) {
   DRAKE_DEMAND(!started_);
   road_ = std::move(*road);
-#if 0
-  // TODO(maddog)  Uh, if someone calls this twice, how do we discard the
-  //               first road from the RBT?
-  const double kGridUnit = 1.;  // meter
-  maliput::utility::generate_urdf("/tmp", road_->id().id_,
-                                  road_.get(), kGridUnit);
-  std::string urdf_filepath = std::string("/tmp/") + road_->id().id_ + ".urdf";
-  parsers::urdf::AddModelInstanceFromUrdfFile(urdf_filepath,
-                                              rigid_body_tree_.get());
-  // NB: The road doesn't move, so we don't need to connect anything
-  // to its joint.
-#endif
   endless_road_ = std::make_unique<maliput::utility::InfiniteCircuitRoad>(
       maliput::geometry_api::RoadGeometryId({"ForeverRoad"}),
       road_.get(),
       maliput::geometry_api::LaneEnd(road_->junction(0)->segment(0)->lane(0),
                                      maliput::geometry_api::LaneEnd::kStart));
+  return endless_road_.get();
 }
 
 
@@ -402,7 +398,7 @@ void AutomotiveSimulator<T>::ConnectJointStateSourcesToVisualizer() {
 template <typename T>
 void AutomotiveSimulator<T>::Start() {
   DRAKE_DEMAND(!started_);
-  // TODO(maddog)  This is hackery.
+  // TODO(maddog)  This seems like hackery.
   // After all the moving parts (boxcars) have been added finally add
   // the static road (if any) to the RBT.
   if (road_) {
@@ -425,21 +421,21 @@ void AutomotiveSimulator<T>::Start() {
   diagram_ = builder_->Build();
   simulator_ = std::make_unique<systems::Simulator<T>>(*diagram_);
 
-  // TODO(maddog) HACKERY.
-  {
+  // Initialize the state of the EndlessRoadCars.
+  for (auto& pair : endless_road_cars_) {
     systems::Context<T>* context =
         diagram_->GetMutableSubsystemContext(simulator_->get_mutable_context(),
-                                             THE_ENDLESS_ROAD_CAR_);
-
+                                             pair.first);
     systems::VectorBase<T>* context_state =
         context->get_mutable_continuous_state()->get_mutable_state();
     EndlessRoadCarState<T>* const state =
         dynamic_cast<EndlessRoadCarState<T>*>(context_state);
     DRAKE_ASSERT(state);
-    state->set_s(0.);
-    state->set_r(-2.);
-    state->set_sigma_dot(1.);
-    state->set_rho_dot(0.);
+    // TODO(maddog)  Is there a better way to copy all the fields?
+    state->set_s(pair.second.s());
+    state->set_r(pair.second.r());
+    state->set_sigma_dot(pair.second.sigma_dot());
+    state->set_rho_dot(pair.second.rho_dot());
   }
 
   lcm_->StartReceiveThread();

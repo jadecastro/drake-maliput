@@ -102,7 +102,7 @@ class AutomotiveSimulator {
   /// Sets the RoadGeometry for this simulation.
   /// (This simulation takes ownership of the RoadGeometry*.)
   /// @pre Start() has NOT been called.
-  void SetRoadGeometry(
+  const maliput::utility::InfiniteCircuitRoad* SetRoadGeometry(
       std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road);
 
   /// Adds an LCM publisher for the given @p system.
@@ -195,7 +195,7 @@ class AutomotiveSimulator {
   std::unique_ptr<lcm::DrakeLcmInterface> lcm_{};
   std::unique_ptr<const maliput::geometry_api::RoadGeometry> road_{};
   std::unique_ptr<const maliput::utility::InfiniteCircuitRoad> endless_road_{};
-  EndlessRoadCar<T>* THE_ENDLESS_ROAD_CAR_{};
+  std::map<EndlessRoadCar<T>*, EndlessRoadCarState<T>> endless_road_cars_;
 
   // === Start for building. ===
   std::unique_ptr<systems::DiagramBuilder<T>> builder_{

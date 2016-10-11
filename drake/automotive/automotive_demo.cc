@@ -1,5 +1,7 @@
+#include <chrono>
 #include <iostream>
 #include <memory>
+#include <thread>
 
 #include <gflags/gflags.h>
 
@@ -10,13 +12,14 @@
 #include "drake/common/drake_path.h"
 #include "drake/common/text_logging_gflags.h"
 
-DEFINE_int32(num_simple_car, 1, "Number of SimpleCar vehicles");
-DEFINE_int32(num_trajectory_car, 1, "Number of TrajectoryCar vehicles");
-DEFINE_string(map_file, "",
-              "yaml input file defining a maliput monolane road geometry");
-DEFINE_string(road_yaml_file, "",
-              "yaml input file defining a maliput monolane road geometry");
-DEFINE_int32(num_circuit_car, 1, "Number of InfiniteCircuitCar vehicles");
+DEFINE_string(road_file, "",
+              "yaml file defining a maliput monolane road geometry");
+// "Ego car" in this instance means "controlled by something smarter than
+// this demo code".
+DEFINE_int32(num_ego_car, 1, "Number of user-controlled vehicles");
+DEFINE_int32(num_ado_car, 1,
+             "Number of vehicles controlled by a "
+             "(possibly trivial) traffic model");
 
 namespace drake {
 namespace automotive {
@@ -27,8 +30,8 @@ int main(int argc, char* argv[]) {
   logging::HandleSpdlogGflags();
 
   // TODO(jwnimmer-tri) Allow for multiple simple cars.
-  if (FLAGS_num_simple_car > 1) {
-    std::cerr << "ERROR: Only one simple car is supported (for now)."
+  if (FLAGS_num_ego_car > 1) {
+    std::cerr << "ERROR: Only one user-controlled car is supported (for now)."
               << std::endl;
     return 1;
   }
@@ -41,50 +44,57 @@ int main(int argc, char* argv[]) {
   const std::string kSdfFile =
       GetDrakePath() + "/automotive/models/prius/prius_with_lidar.sdf";
   auto simulator = std::make_unique<AutomotiveSimulator<double>>();
-  for (int i = 0; i < FLAGS_num_simple_car; ++i) {
-    simulator->AddSimpleCarFromSdf(kSdfFile);
-  }
-  if (FLAGS_map_file.empty()) {
-#if 0
-    for (int i = 0; i < FLAGS_num_trajectory_car; ++i) {
+
+  if (FLAGS_road_file.empty()) {
+    // No road description has been specified.  So, we will run in
+    // "free-for-all on the xy-plane" mode.
+
+    // User-controlled vehicles are SimpleCars.
+    for (int i = 0; i < FLAGS_num_ego_car; ++i) {
+      simulator->AddSimpleCarFromSdf(kSdfFile);
+    }
+    // "Traffic model" is "drive in a figure-8".
+    for (int i = 0; i < FLAGS_num_ado_car; ++i) {
       const auto& params = CreateTrajectoryParams(i);
       simulator->AddTrajectoryCarFromSdf(kSdfFile,
                                          std::get<0>(params),
                                          std::get<1>(params),
                                          std::get<2>(params));
     }
-#endif
   } else {
-    DRAKE_ABORT();
-//XXX    for (int i = 0; i < FLAGS_num_trajectory_car; ++i) {
-//XXX      auto road = maliput::monolane::LoadFile(FLAGS_map_file);
-//XXX      std::string obj_file = std::string("/tmp/") + road->id().id_ + ".obj";
-//XXX      maliput::utility::generate_obj(road.get(), obj_file, 1.);
-//XXX      // TODO(rico) jam the obj file path into RigidBodyTree for viz.
-//XXX
-//XXX      const auto& params = CreateTrajectoryRoadParams(*road, i);
-//XXX      simulator->AddTrajectoryRoadCar(
-//XXX          *std::get<0>(params),
-//XXX          std::get<1>(params),
-//XXX          std::get<2>(params),
-//XXX          std::get<3>(params));
-//XXX    }
-  }
-  if (!FLAGS_road_yaml_file.empty()) {
-    std::cerr << "building road from " << FLAGS_road_yaml_file << std::endl;
-    auto road = maliput::monolane::LoadFile(FLAGS_road_yaml_file);
-    simulator->SetRoadGeometry(&road);
+    // A road description has been specified.  All vehicles will be constrained
+    // to drive on the specified road surface.
+    std::cerr << "building road from " << FLAGS_road_file << std::endl;
+    auto base_road = maliput::monolane::LoadFile(FLAGS_road_file);
+    const maliput::utility::InfiniteCircuitRoad* const endless_road =
+        simulator->SetRoadGeometry(&base_road);
 
-    simulator->AddEndlessRoadCar(0., 0., 1.);
-  }
-  if (FLAGS_num_circuit_car) {
-    // TODO(maddog)  create appropriate cars, etc.
+    // TODO(maddog) Implement user-controlled vehicles.
+
+    // TODO(maddog) Implement traffic models other than "just drive at
+    // constant speed".
+    for (int i = 0; i < FLAGS_num_ado_car; ++i) {
+      const double kConstantSpeed = 10.0;
+      const double kLateralOffsetUnit = -2.0;
+
+      const double longitudinal_start =
+          endless_road->cycle_length() * (i / 2) / FLAGS_num_ado_car * 2.;
+      const double lateral_offset =
+          (((i % 2) * 2) - 1) * kLateralOffsetUnit;
+      simulator->AddEndlessRoadCar(
+          longitudinal_start, lateral_offset, kConstantSpeed);
+    }
   }
 
   simulator->Start();
 
+  const double kTimeStep = 0.02;
+  std::chrono::time_point<std::chrono::steady_clock> desired_now =
+      std::chrono::steady_clock::now();
   while (true) {
-    simulator->StepBy(0.01);
+    desired_now += std::chrono::microseconds((int)(kTimeStep * 1e6));
+    std::this_thread::sleep_until(desired_now);
+    simulator->StepBy(kTimeStep);
   }
 
   return 0;

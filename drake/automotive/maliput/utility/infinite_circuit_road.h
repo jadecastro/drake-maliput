@@ -38,8 +38,12 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
 
   virtual ~InfiniteCircuitRoad();
 
-  // Direct access to the sole Lane component.
+  /// Return the sole Lane component emulated by this RoadGeometry.
   const api::Lane* lane() const { return &lane_; }
+
+  /// Return the actual length of a single cycle (despite the illusion that
+  /// the road is infinitely long).
+  double cycle_length() const { return lane_.cycle_length(); }
 
  private:
   class Junction;
@@ -52,6 +56,8 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
          const api::LaneEnd& start);
 
     virtual ~Lane();
+
+    double cycle_length() const { return cycle_length_; }
 
    private:
     const api::LaneId do_id() const override { return id_; }
