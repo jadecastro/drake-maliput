@@ -115,7 +115,7 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
                                                double speed,
                                                bool is_user_controlled) {
   DRAKE_DEMAND(!started_);
-  DRAKE_DEMAND(endless_road_.get()); // TODO(maddog)  Why is the get() needed?
+  DRAKE_DEMAND((bool)endless_road_);
   const int vehicle_number = allocate_vehicle_number();
 
   auto endless_road_car = builder_->template AddSystem<EndlessRoadCar<T>>(
@@ -133,7 +133,6 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
   initial_state.set_rho_dot(0.);
 
   if (is_user_controlled) {
-    // TODO(maddog)  'static', really?
     static const DrivingCommandTranslator driving_command_translator;
     auto command_subscriber =
         builder_->template AddSystem<systems::lcm::LcmSubscriberSystem>(
@@ -419,7 +418,8 @@ void AutomotiveSimulator<T>::Start() {
   DRAKE_DEMAND(!started_);
   // TODO(maddog)  This seems like hackery.
   // After all the moving parts (boxcars) have been added finally add
-  // the static road (if any) to the RBT.
+  // the static road (if any) to the RBT (otherwise the naive multiplexing
+  // gets mucked up?).
   if (road_) {
     const double kGridUnit = 1.;  // meter
     maliput::utility::generate_urdf("/tmp", road_->id().id_,
@@ -451,10 +451,8 @@ void AutomotiveSimulator<T>::Start() {
         dynamic_cast<EndlessRoadCarState<T>*>(context_state);
     DRAKE_ASSERT(state);
     // TODO(maddog)  Is there a better way to copy all the fields?
-    state->set_s(pair.second.s());
-    state->set_r(pair.second.r());
-    state->set_sigma_dot(pair.second.sigma_dot());
-    state->set_rho_dot(pair.second.rho_dot());
+    //               (I.e., until lcm_vector_gen.py makes an operator=()....)
+    state->set_value(pair.second.get_value());
   }
 
   lcm_->StartReceiveThread();

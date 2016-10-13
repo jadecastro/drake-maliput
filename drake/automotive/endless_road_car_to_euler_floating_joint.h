@@ -14,8 +14,9 @@ namespace automotive {
 template <typename T>
 class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
  public:
-  // TODO(maddog)  Is a nice way for this to get the RoadGeometry from
-  //               the connected car?
+  // TODO(maddog)  Is there a nice way for this to get the RoadGeometry from
+  //               the connected car?  (It will be a moot question once the
+  //               complete ROAD-state including Lane* is used.)
   EndlessRoadCarToEulerFloatingJoint(
       const maliput::utility::InfiniteCircuitRoad* road)
       : road_(road) {

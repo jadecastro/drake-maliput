@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     const maliput::utility::InfiniteCircuitRoad* const endless_road =
         simulator->SetRoadGeometry(&base_road);
 
-    // TODO(maddog) Implement user-controlled vehicles.
+    // User-controlled vehicles are EndlessRoadCars with DrivingCommand input.
     for (int i = 0; i < FLAGS_num_ego_car; ++i) {
       const double kConstantSpeed = 10.0;
       const double kLateralOffsetUnit = -2.0;
@@ -83,6 +83,7 @@ int main(int argc, char* argv[]) {
           longitudinal_start, lateral_offset, kConstantSpeed, true);
     }
 
+    // "Traffic model" is "drive at a constant LANE-space velocity".
     // TODO(maddog) Implement traffic models other than "just drive at
     // constant speed".
     for (int i = 0; i < FLAGS_num_ado_car; ++i) {
