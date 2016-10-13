@@ -21,6 +21,7 @@
 #include "drake/systems/analysis/simulator.h"
 #include "drake/systems/framework/diagram.h"
 #include "drake/systems/framework/diagram_builder.h"
+#include "drake/systems/framework/primitives/constant_value_source.h"
 #include "drake/systems/framework/primitives/constant_vector_source.h"
 #include "drake/systems/framework/primitives/multiplexer.h"
 #include "drake/systems/lcm/lcm_publisher_system.h"
@@ -111,13 +112,14 @@ int AutomotiveSimulator<T>::AddTrajectoryCarFromSdf(
 template <typename T>
 void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
                                                double lateral_offset,
-                                               double speed) {
+                                               double speed,
+                                               bool is_user_controlled) {
   DRAKE_DEMAND(!started_);
   DRAKE_DEMAND(endless_road_.get()); // TODO(maddog)  Why is the get() needed?
   const int vehicle_number = allocate_vehicle_number();
 
   auto endless_road_car = builder_->template AddSystem<EndlessRoadCar<T>>(
-      endless_road_.get(), longitudinal_start, lateral_offset, speed);
+      endless_road_.get(), !is_user_controlled);
   auto coord_transform =
       builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
           endless_road_.get());
@@ -129,6 +131,23 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
   initial_state.set_r(lateral_offset);
   initial_state.set_sigma_dot(speed);
   initial_state.set_rho_dot(0.);
+
+  if (is_user_controlled) {
+    // TODO(maddog)  'static', really?
+    static const DrivingCommandTranslator driving_command_translator;
+    auto command_subscriber =
+        builder_->template AddSystem<systems::lcm::LcmSubscriberSystem>(
+            "DRIVING_COMMAND", driving_command_translator, lcm_.get());
+      builder_->Connect(*command_subscriber, *endless_road_car);
+  } else {
+    // TODO(maddog)  Once ConstantVectorSource can preserve type info,
+    // perhaps something like this:
+    // No user input, so feed constant zero commands.
+    // auto zero_command =
+    //    builder_->template AddSystem<systems::ConstantValueSource>(
+    //        DrivingCommand<T>());
+    // builder_->Connect(*zero_command, *endless_road_car);
+  }
 
   builder_->Connect(*endless_road_car, *coord_transform);
   AddPublisher(*endless_road_car, vehicle_number);

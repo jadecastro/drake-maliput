@@ -70,6 +70,18 @@ int main(int argc, char* argv[]) {
         simulator->SetRoadGeometry(&base_road);
 
     // TODO(maddog) Implement user-controlled vehicles.
+    for (int i = 0; i < FLAGS_num_ego_car; ++i) {
+      const double kConstantSpeed = 10.0;
+      const double kLateralOffsetUnit = -2.0;
+
+      const double longitudinal_start =
+          endless_road->cycle_length() *
+          ((1.0 * (i / 2) / FLAGS_num_ego_car) + 0.5);
+      const double lateral_offset =
+          (((i % 2) * 2) - 1) * kLateralOffsetUnit;
+      simulator->AddEndlessRoadCar(
+          longitudinal_start, lateral_offset, kConstantSpeed, true);
+    }
 
     // TODO(maddog) Implement traffic models other than "just drive at
     // constant speed".
@@ -78,11 +90,11 @@ int main(int argc, char* argv[]) {
       const double kLateralOffsetUnit = -2.0;
 
       const double longitudinal_start =
-          endless_road->cycle_length() * (i / 2) / FLAGS_num_ado_car * 2.;
+          endless_road->cycle_length() * (i / 2) / FLAGS_num_ado_car;
       const double lateral_offset =
           (((i % 2) * 2) - 1) * kLateralOffsetUnit;
       simulator->AddEndlessRoadCar(
-          longitudinal_start, lateral_offset, kConstantSpeed);
+          longitudinal_start, lateral_offset, kConstantSpeed, false);
     }
   }
 

@@ -2,7 +2,9 @@
 
 #include <stdexcept>
 
+#include "drake/automotive/gen/driving_command.h"
 #include "drake/automotive/gen/endless_road_car_state.h"
+#include "drake/automotive/gen/simple_car_config.h"
 #include "drake/drakeAutomotive_export.h"
 #include "drake/systems/framework/leaf_system.h"
 
@@ -36,7 +38,12 @@ template <typename T>
 class EndlessRoadCar : public systems::LeafSystem<T> {
  public:
   EndlessRoadCar(const maliput::utility::InfiniteCircuitRoad* road,
-                 const double s0, const double r0, const double speed);
+                 bool ignore_input_jackass,
+                 const SimpleCarConfig<T>& config = get_default_config());
+
+  static SimpleCarConfig<T> get_default_config();
+
+  const SimpleCarConfig<T>& config() const { return config_; }
 
  public:
   // System<T> overrides
@@ -62,10 +69,12 @@ class EndlessRoadCar : public systems::LeafSystem<T> {
                     EndlessRoadCarState<T>*) const;
 
   void DoEvalTimeDerivatives(const EndlessRoadCarState<T>&,
+                             const DrivingCommand<T>&,
                              EndlessRoadCarState<T>*) const;
 
   const maliput::utility::InfiniteCircuitRoad* road_;
-  const double speed_;
+  const SimpleCarConfig<T> config_;
+  const bool ignore_input_jackass_;
 };
 
 }  // namespace automotive

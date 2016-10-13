@@ -57,7 +57,11 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
     output_data->set_z(geo.z_);
     output_data->set_roll(-rot.roll_); // TODO(maddog)  Why negative?????
     output_data->set_pitch(rot.pitch_);
-    output_data->set_yaw(rot.yaw_);
+
+    //////////////output_data->set_yaw(rot.yaw_);
+    // TODO(maddog)  HACKERY.  This math is certainly wrong.
+    output_data->set_yaw(rot.yaw_ + std::atan2(input_data->rho_dot(),
+                                               input_data->sigma_dot()));
   }
 
  protected:
