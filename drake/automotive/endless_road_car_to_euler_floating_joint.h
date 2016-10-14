@@ -50,19 +50,38 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
     maliput::geometry_api::LanePosition lp(
         input_data->s(), input_data->r(), 0.);
     maliput::geometry_api::GeoPosition geo = road_->lane()->ToGeoPosition(lp);
-    maliput::geometry_api::Rotation rot = road_->lane()->GetOrientation(lp);
-    // TODO(maddog)  Deal with (rho_dot != 0) and with (sigma_dot < 0).
-
     output_data->set_x(geo.x_);
     output_data->set_y(geo.y_);
     output_data->set_z(geo.z_);
-    output_data->set_roll(-rot.roll_); // TODO(maddog)  Why negative?????
-    output_data->set_pitch(rot.pitch_);
 
-    //////////////output_data->set_yaw(rot.yaw_);
-    // TODO(maddog)  HACKERY.  This math is certainly wrong.
-    output_data->set_yaw(rot.yaw_ + std::atan2(input_data->rho_dot(),
-                                               input_data->sigma_dot()));
+    // Simple treatment of orientation:  "car always points in the direction
+    // of its velocity vector", e.g., no slip, oversteeer, etc.
+    // Hence, we express forward-orientation of the car as a composition of
+    // two rotations:  rotation in sr-plane to align with velocity vector,
+    // followed by srh->xyz rotation of LANE-space orientation.
+    maliput::geometry_api::Rotation rot = road_->lane()->GetOrientation(lp);
+    // TODO(maddog)  Deal with (sigma_dot < 0).
+    const double theta = std::atan2(input_data->rho_dot(),
+                                    input_data->sigma_dot());
+    const double ct = std::cos(theta);
+    const double st = std::sin(theta);
+
+    const double ca = std::cos(rot.roll_);
+    const double sa = std::sin(rot.roll_);
+    const double cb = std::cos(rot.pitch_);
+    const double sb = std::sin(rot.pitch_);
+    const double cg = std::cos(rot.yaw_);
+    const double sg = std::sin(rot.yaw_);
+
+    const double A = ct*(cb*cg) + st*(-ca*sg + sa*sb*cg);
+    const double B = ct*(cb*sg) + st*(ca*cg + sa*sb*sg);
+    const double C = -ct*(sb) + st*(sa*cb);
+    const double D = st*(sb) + ct*(sa*cb);
+    const double E = ca*cb;
+
+    output_data->set_yaw(std::atan2(B, A));
+    output_data->set_pitch(std::atan2(-C, std::sqrt(D*D + E*E)));
+    output_data->set_roll(std::atan2(D, E));
   }
 
  protected:
