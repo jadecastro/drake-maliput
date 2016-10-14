@@ -140,10 +140,10 @@ double HeadingIntoLane(const api::Lane* const lane,
                        const api::LaneEnd::Which end) {
   switch (end) {
     case api::LaneEnd::kStart: {
-      return lane->GetOrientation({0., 0., 0.}).yaw_;
+      return lane->GetOrientation({0., 0., 0.}).yaw;
     }
     case api::LaneEnd::kFinish: {
-      return lane->GetOrientation({lane->length(), 0., 0.}).yaw_ + M_PI;
+      return lane->GetOrientation({lane->length(), 0., 0.}).yaw + M_PI;
     }
     default: { DRAKE_ABORT(); }
   }
@@ -202,7 +202,7 @@ void Builder::AttachBranchPoint(
   // (rather than goofing around with cyclic angle arithmetic).
   const double new_h = HeadingIntoLane(lane, end);
   const api::LaneEnd old_le = bp->GetASide()->get(0);
-  const double old_h = HeadingIntoLane(old_le.lane_, old_le.end_);
+  const double old_h = HeadingIntoLane(old_le.lane, old_le.end);
   if (((std::cos(new_h) * std::cos(old_h)) +
        (std::sin(new_h) * std::sin(old_h))) > 0.) {
     bp->AddABranch({lane, end});
@@ -300,7 +300,7 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
 
   for (auto& grp : groups_) {
     Junction* junction = rg->NewJunction({std::string("j:") + grp->id()});
-    std::cout << "jnx: " << junction->id().id_ << std::endl;
+    std::cout << "jnx: " << junction->id().id << std::endl;
     for (auto& cnx : grp->connections()) {
       std::cout << "cnx: " << cnx->id() << std::endl;
       remaining_connections.erase(cnx);
@@ -310,7 +310,7 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
 
   for (auto& cnx : remaining_connections) {
     Junction* junction = rg->NewJunction({std::string("j:") + cnx->id()});
-    std::cout << "jnx: " << junction->id().id_ << std::endl;
+    std::cout << "jnx: " << junction->id().id << std::endl;
     std::cout << "cnx: " << cnx->id() << std::endl;
     lane_map[cnx] = BuildConnection(cnx, junction, rg.get(), &bp_map);
   }

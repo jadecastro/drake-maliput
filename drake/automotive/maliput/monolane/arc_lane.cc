@@ -39,7 +39,7 @@ double ArcLane::heading_dot_of_p_(const double p) const {
 
 api::LanePosition ArcLane::DoToLanePosition(
     const api::GeoPosition& geo_pos) const {
-  ignore(geo_pos.x_);  // TODO(maddog) temp warning quashing
+  ignore(geo_pos.x);  // TODO(maddog) temp warning quashing
   DRAKE_ABORT();  // TODO(maddog) Implement me.
 }
 

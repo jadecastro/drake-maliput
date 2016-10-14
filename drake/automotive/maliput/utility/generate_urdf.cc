@@ -26,7 +26,7 @@ void DRAKEAUTOMOTIVE_EXPORT generate_urdf(const std::string& dirname,
 
   std::ofstream os(dirname + "/" + fileroot + ".urdf");
   os << "<?xml version=\"1.0\" ?>" << std::endl;
-  os << "<robot name=\"" << rg->id().id_ << "\">" << std::endl;
+  os << "<robot name=\"" << rg->id().id << "\">" << std::endl;
   os << "  <link name=\"world\"/>" << std::endl;
   os << std::endl;
   os << "  <joint name=\"world_to_road_joint\" type=\"continuous\">" << std::endl;

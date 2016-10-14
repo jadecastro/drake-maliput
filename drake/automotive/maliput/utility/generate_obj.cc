@@ -55,19 +55,19 @@ class DRAKEAUTOMOTIVE_EXPORT IndexMap {
 struct DRAKEAUTOMOTIVE_EXPORT GeoVertex {
   GeoVertex() {}
 
-  explicit GeoVertex(const api::GeoPosition& v) : v_(v) {}
+  explicit GeoVertex(const api::GeoPosition& _v) : v(_v) {}
 
   void printt(std::ostream& os) const {
-    os << "v:" << v_.x_ << " " << v_.y_ << " " << v_.z_ << std::endl;
+    os << "v:" << v.x << " " << v.y << " " << v.z << std::endl;
   }
 
-  api::GeoPosition v_;
+  api::GeoPosition v;
 };
 
 bool operator==(const GeoVertex& lhs, const GeoVertex& rhs) {
-  return ((lhs.v_.x_ == rhs.v_.x_) &&
-          (lhs.v_.y_ == rhs.v_.y_) &&
-          (lhs.v_.z_ == rhs.v_.z_));
+  return ((lhs.v.x == rhs.v.x) &&
+          (lhs.v.y == rhs.v.y) &&
+          (lhs.v.z == rhs.v.z));
 }
 
 
@@ -76,19 +76,19 @@ struct GeoNormal {
   GeoNormal() {}
 
   GeoNormal(const api::GeoPosition& v0, const api::GeoPosition& v1)
-      : n_({v1.x_ - v0.x_, v1.y_ - v0.y_, v1.z_ - v0.z_}) {}
+      : n({v1.x - v0.x, v1.y - v0.y, v1.z - v0.z}) {}
 
   void printt(std::ostream& os) const {
-    os << "vn: " << n_.x_ << " " << n_.y_ << " " << n_.z_ << std::endl;
+    os << "vn: " << n.x << " " << n.y << " " << n.z << std::endl;
   }
 
-  api::GeoPosition n_;
+  api::GeoPosition n;
 };
 
 bool operator==(const GeoNormal& lhs, const GeoNormal& rhs) {
-  return ((lhs.n_.x_ == rhs.n_.x_) &&
-          (lhs.n_.y_ == rhs.n_.y_) &&
-          (lhs.n_.z_ == rhs.n_.z_));
+  return ((lhs.n.x == rhs.n.x) &&
+          (lhs.n.y == rhs.n.y) &&
+          (lhs.n.z == rhs.n.z));
 }
 
 
@@ -98,9 +98,9 @@ template<> struct LocalHash<GeoVertex> {
   typedef GeoVertex argument_type;
   typedef size_t result_type;
   result_type operator()(const argument_type& gv) const {
-    const result_type hx(std::hash<double>()(gv.v_.x_));
-    const result_type hy(std::hash<double>()(gv.v_.y_));
-    const result_type hz(std::hash<double>()(gv.v_.z_));
+    const result_type hx(std::hash<double>()(gv.v.x));
+    const result_type hy(std::hash<double>()(gv.v.y));
+    const result_type hz(std::hash<double>()(gv.v.z));
     return hx ^ (hy << 1) ^ (hz << 2);
   }
 };
@@ -108,9 +108,9 @@ template<> struct LocalHash<GeoNormal> {
   typedef GeoNormal argument_type;
   typedef size_t result_type;
   result_type operator()(const argument_type& gn) const {
-    const result_type hx(std::hash<double>()(gn.n_.x_));
-    const result_type hy(std::hash<double>()(gn.n_.y_));
-    const result_type hz(std::hash<double>()(gn.n_.z_));
+    const result_type hx(std::hash<double>()(gn.n.x));
+    const result_type hy(std::hash<double>()(gn.n.y));
+    const result_type hz(std::hash<double>()(gn.n.z));
     return hx ^ (hy << 1) ^ (hz << 2);
   }
 };
@@ -160,12 +160,12 @@ class ObjData {
   void dump(std::ostream& os) {
     os << "# Vertices" << std::endl;
     for (const GeoVertex& gv : vertices_.vector()) {
-      os << "v " << gv.v_.x_ << " " << gv.v_.y_ << " " << gv.v_.z_ << std::endl;
+      os << "v " << gv.v.x << " " << gv.v.y << " " << gv.v.z << std::endl;
     }
     os << "# Normals" << std::endl;
     for (const GeoNormal& gn : normals_.vector()) {
       os << "vn "
-         << gn.n_.x_ << " " << gn.n_.y_ << " " << gn.n_.z_ << std::endl;
+         << gn.n.x << " " << gn.n.y << " " << gn.n.z << std::endl;
     }
     os << "# Faces" << std::endl;
     for (const IndexFace& f : faces_) {
@@ -232,14 +232,14 @@ void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
     {
       double r00 = 0.;
       double r10 = 0.;
-      DRAKE_DEMAND(rb0.r_min_ <= r00);
-      DRAKE_DEMAND(rb1.r_min_ <= r10);
-      while ((r00 < rb0.r_max_) && (r10 < rb1.r_max_)) {
+      DRAKE_DEMAND(rb0.r_min <= r00);
+      DRAKE_DEMAND(rb1.r_min <= r10);
+      while ((r00 < rb0.r_max) && (r10 < rb1.r_max)) {
         double r01 = r00 + grid_unit;
         double r11 = r10 + grid_unit;
 
-        if (r01 > rb0.r_max_) { r01 = rb0.r_max_; }
-        if (r11 > rb1.r_max_) { r11 = rb0.r_max_; }
+        if (r01 > rb0.r_max) { r01 = rb0.r_max; }
+        if (r11 > rb1.r_max) { r11 = rb0.r_max; }
 
         // std::cerr << "{{" << s0 << ", " << r00
         //           << "}, {" << s1 << ", " << r10 << "}, {"
@@ -255,14 +255,14 @@ void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
     {
       double r00 = 0.;
       double r10 = 0.;
-      DRAKE_DEMAND(rb0.r_max_ >= r00);
-      DRAKE_DEMAND(rb1.r_max_ >= r10);
-      while ((r00 > rb0.r_min_) && (r10 > rb1.r_min_)) {
+      DRAKE_DEMAND(rb0.r_max >= r00);
+      DRAKE_DEMAND(rb1.r_max >= r10);
+      while ((r00 > rb0.r_min) && (r10 > rb1.r_min)) {
         double r01 = r00 - grid_unit;
         double r11 = r10 - grid_unit;
 
-        if (r01 < rb0.r_min_) { r01 = rb0.r_min_; }
-        if (r11 < rb1.r_min_) { r11 = rb0.r_min_; }
+        if (r01 < rb0.r_min) { r01 = rb0.r_min; }
+        if (r11 < rb1.r_min) { r11 = rb0.r_min; }
 
         push_face(obj, lane, {{s0, r00}, {s0, r01}, {s1, r11}, {s1, r10}});
 

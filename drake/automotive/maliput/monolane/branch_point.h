@@ -49,7 +49,7 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
   struct LaneEndStrictOrder {
     bool operator()(const api::LaneEnd& lhs, const api::LaneEnd& rhs) const {
       auto as_tuple = [](const api::LaneEnd& le) {
-        return std::tie(le.lane_, le.end_);
+        return std::tie(le.lane, le.end);
       };
       return as_tuple(lhs) < as_tuple(rhs);
     }

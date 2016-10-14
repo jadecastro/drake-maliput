@@ -34,7 +34,7 @@ GTEST_TEST(GenerateObj, Podge) {
       {-5., 5.}, {-10., 10.},
       {0., 0., (60. / 100.), (-40. / 100)},
       zp);
-  EXPECT_NEAR(20., l0->ToGeoPosition({l0->length(), 0., 0.}).z_, 1e-12);
+  EXPECT_NEAR(20., l0->ToGeoPosition({l0->length(), 0., 0.}).z, 1e-12);
 
   const double s50 = 50. * kPi2;
   rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(

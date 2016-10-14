@@ -422,9 +422,9 @@ void AutomotiveSimulator<T>::Start() {
   // gets mucked up?).
   if (road_) {
     const double kGridUnit = 1.;  // meter
-    maliput::utility::generate_urdf("/tmp", road_->id().id_,
+    maliput::utility::generate_urdf("/tmp", road_->id().id,
                                     road_.get(), kGridUnit);
-    std::string urdf_filepath = std::string("/tmp/") + road_->id().id_ + ".urdf";
+    std::string urdf_filepath = std::string("/tmp/") + road_->id().id + ".urdf";
     parsers::urdf::AddModelInstanceFromUrdfFile(urdf_filepath,
                                                 rigid_body_tree_.get());
     // NB: The road doesn't move, so we don't need to connect anything

@@ -44,7 +44,7 @@ GTEST_TEST(MonolaneBuilderTest, Fig8) {
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"figure-eight"});
 
-  EXPECT_EQ(rg->id().id_, "figure-eight");
+  EXPECT_EQ(rg->id().id, "figure-eight");
 
   EXPECT_EQ(rg->num_junctions(), 8);
   for (int j = 0; j < rg->num_junctions(); ++j) {

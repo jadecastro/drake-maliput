@@ -142,8 +142,8 @@ void EndlessRoadCar<T>::DoEvalTimeDerivatives(
   road_->lane()->EvalMotionDerivatives(
       lane_position, lane_velocity, &derivatives);
 
-  rates->set_s(derivatives.s_);
-  rates->set_r(derivatives.r_);
+  rates->set_s(derivatives.s);
+  rates->set_r(derivatives.r);
   // Ignore derivatives.h_, which should be zero anyhow.
 
   // Velocity + control inputs ---> velocity derivatives.

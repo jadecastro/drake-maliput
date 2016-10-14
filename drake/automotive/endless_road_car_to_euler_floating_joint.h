@@ -50,9 +50,9 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
     maliput::geometry_api::LanePosition lp(
         input_data->s(), input_data->r(), 0.);
     maliput::geometry_api::GeoPosition geo = road_->lane()->ToGeoPosition(lp);
-    output_data->set_x(geo.x_);
-    output_data->set_y(geo.y_);
-    output_data->set_z(geo.z_);
+    output_data->set_x(geo.x);
+    output_data->set_y(geo.y);
+    output_data->set_z(geo.z);
 
     // Simple treatment of orientation:  "car always points in the direction
     // of its velocity vector", e.g., no slip, oversteeer, etc.
@@ -66,12 +66,12 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
     const double ct = std::cos(theta);
     const double st = std::sin(theta);
 
-    const double ca = std::cos(rot.roll_);
-    const double sa = std::sin(rot.roll_);
-    const double cb = std::cos(rot.pitch_);
-    const double sb = std::sin(rot.pitch_);
-    const double cg = std::cos(rot.yaw_);
-    const double sg = std::sin(rot.yaw_);
+    const double ca = std::cos(rot.roll);
+    const double sa = std::sin(rot.roll);
+    const double cb = std::cos(rot.pitch);
+    const double sb = std::sin(rot.pitch);
+    const double cg = std::cos(rot.yaw);
+    const double sg = std::sin(rot.yaw);
 
     const double A = ct*(cb*cg) + st*(-ca*sg + sa*sb*cg);
     const double B = ct*(cb*sg) + st*(ca*cg + sa*sb*sg);
