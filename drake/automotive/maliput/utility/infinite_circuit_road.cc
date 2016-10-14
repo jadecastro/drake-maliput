@@ -51,11 +51,11 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
     const double end_s = start_s + current.lane_->length();
     seen_lane_index[current.lane_] = records_.size();
     records_.push_back(Record {
-        current.lane_, start_s, end_s, (current.end_ == api::LaneEnd::kEnd)});
+        current.lane_, start_s, end_s, (current.end_ == api::LaneEnd::kFinish)});
 
     api::LaneEnd::Which other_end =
         (current.end_ == api::LaneEnd::kStart) ?
-        api::LaneEnd::kEnd :
+        api::LaneEnd::kFinish :
         api::LaneEnd::kStart;
     const api::SetOfLaneEnds* branches = current.lane_->GetBranches(other_end);
     DRAKE_DEMAND(branches->count() > 0);

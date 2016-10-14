@@ -142,7 +142,7 @@ double HeadingIntoLane(const api::Lane* const lane,
     case api::LaneEnd::kStart: {
       return lane->GetOrientation({0., 0., 0.}).yaw_;
     }
-    case api::LaneEnd::kEnd: {
+    case api::LaneEnd::kFinish: {
       return lane->GetOrientation({lane->length(), 0., 0.}).yaw_ + M_PI;
     }
     default: { DRAKE_ABORT(); }
@@ -181,7 +181,7 @@ void Builder::AttachBranchPoint(
       lane->SetStartBp(bp);
       break;
     }
-    case api::LaneEnd::kEnd: {
+    case api::LaneEnd::kFinish: {
       lane->SetEndBp(bp);
       break;
     }
@@ -281,7 +281,7 @@ Lane* Builder::BuildConnection(
   }
 
   AttachBranchPoint(cnx->start(), lane, api::LaneEnd::kStart, rg, bp_map);
-  AttachBranchPoint(cnx->end(), lane, api::LaneEnd::kEnd, rg, bp_map);
+  AttachBranchPoint(cnx->end(), lane, api::LaneEnd::kFinish, rg, bp_map);
   return lane;
 }
 
@@ -319,7 +319,7 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
     Lane* in_lane = lane_map[def.in_];
     Lane* out_lane = lane_map[def.out_];
     DRAKE_DEMAND((def.in_end_ == api::LaneEnd::kStart) ||
-                 (def.in_end_ == api::LaneEnd::kEnd));
+                 (def.in_end_ == api::LaneEnd::kFinish));
     ((def.in_end_ == api::LaneEnd::kStart) ?
      in_lane->start_bp() : in_lane->end_bp())
         ->SetDefault({in_lane, def.in_end_},

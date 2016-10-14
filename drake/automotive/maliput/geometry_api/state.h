@@ -14,9 +14,9 @@ class Lane;
 
 /// The endpoint of a specific Lane.
 struct LaneEnd {
-  /// Labels for the endpointss of a Lane.  kStart is the "s == 0"
-  /// end, and kEnd is the "s == maximum" end.
-  enum Which { kStart, kEnd, };
+  /// Labels for the endpoints of a Lane.  kStart is the "s == 0"
+  /// end, and kFinish is the other end.
+  enum Which { kStart, kFinish, };
 
   /// Default constructor.
   LaneEnd() {}

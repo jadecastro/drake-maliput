@@ -16,8 +16,8 @@ const api::Segment* Lane::do_segment() const { return segment_; }
 const api::BranchPoint* Lane::DoGetBranchPoint(
     const api::LaneEnd::Which which_end) const {
   switch (which_end) {
-    case api::LaneEnd::kStart: { return start_bp_; }
-    case api::LaneEnd::kEnd:   { return end_bp_; }
+    case api::LaneEnd::kStart:  { return start_bp_; }
+    case api::LaneEnd::kFinish: { return end_bp_; }
   }
   DRAKE_ABORT();
 }

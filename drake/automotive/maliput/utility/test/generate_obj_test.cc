@@ -192,8 +192,8 @@ GTEST_TEST(GenerateObj, TeeIntersection) {
 
   b.SetDefaultBranch(ce, api::LaneEnd::kStart, cew, api::LaneEnd::kStart);
   b.SetDefaultBranch(cew, api::LaneEnd::kStart, ce, api::LaneEnd::kStart);
-  b.SetDefaultBranch(cw, api::LaneEnd::kStart, cew, api::LaneEnd::kEnd);
-  b.SetDefaultBranch(cew, api::LaneEnd::kEnd, cw, api::LaneEnd::kStart);
+  b.SetDefaultBranch(cw, api::LaneEnd::kStart, cew, api::LaneEnd::kFinish);
+  b.SetDefaultBranch(cew, api::LaneEnd::kFinish, cw, api::LaneEnd::kStart);
 
   std::unique_ptr<const api::RoadGeometry> rg = b.Build({"tee"});
   generate_obj(rg.get(), "/tmp/tee.obj", 1.);
