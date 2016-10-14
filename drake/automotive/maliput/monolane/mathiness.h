@@ -77,14 +77,14 @@ struct DRAKEAUTOMOTIVE_EXPORT Rot3 {
     return V3(
         ((cb * cg) * in.x) +
         ((-ca*sg + sa*sb*cg) * in.y) +
-        ((-sa*sg - ca*sb*cg) * in.z),
+        ((sa*sg + ca*sb*cg) * in.z),
 
         ((cb*sg) * in.x) +
         ((ca*cg + sa*sb*sg) * in.y) +
-        ((sa*cg - ca*sb*sg) * in.z),
+        ((-sa*cg + ca*sb*sg) * in.z),
 
-        ((sb) * in.x) +
-        ((-sa*cb) * in.y) +
+        ((-sb) * in.x) +
+        ((sa*cb) * in.y) +
         ((ca*cb) * in.z));
   }
 

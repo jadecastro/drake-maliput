@@ -255,6 +255,8 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};
 
+  const double kTheta = 0.10 * M_PI;  // superelevation
+
   RoadGeometry rg = RoadGeometry({"apple"});
   Segment* s1 = rg.NewJunction({"j1"})->NewSegment({"s1"});
   Lane* l2 = s1->NewArcLane(
@@ -262,7 +264,7 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
       {100., -75.}, 100., 0.25 * M_PI, 1.5 * M_PI,
       {-5., 5.}, {-10., 10.},
       zp,
-      { (0.10 * M_PI) / (100. * 1.5 * M_PI), 0., 0., 0. });
+      { (kTheta) / (100. * 1.5 * M_PI), 0., 0., 0. });
 
   EXPECT_NEAR(l2->length(), 100. * 1.5 * M_PI, kVeryExact);
 
@@ -282,9 +284,9 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
   EXPECT_NEAR(
       xyz.y_,
       -75. + (100. * std::sin(0.25 * M_PI)) +
-      (10. * std::cos(0.10 * M_PI) * std::sin(1.25 * M_PI)),
+      (10. * std::cos(kTheta) * std::sin(1.25 * M_PI)),
       kPositionPrecision);
-  EXPECT_NEAR(xyz.z_, -10. * std::sin(0.10 * M_PI), kPositionPrecision);
+  EXPECT_NEAR(xyz.z_, 10. * std::sin(kTheta), kPositionPrecision);
 
 
   // TODO(maddog) Test ToLanePosition().
@@ -292,17 +294,17 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
   rot = l2->GetOrientation({0., 0., 0.});
   EXPECT_NEAR(rot.yaw_, (0.25 + 0.5) * M_PI, kVeryExact);
   EXPECT_NEAR(rot.pitch_, 0., kVeryExact);
-  EXPECT_NEAR(rot.roll_, 0.10 * M_PI, kVeryExact);
+  EXPECT_NEAR(rot.roll_, kTheta, kVeryExact);
 
   rot = l2->GetOrientation({0., 1., 0.});
   EXPECT_NEAR(rot.yaw_, (0.25 + 0.5) * M_PI, kVeryExact);
   EXPECT_NEAR(rot.pitch_, 0., kVeryExact);
-  EXPECT_NEAR(rot.roll_, 0.10 * M_PI, kVeryExact);
+  EXPECT_NEAR(rot.roll_, kTheta, kVeryExact);
 
   rot = l2->GetOrientation({l2->length(), 0., 0.});
   EXPECT_NEAR(rot.yaw_, 0.25 * M_PI, kVeryExact);  // 0.25 + 1.5 + 0.5
   EXPECT_NEAR(rot.pitch_, 0., kVeryExact);
-  EXPECT_NEAR(rot.roll_, 0.10 * M_PI, kVeryExact);
+  EXPECT_NEAR(rot.roll_, kTheta, kVeryExact);
 
   api::LanePosition pdot;
   // For r=0, derivative map should be identity.
@@ -335,14 +337,14 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
   // from the original 100 down to 90.
   l2->EvalMotionDerivatives({0., 10., 0.}, {1., 1., 1.}, &pdot);
   EXPECT_NEAR(pdot.s_,
-              (100. / (100. - (10. * std::cos(0.10 * M_PI)))) * 1., kVeryExact);
+              (100. / (100. - (10. * std::cos(kTheta)))) * 1., kVeryExact);
   EXPECT_NEAR(pdot.r_, 1., kVeryExact);
   EXPECT_NEAR(pdot.h_, 1., kVeryExact);
   // Likewise, r = -10 will increase the radius of the path from the
   // original 100 up to 110.
   l2->EvalMotionDerivatives({0., -10., 0.}, {1., 1., 1.}, &pdot);
   EXPECT_NEAR(pdot.s_,
-              (100. / (100 + (10. * std::cos(0.10 * M_PI)))) * 1., kVeryExact);
+              (100. / (100 + (10. * std::cos(kTheta)))) * 1., kVeryExact);
   EXPECT_NEAR(pdot.r_, 1., kVeryExact);
   EXPECT_NEAR(pdot.h_, 1., kVeryExact);
 
@@ -350,8 +352,8 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
   l2->EvalMotionDerivatives({l2->length(), -10., 8.}, {1., 1., 1.}, &pdot);
   EXPECT_NEAR(pdot.s_,
               (100. / (100
-                       + (10. * std::cos(0.10 * M_PI))
-                       - (8. * std::sin(0.10 * M_PI)))) * 1., kVeryExact);
+                       + (10. * std::cos(kTheta))
+                       + (8. * std::sin(kTheta)))) * 1., kVeryExact);
   EXPECT_NEAR(pdot.r_, 1., kVeryExact);
   EXPECT_NEAR(pdot.h_, 1., kVeryExact);
 }
@@ -400,7 +402,7 @@ GTEST_TEST(MonolaneLanesTest, HillIntegration) {
 
   const api::IsoLaneVelocity kVelocity { 1., 0., 0. };
   const double kTimeStep = 0.01;
-  const int kStepsForZeroR = 15835;
+  const int kStepsForZeroR = 15860;
 
   const api::LanePosition kLpInitialA { 0., 0., 0. };
   xyz = l1->ToGeoPosition(kLpInitialA);
@@ -426,7 +428,7 @@ GTEST_TEST(MonolaneLanesTest, HillIntegration) {
 
   // NB:  '27' is a fudge-factor.  We know the steps should scale roughly
   //      as (r / r0), but not exactly because of the elevation curve.
-  const int kStepsForR10 = ((100. + 10.) / 100. * kStepsForZeroR) - 27;
+  const int kStepsForR10 = ((100. + 10.) / 100. * kStepsForZeroR) - 28;
   api::LanePosition lp_final_b =
       IntegrateTrivially(l1, kLpInitialB, kVelocity, kTimeStep,
                          kStepsForR10);
