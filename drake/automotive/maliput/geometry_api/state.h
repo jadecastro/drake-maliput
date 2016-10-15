@@ -18,6 +18,17 @@ struct LaneEnd {
   /// end, and kFinish is the other end.
   enum Which { kStart, kFinish, };
 
+  /// An arbitrary strict complete ordering, useful for, e.g., std::map.
+  struct StrictOrder {
+    bool operator()(const LaneEnd& lhs, const LaneEnd& rhs) const {
+      auto as_tuple = [](const LaneEnd& le) {
+        return std::tie(le.lane, le.end);
+      };
+      return as_tuple(lhs) < as_tuple(rhs);
+    }
+  };
+
+
   /// Default constructor.
   LaneEnd() {}
 

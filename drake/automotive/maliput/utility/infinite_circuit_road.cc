@@ -34,22 +34,24 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
                                 const api::LaneEnd& start)
     : id_(id),
       segment_(segment) {
-  // Starting at start, walk source's Lane/BranchPoint graph.  We assume
-  // that there are no dead-end branch-points, so we will eventually
-  // encounter a Lane that we have seen before, at which point we know
-  // that we have found a cycle.  Along the way, we will keep track of
-  // accumulated s-length over the sequence of lanes.
+  // Starting at start, walk source's Lane/BranchPoint graph.  We
+  // assume (demand!) that there are no dead-end branch-points, so we
+  // will eventually encounter a LaneEnd that we have seen before, at
+  // which point we know that we have found a cycle.  Along the way,
+  // we will keep track of accumulated s-length over the sequence of
+  // lanes.
 
-  std::map<const api::Lane*, int> seen_lane_index;
+  // Starting-ends of recorded lane traversals, mapped to index in sequence.
+  std::map<api::LaneEnd, int, api::LaneEnd::StrictOrder> seen_records;
   double start_s = 0.;
   api::LaneEnd current = start;
 
-  while (!seen_lane_index.count(current.lane)) {
+  while (!seen_records.count(current)) {
     std::cerr << "walk lane " << current.lane->id().id
               << "  end " << current.end
               << "   length " << current.lane->length() << std::endl;
     const double end_s = start_s + current.lane->length();
-    seen_lane_index[current.lane] = records_.size();
+    seen_records[current] = records_.size();
     records_.push_back(Record {
         current.lane, start_s, end_s, (current.end == api::LaneEnd::kFinish)});
 
@@ -69,11 +71,19 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
     start_s = end_s;
   }
 
-  // TODO(maddog)  For now, just assert that we came back to where we started.
-  //               (Otherwise, we have to trim records off the front, and
-  //               adjust the total length.)
-  DRAKE_DEMAND((current.lane == start.lane) &&
-               (current.end == start.end));
+  if (seen_records[current] > 0) {
+    // We're not back at the start; need to trim records from the beginning.
+    records_.erase(records_.begin(),
+                   records_.begin() + seen_records[current]);
+    // Need to re-measure all the start/end offsets, too.
+    start_s = 0;
+    for (Record& r : records_) {
+      r.start_circuit_s = start_s;
+      start_s += r.lane->length();
+      r.end_circuit_s = start_s;
+    }
+  }
+
   cycle_length_ = start_s;
 }
 
