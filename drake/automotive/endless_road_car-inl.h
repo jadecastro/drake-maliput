@@ -23,12 +23,25 @@ namespace automotive {
 template <typename T>
 EndlessRoadCar<T>::EndlessRoadCar(
     const maliput::utility::InfiniteCircuitRoad* road,
-    bool ignore_input_jackass,
+    const ControlType control_type,
     const SimpleCarConfig<T>& config)
-    : road_(road), config_(config), ignore_input_jackass_(ignore_input_jackass) {
-  this->DeclareInputPort(systems::kVectorValued,
-                         DrivingCommandIndices::kNumCoordinates,
-                         systems::kContinuousSampling);
+    : road_(road), control_type_(control_type), config_(config) {
+  switch (control_type) {
+    case kNone: { break; }
+    case kUser: {
+      this->DeclareInputPort(systems::kVectorValued,
+                             DrivingCommandIndices::kNumCoordinates,
+                             systems::kContinuousSampling);
+      break;
+    }
+    case kIdm: {
+      this->DeclareInputPort(systems::kVectorValued,
+                             EndlessRoadOracleOutputIndices::kNumCoordinates,
+                             systems::kContinuousSampling);
+      break;
+    }
+    default: { DRAKE_ABORT(); }
+  };
   this->DeclareOutputPort(systems::kVectorValued,
                           EndlessRoadCarStateIndices::kNumCoordinates,
                           systems::kContinuousSampling);
@@ -100,16 +113,6 @@ void EndlessRoadCar<T>::EvalTimeDerivatives(
       dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
   DRAKE_ASSERT(state);
 
-  // Obtain the input.
-  const systems::VectorBase<T>* const vector_input =
-      this->EvalVectorInput(context, 0);
-  DRAKE_ASSERT(vector_input);
-  const DrivingCommand<T>* const input =
-      dynamic_cast<const DrivingCommand<T>*>(vector_input);
-  if (!ignore_input_jackass_) {
-  DRAKE_ASSERT(input);
-  }
-
   // Obtain the result structure.
   DRAKE_ASSERT(derivatives != nullptr);
   systems::VectorBase<T>* const vector_derivatives =
@@ -119,19 +122,98 @@ void EndlessRoadCar<T>::EvalTimeDerivatives(
       dynamic_cast<EndlessRoadCarState<T>*>(vector_derivatives);
   DRAKE_ASSERT(rates);
 
-  if (ignore_input_jackass_) {
-    DrivingCommand<T> zero_input;
-    DoEvalTimeDerivatives(*state, zero_input, rates);
-  } else {
-    DoEvalTimeDerivatives(*state, *input, rates);
-  }
+  const Accelerations accelerations = [&](){
+    switch (control_type_) {
+      case kNone: { return Accelerations(0., 0.); }
+      case kUser: {
+        // Obtain the DrivingCommand input.
+        const systems::VectorBase<T>* const vector_input =
+        this->EvalVectorInput(context, 0);
+        DRAKE_ASSERT(vector_input);
+        const DrivingCommand<T>* const input =
+        dynamic_cast<const DrivingCommand<T>*>(vector_input);
+        DRAKE_ASSERT(input);
+        return ComputeUserAccelerations(*state, *input);
+      }
+      case kIdm: {
+        // Obtain the EndlessRoadOracleOutput input.
+        const systems::VectorBase<T>* const vector_input =
+        this->EvalVectorInput(context, 0);
+        DRAKE_ASSERT(vector_input);
+        const EndlessRoadOracleOutput<T>* const input =
+        dynamic_cast<const EndlessRoadOracleOutput<T>*>(vector_input);
+        DRAKE_ASSERT(input);
+        return ComputeIdmAccelerations(*state, *input);
+      }
+      default: { DRAKE_ABORT(); }
+    };
+  }();
+
+  DoEvalTimeDerivatives(*state, accelerations, rates);
+}
+
+
+template <typename T>
+typename EndlessRoadCar<T>::Accelerations EndlessRoadCar<T>::ComputeUserAccelerations(
+    const EndlessRoadCarState<T>& state,
+    const DrivingCommand<T>& input) const {
+
+  // Simplistic throttle and brake --> longitudinal acceleration.
+  const T forward_acceleration = (input.throttle() - input.brake())
+      * config_.max_acceleration();
+
+  // Simplistic steering: lateral acceleration <-- centripetal acceleration.
+  const T speed = std::sqrt((state.sigma_dot() * state.sigma_dot()) +
+                            (state.rho_dot() * state.rho_dot()));
+  T sane_steering_angle = input.steering_angle();
+  DRAKE_ASSERT(static_cast<T>(-M_PI) < sane_steering_angle);
+  DRAKE_ASSERT(sane_steering_angle < static_cast<T>(M_PI));
+  sane_steering_angle = std::min(
+      sane_steering_angle, config_.max_abs_steering_angle());
+  sane_steering_angle = std::max(
+      sane_steering_angle, static_cast<T>(-config_.max_abs_steering_angle()));
+  const T curvature = tan(sane_steering_angle) / config_.wheelbase();
+  const T lateral_acceleration = speed * speed * curvature;
+
+  return {forward_acceleration, lateral_acceleration};
+}
+
+
+template <typename T>
+typename EndlessRoadCar<T>::Accelerations EndlessRoadCar<T>::ComputeIdmAccelerations(
+    const EndlessRoadCarState<T>& state,
+    const EndlessRoadOracleOutput<T>& input) const {
+
+  // Adapted from https://en.wikipedia.org/wiki/Intelligent_driver_model
+  const double v_0{30.0};  // desired velocity in free traffic.
+  const double s_0{2.0};  // minimum desired net distance.
+  const double h{1.0};  // desired time headway to vehicle in front.
+  const double a{config_.max_acceleration()};  // max acceleration.
+  const double b{3. * a};  // comfortable braking deceleration.
+  const double delta{4.0};  // recommended choice of free-road exponent.
+  // TODO(maddog)  This belongs somewhere.
+  //  const double l_a{4.5};  // length of leading car.
+
+  // Velocity difference to car ahead
+  const double delta_v = input.delta_sigma_dot();
+  // Net distance to car ahead (front bumper to rear bumper)
+  const double s = input.net_delta_sigma();
+  // Current velocity
+  const double v = state.sigma_dot();
+
+  const double s_star = s_0 + (v * h) + (v * delta_v / 2. / std::sqrt(a * b));
+
+  const T forward_acceleration =
+      a * (1. - std::pow(v / v_0, delta) - pow(s_star / s, 2.));
+
+  return {forward_acceleration, 0.};
 }
 
 
 template <typename T>
 void EndlessRoadCar<T>::DoEvalTimeDerivatives(
     const EndlessRoadCarState<T>& state,
-    const DrivingCommand<T>& input,
+    const Accelerations& accelerations,
     EndlessRoadCarState<T>* rates) const {
 
   // Position + velocity ---> position derivatives.
@@ -147,32 +229,15 @@ void EndlessRoadCar<T>::DoEvalTimeDerivatives(
   // Ignore derivatives.h_, which should be zero anyhow.
 
   // Velocity + control inputs ---> velocity derivatives.
-  const T speed = std::sqrt((state.sigma_dot() * state.sigma_dot()) +
-                            (state.rho_dot() * state.rho_dot()));
   // "heading angle w.r.t. s_hat == zero angle"
   const T heading = std::atan2(state.rho_dot(), state.sigma_dot());
 
-  // Simplistic throttle and brake --> longitudinal acceleration.
-  const T forward_acceleration = (input.throttle() - input.brake())
-      * config_.max_acceleration();
-
-  // Simplistic steering --> lateral acceleration == centripetal acceleration.
-  T sane_steering_angle = input.steering_angle();
-  DRAKE_ASSERT(static_cast<T>(-M_PI) < sane_steering_angle);
-  DRAKE_ASSERT(sane_steering_angle < static_cast<T>(M_PI));
-  sane_steering_angle = std::min(
-      sane_steering_angle, config_.max_abs_steering_angle());
-  sane_steering_angle = std::max(
-      sane_steering_angle, static_cast<T>(-config_.max_abs_steering_angle()));
-  const T curvature = tan(sane_steering_angle) / config_.wheelbase();
-  const T lateral_acceleration = speed * speed * curvature;
-
   const double sigma_ddot =
-      (forward_acceleration * std::cos(heading)) -
-      (lateral_acceleration * std::sin(heading));
+      (accelerations.forward * std::cos(heading)) -
+      (accelerations.lateral * std::sin(heading));
   const double rho_ddot =
-      (forward_acceleration * std::sin(heading)) +
-      (lateral_acceleration * std::cos(heading));
+      (accelerations.forward * std::sin(heading)) +
+      (accelerations.lateral * std::cos(heading));
   rates->set_sigma_dot(sigma_ddot);
   rates->set_rho_dot(rho_ddot);
 }

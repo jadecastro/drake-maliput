@@ -20,6 +20,7 @@ DEFINE_int32(num_ego_car, 1, "Number of user-controlled vehicles");
 DEFINE_int32(num_ado_car, 1,
              "Number of vehicles controlled by a "
              "(possibly trivial) traffic model");
+DEFINE_bool(use_idm, false, "Use IDM to control ado cars on roads.");
 
 namespace drake {
 namespace automotive {
@@ -80,22 +81,36 @@ int main(int argc, char* argv[]) {
       const double lateral_offset =
           (((i % 2) * 2) - 1) * kLateralOffsetUnit;
       simulator->AddEndlessRoadCar(
-          longitudinal_start, lateral_offset, kConstantSpeed, true);
+          longitudinal_start, lateral_offset, kConstantSpeed,
+          EndlessRoadCar<double>::kUser);
     }
 
     // "Traffic model" is "drive at a constant LANE-space velocity".
     // TODO(maddog) Implement traffic models other than "just drive at
     // constant speed".
-    for (int i = 0; i < FLAGS_num_ado_car; ++i) {
+    if (FLAGS_use_idm) {
+      const double kInitialSpeed = 30.0;
+      const double kLateralOffsetUnit = 0.0;
+      for (int i = 0; i < FLAGS_num_ado_car; ++i) {
+        const double longitudinal_start =
+            endless_road->cycle_length() * i / FLAGS_num_ado_car / 2.;
+        const double lateral_offset = kLateralOffsetUnit;
+        simulator->AddEndlessRoadCar(
+            longitudinal_start, lateral_offset, kInitialSpeed,
+            EndlessRoadCar<double>::kIdm);
+      }
+    } else {
       const double kConstantSpeed = 10.0;
       const double kLateralOffsetUnit = -2.0;
-
-      const double longitudinal_start =
-          endless_road->cycle_length() * (i / 2) / FLAGS_num_ado_car;
-      const double lateral_offset =
-          (((i % 2) * 2) - 1) * kLateralOffsetUnit;
-      simulator->AddEndlessRoadCar(
-          longitudinal_start, lateral_offset, kConstantSpeed, false);
+      for (int i = 0; i < FLAGS_num_ado_car; ++i) {
+        const double longitudinal_start =
+            endless_road->cycle_length() * (i / 2) / FLAGS_num_ado_car;
+        const double lateral_offset =
+            (((i % 2) * 2) - 1) * kLateralOffsetUnit;
+        simulator->AddEndlessRoadCar(
+            longitudinal_start, lateral_offset, kConstantSpeed,
+            EndlessRoadCar<double>::kNone);
+      }
     }
   }
 

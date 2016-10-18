@@ -8,8 +8,10 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   create_trajectory_params.cc
   curve2.cc
   endless_road_car.cc
+  endless_road_oracle.cc
   gen/driving_command.cc
   gen/endless_road_car_state.cc
+  gen/endless_road_oracle_output.cc
   gen/euler_floating_joint_state.cc
   gen/idm_with_trajectory_agent_parameters.cc
   gen/idm_with_trajectory_agent_state.cc
@@ -43,6 +45,8 @@ drake_install_headers(
   curve2.h
   endless_road_car.h
   endless_road_car-inl.h
+  endless_road_oracle.h
+  endless_road_oracle-inl.h
   idm_with_trajectory_agent.h
   simple_car.h
   simple_car_to_euler_floating_joint.h
@@ -63,6 +67,7 @@ if(lcm_FOUND)
     automotive_simulator.cc
     gen/driving_command_translator.cc
     gen/endless_road_car_state_translator.cc
+    gen/endless_road_oracle_output_translator.cc
     gen/euler_floating_joint_state_translator.cc
     gen/idm_with_trajectory_agent_state_translator.cc
     gen/simple_car_config_translator.cc

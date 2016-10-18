@@ -98,7 +98,7 @@ class AutomotiveSimulator {
   /// @pre SetRoadGeometry() HAS been called.
   void AddEndlessRoadCar(
       double longitudinal_start, double lateral_offset, double speed,
-      bool is_user_controlled);
+      typename EndlessRoadCar<T>::ControlType control_type);
 
   /// Sets the RoadGeometry for this simulation.
   /// (This simulation takes ownership of the RoadGeometry*.)

@@ -4,6 +4,7 @@
 
 #include "drake/automotive/gen/driving_command.h"
 #include "drake/automotive/gen/endless_road_car_state.h"
+#include "drake/automotive/gen/endless_road_oracle_output.h"
 #include "drake/automotive/gen/simple_car_config.h"
 #include "drake/drakeAutomotive_export.h"
 #include "drake/systems/framework/leaf_system.h"
@@ -37,9 +38,17 @@ namespace automotive {
 template <typename T>
 class EndlessRoadCar : public systems::LeafSystem<T> {
  public:
+  enum ControlType {
+    kNone,  // no controls, i.e., constant velocity
+    kUser,  // processes DrivingCommand input
+    kIdm,   // IDM controller using input from EndlessRoadOracle
+  };
+
   EndlessRoadCar(const maliput::utility::InfiniteCircuitRoad* road,
-                 bool ignore_input_jackass,
+                 const ControlType control_type,
                  const SimpleCarConfig<T>& config = get_default_config());
+
+  ControlType control_type() const { return control_type_; }
 
   static SimpleCarConfig<T> get_default_config();
 
@@ -65,16 +74,33 @@ class EndlessRoadCar : public systems::LeafSystem<T> {
       const systems::SystemPortDescriptor<T>& descriptor) const override;
 
  private:
+  struct Accelerations {
+    Accelerations(T _forward, T _lateral)
+        : forward(_forward), lateral(_lateral) {}
+
+    T forward;
+    T lateral;
+  };
+
   void DoEvalOutput(const EndlessRoadCarState<T>&,
                     EndlessRoadCarState<T>*) const;
 
+  Accelerations ComputeUserAccelerations(
+      const EndlessRoadCarState<T>& state,
+      const DrivingCommand<T>& input) const;
+
+  Accelerations ComputeIdmAccelerations(
+      const EndlessRoadCarState<T>& state,
+      const EndlessRoadOracleOutput<T>& input) const;
+
+
   void DoEvalTimeDerivatives(const EndlessRoadCarState<T>&,
-                             const DrivingCommand<T>&,
+                             const Accelerations& accelerations,
                              EndlessRoadCarState<T>*) const;
 
   const maliput::utility::InfiniteCircuitRoad* road_;
+  const ControlType control_type_;
   const SimpleCarConfig<T> config_;
-  const bool ignore_input_jackass_;
 };
 
 }  // namespace automotive

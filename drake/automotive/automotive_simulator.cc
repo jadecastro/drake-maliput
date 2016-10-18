@@ -6,6 +6,7 @@
 
 #include "drake/automotive/endless_road_car.h"
 #include "drake/automotive/endless_road_car_to_euler_floating_joint.h"
+#include "drake/automotive/endless_road_oracle.h"
 #include "drake/automotive/gen/driving_command_translator.h"
 #include "drake/automotive/gen/endless_road_car_state_translator.h"
 #include "drake/automotive/gen/euler_floating_joint_state_translator.h"
@@ -110,16 +111,17 @@ int AutomotiveSimulator<T>::AddTrajectoryCarFromSdf(
 
 
 template <typename T>
-void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
-                                               double lateral_offset,
-                                               double speed,
-                                               bool is_user_controlled) {
+void AutomotiveSimulator<T>::AddEndlessRoadCar(
+    double longitudinal_start,
+    double lateral_offset,
+    double speed,
+    typename EndlessRoadCar<T>::ControlType control_type) {
   DRAKE_DEMAND(!started_);
   DRAKE_DEMAND((bool)endless_road_);
   const int vehicle_number = allocate_vehicle_number();
 
   auto endless_road_car = builder_->template AddSystem<EndlessRoadCar<T>>(
-      endless_road_.get(), !is_user_controlled);
+      endless_road_.get(), control_type);
   auto coord_transform =
       builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
           endless_road_.get());
@@ -132,21 +134,25 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(double longitudinal_start,
   initial_state.set_sigma_dot(speed);
   initial_state.set_rho_dot(0.);
 
-  if (is_user_controlled) {
-    static const DrivingCommandTranslator driving_command_translator;
-    auto command_subscriber =
-        builder_->template AddSystem<systems::lcm::LcmSubscriberSystem>(
-            "DRIVING_COMMAND", driving_command_translator, lcm_.get());
+  switch (control_type) {
+    case EndlessRoadCar<T>::kNone: {
+      break;
+    }
+    case EndlessRoadCar<T>::kUser: {
+      static const DrivingCommandTranslator driving_command_translator;
+      auto command_subscriber =
+          builder_->template AddSystem<systems::lcm::LcmSubscriberSystem>(
+              "DRIVING_COMMAND", driving_command_translator, lcm_.get());
       builder_->Connect(*command_subscriber, *endless_road_car);
-  } else {
-    // TODO(maddog)  Once ConstantVectorSource can preserve type info,
-    // perhaps something like this:
-    // No user input, so feed constant zero commands.
-    // auto zero_command =
-    //    builder_->template AddSystem<systems::ConstantValueSource>(
-    //        DrivingCommand<T>());
-    // builder_->Connect(*zero_command, *endless_road_car);
-  }
+      break;
+    }
+    case EndlessRoadCar<T>::kIdm: {
+      // Nothing to do here.  At Start(), we will construct the central
+      // EndlessRoadOracle and attach it to endless_road_cars_ as needed.
+      break;
+    }
+    default: { DRAKE_ABORT(); }
+  };
 
   builder_->Connect(*endless_road_car, *coord_transform);
   AddPublisher(*endless_road_car, vehicle_number);
@@ -436,6 +442,39 @@ void AutomotiveSimulator<T>::Start() {
   rigid_body_tree_->compile();
 
   ConnectJointStateSourcesToVisualizer();
+
+  if (endless_road_) {
+    // Now that we have all the cars, construct an appropriately tentacled
+    // EndlessRoadOracle and hook everything up.
+    const int num_cars = endless_road_cars_.size();
+
+    auto oracle = builder_->template AddSystem<EndlessRoadOracle<T>>(
+        endless_road_.get(), num_cars);
+    int i = 0;
+    for (const auto& item: endless_road_cars_) {
+      EndlessRoadCar<T>* car = item.first;
+
+      // Every car is visible to the Oracle...
+      builder_->Connect(car->get_output_port(0), oracle->get_input_port(i));
+      // ...however, only IDM-controlled cars care about Oracle output.
+      // TODO(maddog)  Optimization:  Oracle should not bother to compute
+      //               output for cars which will ignore it.
+      switch (car->control_type()) {
+        case EndlessRoadCar<T>::kNone: {
+          break;  // No input.
+        }
+        case EndlessRoadCar<T>::kUser: {
+          break;  // Already connected to controls.
+        }
+        case EndlessRoadCar<T>::kIdm: {
+          builder_->Connect(oracle->get_output_port(i), car->get_input_port(0));
+          break;
+        }
+        default: { DRAKE_ABORT(); }
+      }
+      ++i;
+    }
+  }
 
   diagram_ = builder_->Build();
   simulator_ = std::make_unique<systems::Simulator<T>>(*diagram_);

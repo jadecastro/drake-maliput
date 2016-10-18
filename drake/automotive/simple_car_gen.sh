@@ -19,3 +19,4 @@ gen_lcm_and_vector "simple car state" x y heading velocity
 gen_lcm_and_vector "simple car config" wheelbase track max_abs_steering_angle max_velocity max_acceleration velocity_lookahead_time velocity_kp
 
 gen_lcm_and_vector "endless road car state" s r sigma_dot rho_dot
+gen_lcm_and_vector "endless road oracle output" net_delta_sigma delta_sigma_dot
