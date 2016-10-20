@@ -66,9 +66,20 @@ const mono::Connection* maybe_make_connection(
   DRAKE_DEMAND(node.IsMap());
 
   // Check if needed symbols are available.
-  auto start_symbol = node["start"].as<std::string>();
-  auto it_start = xyzpoints.find(start_symbol);
+  const std::string& start_phrase = node["start"].as<std::string>();
+  auto parsed_start = [&](){
+    static const std::string kReverse {"reverse "};
+    int where = start_phrase.find(kReverse);
+    if (where == 0) {
+      return std::make_pair(start_phrase.substr(kReverse.size()), true);
+    } else {
+      return std::make_pair(start_phrase, false);
+    }
+  }();
+  auto it_start = xyzpoints.find(parsed_start.first);
   if (it_start == xyzpoints.end()) { return nullptr; }
+  mono::XYZPoint start_point =
+      parsed_start.second ? it_start->second.reverse() : it_start->second;
 
   // Discover segment type.
   bool explicit_end = false;
@@ -100,19 +111,19 @@ const mono::Connection* maybe_make_connection(
     case kLine: {
       if (explicit_end) {
         return builder->Connect(
-            id, it_start->second, node["length"].as<double>(), it_ee->second);
+            id, start_point, node["length"].as<double>(), it_ee->second);
       } else {
         return builder->Connect(
-            id, it_start->second, node["length"].as<double>(),
+            id, start_point, node["length"].as<double>(),
             zpoint(node["z_end"]));
       }
     }
     case kArc: {
       if (explicit_end) {
-        return builder->Connect(id, it_start->second, arc_offset(node["arc"]),
+        return builder->Connect(id, start_point, arc_offset(node["arc"]),
                                 it_ee->second);
       } else {
-        return builder->Connect(id, it_start->second, arc_offset(node["arc"]),
+        return builder->Connect(id, start_point, arc_offset(node["arc"]),
                                 zpoint(node["z_end"]));
       }
     }

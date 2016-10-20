@@ -8,10 +8,37 @@ maliput_monolane_builder:
   position_precision: .01
   orientation_precision: 0.5
   points:
-    start:
-      xypoint: [0, 45, 0]  # x,y, heading
-      zpoint: [0, 0, 22.9, 0]  # z, zdot, theta (superelevation), thetadot
+    south_bp:
+      xypoint: [0, -10, -90]  # x,y, heading
+      zpoint: [0, 0, 0, 0]  # z, zdot, theta (superelevation), thetadot
+    west_bp:
+      xypoint: [-10, 0, 180]  # x,y, heading
+      zpoint: [0, 0, 0, 0]  # z, zdot, theta (superelevation), thetadot
+    east_bp:
+      xypoint: [10, 0, 0]  # x,y, heading
+      zpoint: [0, 0, 0, 0]  # z, zdot, theta (superelevation), thetadot
   connections:
-    # TODO(rico) I don't quite know how this should look yet.
-        
-  
+    south:
+      start: "points.south_bp"
+      length: 10
+      z_end: [0, 0, 0, 0]
+    west:
+      start: "points.west_bp"
+      length: 10
+      z_end: [0, 0, 0, 0]
+    east:
+      start: "points.east_bp"
+      length: 10
+      z_end: [0, 0, 0, 0]
+    south_west:
+      start: "reverse connections.south.start"
+      arc: [10, 90]
+      explicit_end: "connections.west.start"
+    south_east:
+      start: "reverse connections.south.start"
+      arc: [10, -90]
+      explicit_end: "connections.east.start"
+    east_west:
+      start: "reverse connections.east.start"
+      length: 20
+      explicit_end: "connections.west.start"
