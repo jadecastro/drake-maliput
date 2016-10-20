@@ -22,10 +22,11 @@ namespace automotive {
 
 template <typename T>
 EndlessRoadCar<T>::EndlessRoadCar(
+    const std::string& id,
     const maliput::utility::InfiniteCircuitRoad* road,
     const ControlType control_type,
     const SimpleCarConfig<T>& config)
-    : road_(road), control_type_(control_type), config_(config) {
+    : id_(id), road_(road), control_type_(control_type), config_(config) {
   switch (control_type) {
     case kNone: { break; }
     case kUser: {

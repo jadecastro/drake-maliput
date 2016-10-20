@@ -81,6 +81,7 @@ int main(int argc, char* argv[]) {
       const double lateral_offset =
           (((i % 2) * 2) - 1) * kLateralOffsetUnit;
       simulator->AddEndlessRoadCar(
+          "User-" + std::to_string(i),
           longitudinal_start, lateral_offset, kConstantSpeed,
           EndlessRoadCar<double>::kUser);
     }
@@ -96,6 +97,7 @@ int main(int argc, char* argv[]) {
             endless_road->cycle_length() * i / FLAGS_num_ado_car / 2.;
         const double lateral_offset = kLateralOffsetUnit;
         simulator->AddEndlessRoadCar(
+            "IDM-" + std::to_string(i),
             longitudinal_start, lateral_offset, kInitialSpeed,
             EndlessRoadCar<double>::kIdm);
       }
@@ -108,6 +110,7 @@ int main(int argc, char* argv[]) {
         const double lateral_offset =
             (((i % 2) * 2) - 1) * kLateralOffsetUnit;
         simulator->AddEndlessRoadCar(
+            "CV-" + std::to_string(i),
             longitudinal_start, lateral_offset, kConstantSpeed,
             EndlessRoadCar<double>::kNone);
       }

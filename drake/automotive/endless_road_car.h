@@ -44,7 +44,8 @@ class EndlessRoadCar : public systems::LeafSystem<T> {
     kIdm,   // IDM controller using input from EndlessRoadOracle
   };
 
-  EndlessRoadCar(const maliput::utility::InfiniteCircuitRoad* road,
+  EndlessRoadCar(const std::string& id,
+                 const maliput::utility::InfiniteCircuitRoad* road,
                  const ControlType control_type,
                  const SimpleCarConfig<T>& config = get_default_config());
 
@@ -98,6 +99,7 @@ class EndlessRoadCar : public systems::LeafSystem<T> {
                              const Accelerations& accelerations,
                              EndlessRoadCarState<T>*) const;
 
+  const std::string id_;
   const maliput::utility::InfiniteCircuitRoad* road_;
   const ControlType control_type_;
   const SimpleCarConfig<T> config_;

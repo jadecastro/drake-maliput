@@ -112,6 +112,7 @@ int AutomotiveSimulator<T>::AddTrajectoryCarFromSdf(
 
 template <typename T>
 void AutomotiveSimulator<T>::AddEndlessRoadCar(
+    const std::string& id,
     double longitudinal_start,
     double lateral_offset,
     double speed,
@@ -121,7 +122,7 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(
   const int vehicle_number = allocate_vehicle_number();
 
   auto endless_road_car = builder_->template AddSystem<EndlessRoadCar<T>>(
-      endless_road_.get(), control_type);
+      id, endless_road_.get(), control_type);
   auto coord_transform =
       builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
           endless_road_.get());

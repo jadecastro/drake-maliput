@@ -97,6 +97,7 @@ class AutomotiveSimulator {
   /// @pre Start() has NOT been called.
   /// @pre SetRoadGeometry() HAS been called.
   void AddEndlessRoadCar(
+      const std::string& id,
       double longitudinal_start, double lateral_offset, double speed,
       typename EndlessRoadCar<T>::ControlType control_type);
 
