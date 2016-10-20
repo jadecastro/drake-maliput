@@ -38,8 +38,8 @@ class DRAKEAUTOMOTIVE_EXPORT RoadGeometry {
   /// Figure out the RoadPosition corresponding to GeoPosition @param geo_pos,
   /// potentially using @param hint to guide the search.
   // TODO(maddog)  UNDER CONSTRUCTION
-  virtual RoadPosition ToRoadPosition(const GeoPosition& geo_pos,
-                                      const RoadPosition& hint) const {
+  RoadPosition ToRoadPosition(const GeoPosition& geo_pos,
+                              const RoadPosition& hint) const {
     return DoToRoadPosition(geo_pos, hint);
   }
 
