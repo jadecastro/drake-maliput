@@ -7,6 +7,7 @@
 namespace maliput {
 namespace geometry_api {
 
+class RoadGeometry;
 
 class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds {
  public:
@@ -33,6 +34,9 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint {
   // Provide persistent ID.
   const BranchPointId id() const { return do_id(); }
 
+  /// @return the RoadGeometry which owns this BranchPoint.
+  const RoadGeometry* road_geometry() const { return do_road_geometry(); }
+
   const SetOfLaneEnds* GetBranches(const LaneEnd& end) const {
     return DoGetBranches(end);
   }
@@ -48,6 +52,9 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint {
  private:
   // Provide persistent ID.
   virtual const BranchPointId do_id() const = 0;
+
+  /// @return the RoadGeometry which owns this BranchPoint.
+  virtual const RoadGeometry* do_road_geometry() const = 0;
 
   virtual const SetOfLaneEnds* DoGetBranches(const LaneEnd& end) const = 0;
 

@@ -48,6 +48,8 @@ class DRAKEAUTOMOTIVE_EXPORT BranchPoint : public api::BranchPoint {
  private:
   const api::BranchPointId do_id() const override { return id_; }
 
+  const api::RoadGeometry* do_road_geometry() const override;
+
   const api::SetOfLaneEnds* DoGetBranches(
       const api::LaneEnd& end) const override;
 

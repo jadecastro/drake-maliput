@@ -2,6 +2,8 @@
 
 #include "state.h"
 
+#include <vector>
+
 namespace maliput {
 namespace geometry_api {
 
@@ -43,6 +45,22 @@ class DRAKEAUTOMOTIVE_EXPORT RoadGeometry {
     return DoToRoadPosition(geo_pos, hint);
   }
 
+  /// @return the tolerance guaranteed for linear measurements (positions).
+  double linear_tolerance() const {
+    return do_linear_tolerance();
+  }
+
+  /// @return the tolerance guaranteed for angular measurements (orientations).
+  double angular_tolerance() const {
+    return do_angular_tolerance();
+  }
+
+  /// Verify certain invariants guaranteed by the API.
+  ///
+  /// @returns a vector of strings describing violations of invariants.
+  /// Return value with size() == 0 indicates success.
+  std::vector<std::string> CheckInvariants() const;
+
  private:
   /// @return the persistent identifier.
   ///
@@ -68,6 +86,12 @@ class DRAKEAUTOMOTIVE_EXPORT RoadGeometry {
   // TODO(maddog)  UNDER CONSTRUCTION
   virtual RoadPosition DoToRoadPosition(const GeoPosition& geo_pos,
                                         const RoadPosition& hint) const = 0;
+
+  /// @return the tolerance guaranteed for linear measurements (positions).
+  virtual double do_linear_tolerance() const = 0;
+
+  /// @return the tolerance guaranteed for angular measurements (orientations).
+  virtual double do_angular_tolerance() const = 0;
 };
 
 

@@ -22,19 +22,25 @@ namespace api = maliput::geometry_api;
 namespace mono = maliput::monolane;
 
 GTEST_TEST(GenerateObj, Podge) {
+  const double kLinearTolerance = 1e-2;
+  const double kAngularTolerance = 1e-2;
+  const double kQuiteExact = 1e-12;
+
   mono::CubicPolynomial zp {0., 0., 0., 0.};
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};
 
   const double kPi2 = M_PI / 2.;
 
-  mono::RoadGeometry rg = mono::RoadGeometry({"apple"});
+  mono::RoadGeometry rg = mono::RoadGeometry({"apple"},
+                                             kLinearTolerance,
+                                             kAngularTolerance);
   auto l0 = rg.NewJunction({"j1"})->NewSegment({"s1"})->NewLineLane(
       {"l1"}, {0., 0.}, {100., 0.},
       {-5., 5.}, {-10., 10.},
       {0., 0., (60. / 100.), (-40. / 100)},
       zp);
-  EXPECT_NEAR(20., l0->ToGeoPosition({l0->length(), 0., 0.}).z, 1e-12);
+  EXPECT_NEAR(20., l0->ToGeoPosition({l0->length(), 0., 0.}).z, kQuiteExact);
 
   const double s50 = 50. * kPi2;
   rg.NewJunction({"j2"})->NewSegment({"s2"})->NewArcLane(
@@ -67,6 +73,8 @@ GTEST_TEST(GenerateObj, Podge) {
       zp,
       {0.5 / s50, 0., (-1.5 / s50), (1.0 / s50)});
 
+
+  EXPECT_EQ(rg.CheckInvariants(), std::vector<std::string>());
 
   generate_obj(&rg, "/tmp/omg.obj", 1.);
 }

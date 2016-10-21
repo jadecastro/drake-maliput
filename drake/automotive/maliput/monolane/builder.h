@@ -170,8 +170,8 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
  public:
   Builder(const api::RBounds& lane_bounds,
           const api::RBounds& driveable_bounds,
-          const double position_precision,
-          const double orientation_precision);
+          const double linear_tolerance,
+          const double angular_tolerance);
 
   // TODO(maddog) Provide for explicit branch-point siding of ends...
   //              e.g. to allow 3-way intersection.
@@ -222,11 +222,11 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
  private:
   class XYZPointFuzzyOrder {
    public:
-    XYZPointFuzzyOrder(const double position_precision,
-                       const double orientation_precision);
+    XYZPointFuzzyOrder(const double linear_tolerance,
+                       const double angular_tolerance);
 
     // TODO(maddog) This should perhaps incorporate heading/anti-heading.
-    // TODO(maddog) This should perhaps incorporate position_precision.
+    // TODO(maddog) This should perhaps incorporate linear_tolerance.
     bool operator()(const XYZPoint& lhs, const XYZPoint& rhs) const {
       auto as_tuple = [](const XYZPoint& p) {
         return std::tie(p.xy_.x_, p.xy_.y_, p.z_.z_);
@@ -271,8 +271,8 @@ class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
 
   api::RBounds lane_bounds_;
   api::RBounds driveable_bounds_;
-  double position_precision_;
-  double orientation_precision_;
+  double linear_tolerance_;
+  double angular_tolerance_;
   std::vector<std::unique_ptr<Connection>> connections_;
   std::vector<DefaultBranch> default_branches_;
   std::vector<std::unique_ptr<Group>> groups_;

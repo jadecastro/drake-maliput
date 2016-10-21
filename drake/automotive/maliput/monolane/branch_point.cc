@@ -1,8 +1,9 @@
-#include "branch_point.h"
-
-#include "lane.h"
+#include "drake/automotive/maliput/monolane/branch_point.h"
 
 #include "ignore.h"
+
+#include "drake/automotive/maliput/monolane/lane.h"
+#include "drake/automotive/maliput/monolane/road_geometry.h"
 
 #include "drake/common/drake_assert.h"
 
@@ -15,9 +16,13 @@ namespace api = maliput::geometry_api;
 const api::LaneEnd& SetOfLaneEnds::do_get(int index) const {
   return ends_[index]; }
 
+
 BranchPoint::BranchPoint(const api::BranchPointId& id, RoadGeometry* rg)
       : id_(id), road_geometry_(rg) { ignore(road_geometry_); }
 
+const api::RoadGeometry* BranchPoint::do_road_geometry() const {
+  return road_geometry_;
+}
 const api::SetOfLaneEnds* BranchPoint::DoGetBranches(
     const api::LaneEnd& end) const {
   return branches_.at(end);

@@ -78,7 +78,8 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
     const double C = -ct*(sb) + st*(sa*cb);
     const double D = st*(sb) + ct*(sa*cb);
     const double E = ca*cb;
-
+    // TODO(maddog)  yaw and roll are only correct when pitch is in the
+    //               range [-PI/2, PI/2] --- do we care about flipped cars?
     output_data->set_yaw(std::atan2(B, A));
     output_data->set_pitch(std::atan2(-C, std::sqrt(D*D + E*E)));
     output_data->set_roll(std::atan2(D, E));

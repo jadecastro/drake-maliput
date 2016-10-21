@@ -18,6 +18,7 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   gen/simple_car_config.cc
   gen/simple_car_state.cc
   idm_with_trajectory_agent.cc
+  maliput/geometry_api/road_geometry.cc
   maliput/monolane/arc_lane.cc
   maliput/monolane/branch_point.cc
   maliput/monolane/builder.cc

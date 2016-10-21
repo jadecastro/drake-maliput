@@ -19,6 +19,7 @@ InfiniteCircuitRoad::InfiniteCircuitRoad(const api::RoadGeometryId& id,
                                          const api::RoadGeometry* source,
                                          const api::LaneEnd& start)
     : id_(id),
+      source_(source),
       junction_({id.id + ".junction"}, this, &segment_),
       segment_({id.id + ".segment"}, &junction_, &lane_),
       lane_({id.id + ".lane"}, &segment_, source, start) {}

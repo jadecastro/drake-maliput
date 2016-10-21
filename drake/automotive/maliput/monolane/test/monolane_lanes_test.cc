@@ -16,7 +16,8 @@ namespace monolane {
 
 namespace api = maliput::geometry_api;
 
-const double kPositionPrecision = 1e-2;
+const double kLinearTolerance = 1e-2;
+const double kAngularTolerance = 1e-2;
 const double kVeryExact = 1e-7;
 
 GTEST_TEST(MonolaneLanesTest, FlatLineLane) {
@@ -24,7 +25,7 @@ GTEST_TEST(MonolaneLanesTest, FlatLineLane) {
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};
 
-  RoadGeometry rg = RoadGeometry({"apple"});
+  RoadGeometry rg = RoadGeometry({"apple"}, kLinearTolerance, kAngularTolerance);
   Segment* s1 = rg.NewJunction({"j1"})->NewSegment({"s1"});
   Lane* l1 = s1->NewLineLane(
       {"l1"},
@@ -32,6 +33,8 @@ GTEST_TEST(MonolaneLanesTest, FlatLineLane) {
       {-5., 5.}, {-10., 10.},
       // Zero elevation, zero superelevation == flat.
       zp, zp);
+
+  EXPECT_EQ(rg.CheckInvariants(), std::vector<std::string>());
 
   EXPECT_EQ(l1->id().id, "l1");
   EXPECT_EQ(l1->segment(), s1);
@@ -47,24 +50,24 @@ GTEST_TEST(MonolaneLanesTest, FlatLineLane) {
   EXPECT_NEAR(l1->driveable_bounds(0.).r_max,  10., kVeryExact);
 
   xyz = l1->ToGeoPosition({0., 0., 0.});
-  EXPECT_NEAR(xyz.x, 100., kPositionPrecision);
-  EXPECT_NEAR(xyz.y, -75., kPositionPrecision);
-  EXPECT_NEAR(xyz.z,   0., kPositionPrecision);
+  EXPECT_NEAR(xyz.x, 100., kLinearTolerance);
+  EXPECT_NEAR(xyz.y, -75., kLinearTolerance);
+  EXPECT_NEAR(xyz.z,   0., kLinearTolerance);
 
   xyz = l1->ToGeoPosition({1., 0., 0.});
-  EXPECT_NEAR(xyz.x, 100 + (100. * (1. / l1->length())), kPositionPrecision);
-  EXPECT_NEAR(xyz.y, -75 + (50. * (1. / l1->length())), kPositionPrecision);
-  EXPECT_NEAR(xyz.z, 0., kPositionPrecision);
+  EXPECT_NEAR(xyz.x, 100 + (100. * (1. / l1->length())), kLinearTolerance);
+  EXPECT_NEAR(xyz.y, -75 + (50. * (1. / l1->length())), kLinearTolerance);
+  EXPECT_NEAR(xyz.z, 0., kLinearTolerance);
 
   xyz = l1->ToGeoPosition({0., 1., 0.});
-  EXPECT_NEAR(xyz.x, 100 + (-50. * (1. / l1->length())), kPositionPrecision);
-  EXPECT_NEAR(xyz.y, -75 + (100. * (1. / l1->length())), kPositionPrecision);
-  EXPECT_NEAR(xyz.z, 0., kPositionPrecision);
+  EXPECT_NEAR(xyz.x, 100 + (-50. * (1. / l1->length())), kLinearTolerance);
+  EXPECT_NEAR(xyz.y, -75 + (100. * (1. / l1->length())), kLinearTolerance);
+  EXPECT_NEAR(xyz.z, 0., kLinearTolerance);
 
   xyz = l1->ToGeoPosition({l1->length(), 0., 0.});
-  EXPECT_NEAR(xyz.x, 200., kPositionPrecision);
-  EXPECT_NEAR(xyz.y, -25., kPositionPrecision);
-  EXPECT_NEAR(xyz.z,   0., kPositionPrecision);
+  EXPECT_NEAR(xyz.x, 200., kLinearTolerance);
+  EXPECT_NEAR(xyz.y, -25., kLinearTolerance);
+  EXPECT_NEAR(xyz.z,   0., kLinearTolerance);
 
   // TODO(maddog) Test ToLanePosition().
 
@@ -127,7 +130,7 @@ GTEST_TEST(MonolaneLanesTest, FlatArcLane) {
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};
 
-  RoadGeometry rg = RoadGeometry({"apple"});
+  RoadGeometry rg = RoadGeometry({"apple"}, kLinearTolerance, kAngularTolerance);
   Segment* s1 = rg.NewJunction({"j1"})->NewSegment({"s1"});
   Lane* l2 = s1->NewArcLane(
       {"l2"},
@@ -135,6 +138,8 @@ GTEST_TEST(MonolaneLanesTest, FlatArcLane) {
       {-5., 5.}, {-10., 10.},
       // Zero elevation, zero superelevation == flat.
       zp, zp);
+
+  EXPECT_EQ(rg.CheckInvariants(), std::vector<std::string>());
 
   EXPECT_EQ(l2->id().id, "l2");
   EXPECT_EQ(l2->segment(), s1);
@@ -151,39 +156,39 @@ GTEST_TEST(MonolaneLanesTest, FlatArcLane) {
 
   xyz = l2->ToGeoPosition({0., 0., 0.});
   EXPECT_NEAR(xyz.x, 100. + (100. * std::cos(0.25 * M_PI)),
-              kPositionPrecision);
+              kLinearTolerance);
   EXPECT_NEAR(xyz.y, -75. + (100. * std::sin(0.25 * M_PI)),
-              kPositionPrecision);
-  EXPECT_NEAR(xyz.z,   0., kPositionPrecision);
+              kLinearTolerance);
+  EXPECT_NEAR(xyz.z,   0., kLinearTolerance);
 
   xyz = l2->ToGeoPosition({1., 0., 0.});
   EXPECT_NEAR(
       xyz.x,
       100. + (100. * std::cos((0.25 * M_PI) + (1.5 / l2->length() * M_PI))),
-      kPositionPrecision);
+      kLinearTolerance);
   EXPECT_NEAR(
       xyz.y,
       -75. + (100. * std::sin((0.25 * M_PI) + (1.5 / l2->length() * M_PI))),
-      kPositionPrecision);
-  EXPECT_NEAR(xyz.z, 0., kPositionPrecision);
+      kLinearTolerance);
+  EXPECT_NEAR(xyz.z, 0., kLinearTolerance);
 
   xyz = l2->ToGeoPosition({0., 1., 0.});
   EXPECT_NEAR(
       xyz.x,
       100. + (100. * std::cos(0.25 * M_PI)) + (1. * std::cos(1.25 * M_PI)),
-      kPositionPrecision);
+      kLinearTolerance);
   EXPECT_NEAR(
       xyz.y,
       -75. + (100. * std::sin(0.25 * M_PI)) + (1. * std::sin(1.25 * M_PI)),
-      kPositionPrecision);
-  EXPECT_NEAR(xyz.z, 0., kPositionPrecision);
+      kLinearTolerance);
+  EXPECT_NEAR(xyz.z, 0., kLinearTolerance);
 
   xyz = l2->ToGeoPosition({l2->length(), 0., 0.});
   EXPECT_NEAR(xyz.x, 100. + (100. * std::cos(1.75 * M_PI)),
-              kPositionPrecision);
+              kLinearTolerance);
   EXPECT_NEAR(xyz.y, -75. + (100. * std::sin(1.75 * M_PI)),
-              kPositionPrecision);
-  EXPECT_NEAR(xyz.z, 0., kPositionPrecision);
+              kLinearTolerance);
+  EXPECT_NEAR(xyz.z, 0., kLinearTolerance);
 
   // TODO(maddog) Test ToLanePosition().
 
@@ -257,7 +262,7 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
 
   const double kTheta = 0.10 * M_PI;  // superelevation
 
-  RoadGeometry rg = RoadGeometry({"apple"});
+  RoadGeometry rg = RoadGeometry({"apple"}, kLinearTolerance, kAngularTolerance);
   Segment* s1 = rg.NewJunction({"j1"})->NewSegment({"s1"});
   Lane* l2 = s1->NewArcLane(
       {"l2"},
@@ -266,27 +271,29 @@ GTEST_TEST(MonolaneLanesTest, ArcLaneWithConstantSuperelevation) {
       zp,
       { (kTheta) / (100. * 1.5 * M_PI), 0., 0., 0. });
 
+  EXPECT_EQ(rg.CheckInvariants(), std::vector<std::string>());
+
   EXPECT_NEAR(l2->length(), 100. * 1.5 * M_PI, kVeryExact);
 
   xyz = l2->ToGeoPosition({0., 0., 0.});
   EXPECT_NEAR(xyz.x, 100. + (100. * std::cos(0.25 * M_PI)),
-              kPositionPrecision);
+              kLinearTolerance);
   EXPECT_NEAR(xyz.y, -75. + (100. * std::sin(0.25 * M_PI)),
-              kPositionPrecision);
-  EXPECT_NEAR(xyz.z,   0., kPositionPrecision);
+              kLinearTolerance);
+  EXPECT_NEAR(xyz.z,   0., kLinearTolerance);
 
   xyz = l2->ToGeoPosition({0., 10., 0.});
   EXPECT_NEAR(
       xyz.x,
       100. + (100. * std::cos(0.25 * M_PI)) +
       (10. * std::cos(0.10 *M_PI) * std::cos(1.25 * M_PI)),
-      kPositionPrecision);
+      kLinearTolerance);
   EXPECT_NEAR(
       xyz.y,
       -75. + (100. * std::sin(0.25 * M_PI)) +
       (10. * std::cos(kTheta) * std::sin(1.25 * M_PI)),
-      kPositionPrecision);
-  EXPECT_NEAR(xyz.z, 10. * std::sin(kTheta), kPositionPrecision);
+      kLinearTolerance);
+  EXPECT_NEAR(xyz.z, 10. * std::sin(kTheta), kLinearTolerance);
 
 
   // TODO(maddog) Test ToLanePosition().
@@ -385,7 +392,7 @@ GTEST_TEST(MonolaneLanesTest, HillIntegration) {
   api::GeoPosition xyz {0., 0., 0.};
   api::Rotation rot {0., 0., 0.};
 
-  RoadGeometry rg = RoadGeometry({"apple"});
+  RoadGeometry rg = RoadGeometry({"apple"}, kLinearTolerance, kAngularTolerance);
   Segment* s1 = rg.NewJunction({"j1"})->NewSegment({"s1"});
   const double theta0 = 0.25 * M_PI;
   const double d_theta = 0.5 * M_PI;
@@ -400,31 +407,33 @@ GTEST_TEST(MonolaneLanesTest, HillIntegration) {
       {z0, 0., (3. * (z1 - z0) / p_scale), (-2. * (z1 - z0) / p_scale)},
       zp);
 
+  EXPECT_EQ(rg.CheckInvariants(), std::vector<std::string>());
+
   const api::IsoLaneVelocity kVelocity { 1., 0., 0. };
   const double kTimeStep = 0.01;
   const int kStepsForZeroR = 15860;
 
   const api::LanePosition kLpInitialA { 0., 0., 0. };
   xyz = l1->ToGeoPosition(kLpInitialA);
-  EXPECT_NEAR(xyz.x, -100. + (100. * std::cos(theta0)), kPositionPrecision);
-  EXPECT_NEAR(xyz.y, -100. + (100. * std::sin(theta0)), kPositionPrecision);
-  EXPECT_NEAR(xyz.z,  z0, kPositionPrecision);
+  EXPECT_NEAR(xyz.x, -100. + (100. * std::cos(theta0)), kLinearTolerance);
+  EXPECT_NEAR(xyz.y, -100. + (100. * std::sin(theta0)), kLinearTolerance);
+  EXPECT_NEAR(xyz.z,  z0, kLinearTolerance);
   api::LanePosition lp_final_a =
       IntegrateTrivially(l1, kLpInitialA, kVelocity, kTimeStep,
                          kStepsForZeroR);
 
   xyz = l1->ToGeoPosition(lp_final_a);
-  EXPECT_NEAR(xyz.x, -100. + (100. * std::cos(theta1)), kPositionPrecision);
-  EXPECT_NEAR(xyz.y, -100. + (100. * std::sin(theta1)), kPositionPrecision);
-  EXPECT_NEAR(xyz.z,  z1, kPositionPrecision);
+  EXPECT_NEAR(xyz.x, -100. + (100. * std::cos(theta1)), kLinearTolerance);
+  EXPECT_NEAR(xyz.y, -100. + (100. * std::sin(theta1)), kLinearTolerance);
+  EXPECT_NEAR(xyz.z,  z1, kLinearTolerance);
 
   const api::LanePosition kLpInitialB { 0., -10., 0. };
   xyz = l1->ToGeoPosition(kLpInitialB);
   EXPECT_NEAR(xyz.x, -100. + ((100. + 10.) * std::cos(theta0)),
-              kPositionPrecision);
+              kLinearTolerance);
   EXPECT_NEAR(xyz.y, -100. + ((100. + 10.) * std::sin(theta0)),
-              kPositionPrecision);
-  EXPECT_NEAR(xyz.z,  z0, kPositionPrecision);
+              kLinearTolerance);
+  EXPECT_NEAR(xyz.z,  z0, kLinearTolerance);
 
   // NB:  '27' is a fudge-factor.  We know the steps should scale roughly
   //      as (r / r0), but not exactly because of the elevation curve.
@@ -434,10 +443,10 @@ GTEST_TEST(MonolaneLanesTest, HillIntegration) {
                          kStepsForR10);
   xyz = l1->ToGeoPosition(lp_final_b);
   EXPECT_NEAR(xyz.x, -100. + ((100. + 10.) * std::cos(theta1)),
-              kPositionPrecision);
+              kLinearTolerance);
   EXPECT_NEAR(xyz.y, -100. + ((100. + 10.) * std::sin(theta1)),
-              kPositionPrecision);
-  EXPECT_NEAR(xyz.z,  z1, kPositionPrecision);
+              kLinearTolerance);
+  EXPECT_NEAR(xyz.z,  z1, kLinearTolerance);
 }
 
 

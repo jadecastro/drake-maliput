@@ -200,7 +200,16 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
     DRAKE_ABORT();  // TODO(maddog)  Implement when someone needs this.
   }
 
+  double do_linear_tolerance() const override {
+    return source_->linear_tolerance();
+  }
+
+  double do_angular_tolerance() const override {
+    return source_->angular_tolerance();
+  }
+
   const api::RoadGeometryId id_;
+  const api::RoadGeometry* const source_;
   const Junction junction_;
   const Segment segment_;
   const Lane lane_;

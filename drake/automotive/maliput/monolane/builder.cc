@@ -15,22 +15,22 @@ namespace maliput {
 namespace monolane {
 
 Builder::XYZPointFuzzyOrder::
-XYZPointFuzzyOrder(const double position_precision,
-                   const double orientation_precision)
-        : pos_pre_(position_precision),
-          ori_pre_(orientation_precision) {
+XYZPointFuzzyOrder(const double linear_tolerance,
+                   const double angular_tolerance)
+        : pos_pre_(linear_tolerance),
+          ori_pre_(angular_tolerance) {
       ignore(pos_pre_);
       ignore(ori_pre_);
     }
 
 Builder::Builder(const api::RBounds& lane_bounds,
                  const api::RBounds& driveable_bounds,
-                 const double position_precision,
-                 const double orientation_precision)
+                 const double linear_tolerance,
+                 const double angular_tolerance)
     : lane_bounds_(lane_bounds),
       driveable_bounds_(driveable_bounds),
-      position_precision_(position_precision),
-      orientation_precision_(orientation_precision) {}
+      linear_tolerance_(linear_tolerance),
+      angular_tolerance_(angular_tolerance) {}
 
 const Connection* Builder::Connect(
     const std::string& id,
@@ -55,7 +55,8 @@ const Connection* Builder::Connect(
     const XYZPoint& start,
     const double length,
     const XYZPoint& explicit_end) {
-  DRAKE_DEMAND(length);  // TODO(maddog)  Validate length vs forced_end.
+  // TODO(maddog)  Validate length/heading vs forced_end.
+  DRAKE_DEMAND(length);
   connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kLine, id,
       start, explicit_end));
@@ -288,9 +289,10 @@ Lane* Builder::BuildConnection(
 
 std::unique_ptr<const api::RoadGeometry> Builder::Build(
     const api::RoadGeometryId& id) const {
-  auto rg = std::make_unique<RoadGeometry>(id);
+  auto rg = std::make_unique<RoadGeometry>(
+      id, linear_tolerance_, angular_tolerance_);
   std::map<XYZPoint, BranchPoint*, XYZPointFuzzyOrder> bp_map(
-      XYZPointFuzzyOrder(position_precision_, orientation_precision_));
+      XYZPointFuzzyOrder(linear_tolerance_, angular_tolerance_));
   std::map<const Connection*, Lane*> lane_map;
   std::set<const Connection*> remaining_connections;
 
@@ -325,6 +327,13 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
         ->SetDefault({in_lane, def.in_end_},
                      {out_lane, def.out_end_});
   }
+
+  // Make sure we didn't screw up!
+  std::vector<std::string> failures = rg->CheckInvariants();
+  for (const auto& s: failures) {
+    std::cerr << s << std::endl;
+  }
+  DRAKE_DEMAND(failures.size() == 0);
 
   return rg;
 }
