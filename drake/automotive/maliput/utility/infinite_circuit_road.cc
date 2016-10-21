@@ -15,9 +15,11 @@ namespace utility {
 
 namespace api = maliput::geometry_api;
 
-InfiniteCircuitRoad::InfiniteCircuitRoad(const api::RoadGeometryId& id,
-                                         const api::RoadGeometry* source,
-                                         const api::LaneEnd& start)
+InfiniteCircuitRoad::InfiniteCircuitRoad(
+    const api::RoadGeometryId& id,
+    const api::RoadGeometry* source,
+    const api::LaneEnd& start,
+    const std::vector<const api::Lane*>& path)
     : id_(id),
       source_(source),
       junction_({id.id + ".junction"}, this, &segment_),

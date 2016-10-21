@@ -34,16 +34,34 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   /// InfiniteCircuitRoad::Lane.
   InfiniteCircuitRoad(const api::RoadGeometryId& id,
                       const api::RoadGeometry* source,
-                      const api::LaneEnd& start);
+                      const api::LaneEnd& start,
+                      const std::vector<const api::Lane*>& path);
 
   virtual ~InfiniteCircuitRoad();
 
-  /// Return the sole Lane component emulated by this RoadGeometry.
+  /// @returns the sole Lane component emulated by this RoadGeometry.
   const api::Lane* lane() const { return &lane_; }
 
-  /// Return the actual length of a single cycle (despite the illusion that
+  /// @returns the actual length of a single cycle (despite the illusion that
   /// the road is infinitely long).
   double cycle_length() const { return lane_.cycle_length(); }
+
+  /// @returns a pointer to the underlying source RoadGeometry.
+  const api::RoadGeometry* source() const { return source_; }
+
+  /// Project the given LanePosition on the "infinite Lane" back to the
+  /// source Lane.
+  ///
+  /// @returns a pair of:
+  /// - RoadPosition indicating the source Lane and position on that Lane;
+  /// - bool indicating travel should be reversed in the source Lane with
+  ///   respect to +s travel in the Infinite Lane --- e.g., if true, then
+  ///   +s motion in the Infinite Lane corresponds to -s motion in the
+  ///   source Lane.
+  std::pair<api::RoadPosition, bool> ProjectToSourceRoad(
+      const api::LanePosition& lane_pos) const {
+    return lane_.ProjectToSourceRoad(lane_pos);
+  }
 
  private:
   class Junction;
@@ -58,6 +76,9 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
     virtual ~Lane();
 
     double cycle_length() const { return cycle_length_; }
+
+    std::pair<api::RoadPosition, bool> ProjectToSourceRoad(
+        const api::LanePosition& lane_pos) const;
 
    private:
     const api::LaneId do_id() const override { return id_; }
@@ -107,10 +128,6 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
         const api::GeoPosition&) const override {
       DRAKE_ABORT();  // TODO(maddog)  Implement when someone needs this.
     }
-
-    std::pair<api::RoadPosition, bool> ProjectToSourceRoad(
-        const api::LanePosition& lane_pos) const;
-
 
     struct Record {
       const api::Lane* lane;

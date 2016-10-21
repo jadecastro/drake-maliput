@@ -7,6 +7,7 @@
 
 #include "drake/automotive/automotive_simulator.h"
 #include "drake/automotive/create_trajectory_params.h"
+#include "drake/automotive/maliput/geometry_api/state.h"
 #include "drake/automotive/maliput/monolane/loader.h"
 #include "drake/automotive/maliput/utility/generate_obj.h"
 #include "drake/common/drake_path.h"
@@ -14,6 +15,13 @@
 
 DEFINE_string(road_file, "",
               "yaml file defining a maliput monolane road geometry");
+DEFINE_string(road_path, "",
+              "A string defining a circuit through the road geometry, "
+              "consisting of lane id's separated by commas.  The first "
+              "lane id must be prefixed by either 'start:' or 'end:' "
+              "indicating at which end of the first lane to begin the "
+              "circuit.  If the string is empty, a default path will "
+              "be selected.");
 // "Ego car" in this instance means "controlled by something smarter than
 // this demo code".
 DEFINE_int32(num_ego_car, 1, "Number of user-controlled vehicles");
@@ -25,6 +33,25 @@ DEFINE_bool(use_idm, false, "Use IDM to control ado cars on roads.");
 namespace drake {
 namespace automotive {
 namespace {
+
+const maliput::geometry_api::Lane* FindLaneByIdOrDie(
+    const std::string& id, const maliput::geometry_api::RoadGeometry* road) {
+  for (int ji = 0; ji < road->num_junctions(); ++ji) {
+    const maliput::geometry_api::Junction* jnx = road->junction(ji);
+    for (int si = 0; si < jnx->num_segments(); ++si) {
+      const maliput::geometry_api::Segment* seg = jnx->segment(si);
+      for (int li = 0; li < seg->num_lanes(); ++li) {
+        const maliput::geometry_api::Lane* lane = seg->lane(li);
+        if (lane->id().id == id) {
+          return lane;
+        }
+      }
+    }
+  }
+  std::cerr << "ERROR:  No lane named '" << id << "'." << std::endl;
+  std::exit(1);
+}
+
 
 int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -67,8 +94,36 @@ int main(int argc, char* argv[]) {
     // to drive on the specified road surface.
     std::cerr << "building road from " << FLAGS_road_file << std::endl;
     auto base_road = maliput::monolane::LoadFile(FLAGS_road_file);
+
+    maliput::geometry_api::LaneEnd start(
+        base_road->junction(0)->segment(0)->lane(0),
+        maliput::geometry_api::LaneEnd::kStart);
+    std::vector<const maliput::geometry_api::Lane*> path;
+
+    if (! FLAGS_road_path.empty()) {
+      std::string end;
+      std::string lane_id;
+      std::stringstream ss(FLAGS_road_path);
+
+      std::getline(ss, end, ':');
+      std::getline(ss, lane_id, ',');
+      if ((end != "start") && (end != "end")) {
+        std::cerr << "ERROR:  road_path must start with 'start:' or 'end:'."
+                  << std::endl;
+        return 1;
+      }
+      start = maliput::geometry_api::LaneEnd(
+          FindLaneByIdOrDie(lane_id, base_road.get()),
+          (end == "start") ? maliput::geometry_api::LaneEnd::kStart :
+          maliput::geometry_api::LaneEnd::kFinish);
+
+      while (std::getline(ss, lane_id, ',')) {
+        path.push_back(FindLaneByIdOrDie(lane_id, base_road.get()));
+      }
+    }
+
     const maliput::utility::InfiniteCircuitRoad* const endless_road =
-        simulator->SetRoadGeometry(&base_road);
+        simulator->SetRoadGeometry(&base_road, start, path);
 
     // User-controlled vehicles are EndlessRoadCars with DrivingCommand input.
     for (int i = 0; i < FLAGS_num_ego_car; ++i) {

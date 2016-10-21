@@ -103,9 +103,17 @@ class AutomotiveSimulator {
 
   /// Sets the RoadGeometry for this simulation.
   /// (This simulation takes ownership of the RoadGeometry*.)
+  /// The provide RoadGeometry will be wrapped with in an InfiniteCircuitRoad.
+  /// @p start specifies at which end of which lane the cicuit shall begin.
+  /// @p path specifies the route of the circuit; if @p path is empty, some
+  /// default will be constructed.  See maliput::utility::InfiniteCircuitRoad
+  /// for details.
+  ///
   /// @pre Start() has NOT been called.
   const maliput::utility::InfiniteCircuitRoad* SetRoadGeometry(
-      std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road);
+      std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road,
+      const maliput::geometry_api::LaneEnd& start,
+      const std::vector<const maliput::geometry_api::Lane*>& path);
 
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
