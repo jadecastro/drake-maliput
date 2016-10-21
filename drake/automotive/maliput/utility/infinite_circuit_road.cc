@@ -134,6 +134,10 @@ void InfiniteCircuitRoad::Lane::DoEvalMotionDerivatives(
                                          -velocity.rho_v,
                                          velocity.eta_v) : velocity,
       position_dot);
+  if (is_reversed) {
+    position_dot->s *= -1;
+    position_dot->r *= -1;
+  }
 }
 
 
