@@ -24,7 +24,7 @@ InfiniteCircuitRoad::InfiniteCircuitRoad(
       source_(source),
       junction_({id.id + ".junction"}, this, &segment_),
       segment_({id.id + ".segment"}, &junction_, &lane_),
-      lane_({id.id + ".lane"}, &segment_, source, start) {}
+      lane_({id.id + ".lane"}, &segment_, source, start, path) {}
 
 
 InfiniteCircuitRoad::~InfiniteCircuitRoad() {}
@@ -34,7 +34,8 @@ InfiniteCircuitRoad::~InfiniteCircuitRoad() {}
 InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
                                 const Segment* segment,
                                 const api::RoadGeometry* source,
-                                const api::LaneEnd& start)
+                                const api::LaneEnd& start,
+                                const std::vector<const api::Lane*>& path)
     : id_(id),
       segment_(segment) {
   // Starting at start, walk source's Lane/BranchPoint graph.  We
@@ -48,8 +49,15 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
   std::map<api::LaneEnd, int, api::LaneEnd::StrictOrder> seen_records;
   double start_s = 0.;
   api::LaneEnd current = start;
+  auto path_it = path.begin();
 
-  while (!seen_records.count(current)) {
+  while (true) {
+    if ((path.size() == 0) && (seen_records.count(current))) {
+      break;
+    } else if ((path.size() > 0) && (path_it == path.end())) {
+      break;
+    }
+
     std::cerr << "walk lane " << current.lane->id().id
               << "  end " << current.end
               << "   length " << current.lane->length() << std::endl;
@@ -64,8 +72,28 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
         api::LaneEnd::kStart;
     const api::SetOfLaneEnds* branches = current.lane->GetBranches(other_end);
     DRAKE_DEMAND(branches->count() > 0);
-    // Use the first branch every time == simple.
-    current = branches->get(0);
+
+    // If a non-empty path has been supplied, follow it.
+    // Otherwise, simply use the first branch every time.
+    if (path.size() > 0) {
+      const api::Lane* specified_lane = *path_it;
+      int bi = 0;
+      while (branches->get(bi).lane != specified_lane) {
+        ++bi;
+        if (bi >= branches->count()) {
+          std::cerr << "OOOPS:  Lane " << specified_lane->id().id
+                    << " was not found at "
+                    << ((current.end == api::LaneEnd::kStart)
+                        ? "start" : "finish")
+                    << " end of lane " << current.lane->id().id << std::endl;
+          DRAKE_ABORT();
+        }
+      }
+      current = branches->get(bi);
+      ++path_it;
+    } else {
+      current = branches->get(0);
+    }
     std::cerr << branches->count() << " branches, "
               << " 0 ---> lane " << current.lane->id().id
               << ", end " << current.end
@@ -74,7 +102,7 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
     start_s = end_s;
   }
 
-  if (seen_records[current] > 0) {
+  if ((path.size() == 0) && (seen_records[current] > 0)) {
     // We're not back at the start; need to trim records from the beginning.
     records_.erase(records_.begin(),
                    records_.begin() + seen_records[current]);

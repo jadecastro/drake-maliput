@@ -71,7 +71,8 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
    public:
     Lane(const api::LaneId& id, const Segment* segment,
          const api::RoadGeometry* source,
-         const api::LaneEnd& start);
+         const api::LaneEnd& start,
+         const std::vector<const api::Lane*>& path);
 
     virtual ~Lane();
 
