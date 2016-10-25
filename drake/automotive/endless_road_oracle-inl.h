@@ -45,13 +45,6 @@ void EndlessRoadOracle<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
-  // Obtain the state.
-  const systems::VectorBase<T>& context_state =
-      context.get_continuous_state()->get_state();
-  const EndlessRoadCarState<T>* const state =
-      dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
-  DRAKE_ASSERT(state);
-
   // Obtain the inputs.
   std::vector<const EndlessRoadCarState<T>*> car_inputs;
   for (int i = 0; i < num_cars_; ++i) {

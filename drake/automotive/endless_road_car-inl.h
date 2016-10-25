@@ -80,7 +80,7 @@ void EndlessRoadCar<T>::EvalOutput(const systems::Context<T>& context,
 
   // Obtain the state.
   const systems::VectorBase<T>& context_state =
-      context.get_continuous_state()->get_state();
+      context.get_continuous_state_vector();
   const EndlessRoadCarState<T>* const state =
       dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
   DRAKE_ASSERT(state);
@@ -109,7 +109,7 @@ void EndlessRoadCar<T>::EvalTimeDerivatives(
 
   // Obtain the state.
   const systems::VectorBase<T>& context_state =
-      context.get_continuous_state()->get_state();
+      context.get_continuous_state_vector();
   const EndlessRoadCarState<T>* const state =
       dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
   DRAKE_ASSERT(state);
@@ -117,7 +117,7 @@ void EndlessRoadCar<T>::EvalTimeDerivatives(
   // Obtain the result structure.
   DRAKE_ASSERT(derivatives != nullptr);
   systems::VectorBase<T>* const vector_derivatives =
-      derivatives->get_mutable_state();
+      derivatives->get_mutable_vector();
   DRAKE_ASSERT(vector_derivatives);
   EndlessRoadCarState<T>* const rates =
       dynamic_cast<EndlessRoadCarState<T>*>(vector_derivatives);

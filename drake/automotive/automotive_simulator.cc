@@ -486,7 +486,7 @@ void AutomotiveSimulator<T>::Start() {
         diagram_->GetMutableSubsystemContext(simulator_->get_mutable_context(),
                                              pair.first);
     systems::VectorBase<T>* context_state =
-        context->get_mutable_continuous_state()->get_mutable_state();
+        context->get_mutable_continuous_state()->get_mutable_vector();
     EndlessRoadCarState<T>* const state =
         dynamic_cast<EndlessRoadCarState<T>*>(context_state);
     DRAKE_ASSERT(state);
