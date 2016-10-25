@@ -1,10 +1,10 @@
 #pragma once
 
 // GENERATED FILE DO NOT EDIT
-// See drake/automotive/lcm_vector_gen.py.
+// See drake/tools/lcm_vector_gen.py.
 
 #include "drake/automotive/gen/endless_road_car_state.h"
-#include "drake/drakeAutomotiveLcm_export.h"
+#include "drake/common/drake_export.h"
 #include "drake/systems/lcm/lcm_and_vector_base_translator.h"
 #include "drake/lcmt_endless_road_car_state_t.hpp"
 
@@ -15,7 +15,7 @@ namespace automotive {
  * Translates between LCM message objects and VectorBase objects for the
  * EndlessRoadCarState type.
  */
-class DRAKEAUTOMOTIVELCM_EXPORT EndlessRoadCarStateTranslator
+class DRAKE_EXPORT EndlessRoadCarStateTranslator
     : public systems::lcm::LcmAndVectorBaseTranslator {
  public:
   EndlessRoadCarStateTranslator()
