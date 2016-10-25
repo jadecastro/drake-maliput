@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 
+#include <boost/optional.hpp>
+
 #include <gflags/gflags.h>
 #include "yaml-cpp/yaml.h"
 
@@ -58,6 +60,26 @@ mono::ArcOffset arc_offset(const YAML::Node& node) {
 }
 
 
+boost::optional<mono::XYZPoint> ResolvePointReference(
+    const std::string& ref,
+    const std::map<std::string, mono::XYZPoint>& xyzpoints) {
+  auto parsed = [&](){
+    static const std::string kReverse {"reverse "};
+    int where = ref.find(kReverse);
+    if (where == 0) {
+      return std::make_pair(ref.substr(kReverse.size()), true);
+    } else {
+      return std::make_pair(ref, false);
+    }
+  }();
+  auto it = xyzpoints.find(parsed.first);
+  if (it == xyzpoints.end()) {
+    return boost::none;
+  }
+  return parsed.second ? it->second.reverse() : it->second;
+}
+
+
 const mono::Connection* maybe_make_connection(
     std::string id,
     YAML::Node node,
@@ -66,24 +88,12 @@ const mono::Connection* maybe_make_connection(
   DRAKE_DEMAND(node.IsMap());
 
   // Check if needed symbols are available.
-  const std::string& start_phrase = node["start"].as<std::string>();
-  auto parsed_start = [&](){
-    static const std::string kReverse {"reverse "};
-    int where = start_phrase.find(kReverse);
-    if (where == 0) {
-      return std::make_pair(start_phrase.substr(kReverse.size()), true);
-    } else {
-      return std::make_pair(start_phrase, false);
-    }
-  }();
-  auto it_start = xyzpoints.find(parsed_start.first);
-  if (it_start == xyzpoints.end()) { return nullptr; }
-  mono::XYZPoint start_point =
-      parsed_start.second ? it_start->second.reverse() : it_start->second;
+  boost::optional<mono::XYZPoint> start_point =
+      ResolvePointReference(node["start"].as<std::string>(), xyzpoints);
+  if (! start_point) { return nullptr; }
 
   // Discover segment type.
-  bool explicit_end = false;
-  auto it_ee = xyzpoints.end();
+  boost::optional<mono::XYZPoint> ee_point;
   enum SegmentType{ kLine, kArc } segment_type{};
   for (const auto& kv : node) {
     std::string key = kv.first.as<std::string>();
@@ -93,12 +103,11 @@ const mono::Connection* maybe_make_connection(
     } else if (key == "arc") {
       segment_type = kArc;
     } else if (key == "explicit_end") {
-      explicit_end = true;
       // More symbol resolution.
       // TODO(rico): fold this and above into a function.
-      auto ee_symbol = node["explicit_end"].as<std::string>();
-      it_ee = xyzpoints.find(ee_symbol);
-      if (it_ee == xyzpoints.end()) {
+      ee_point = ResolvePointReference(node["explicit_end"].as<std::string>(),
+                                       xyzpoints);
+      if (! ee_point) {
         // Skip this connection for now; maybe we can resolve this later.
         return nullptr;
       }
@@ -109,21 +118,21 @@ const mono::Connection* maybe_make_connection(
   // Call appropriate method.
   switch (segment_type) {
     case kLine: {
-      if (explicit_end) {
+      if (ee_point) {
         return builder->Connect(
-            id, start_point, node["length"].as<double>(), it_ee->second);
+            id, *start_point, node["length"].as<double>(), *ee_point);
       } else {
         return builder->Connect(
-            id, start_point, node["length"].as<double>(),
+            id, *start_point, node["length"].as<double>(),
             zpoint(node["z_end"]));
       }
     }
     case kArc: {
-      if (explicit_end) {
-        return builder->Connect(id, start_point, arc_offset(node["arc"]),
-                                it_ee->second);
+      if (ee_point) {
+        return builder->Connect(id, *start_point, arc_offset(node["arc"]),
+                                *ee_point);
       } else {
-        return builder->Connect(id, start_point, arc_offset(node["arc"]),
+        return builder->Connect(id, *start_point, arc_offset(node["arc"]),
                                 zpoint(node["z_end"]));
       }
     }
