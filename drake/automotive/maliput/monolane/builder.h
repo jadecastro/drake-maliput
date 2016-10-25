@@ -98,7 +98,7 @@ struct ArcOffset {
 };
 
 
-class DRAKEAUTOMOTIVE_EXPORT Connection : boost::noncopyable {
+class DRAKE_EXPORT Connection : boost::noncopyable {
  public:
   enum Type { kLine, kArc };
 
@@ -144,7 +144,7 @@ class DRAKEAUTOMOTIVE_EXPORT Connection : boost::noncopyable {
 };
 
 
-class DRAKEAUTOMOTIVE_EXPORT Group : boost::noncopyable {
+class DRAKE_EXPORT Group : boost::noncopyable {
  public:
   explicit Group(const std::string& id) : id_(id) {}
 
@@ -166,7 +166,7 @@ class DRAKEAUTOMOTIVE_EXPORT Group : boost::noncopyable {
 };
 
 
-class DRAKEAUTOMOTIVE_EXPORT Builder : boost::noncopyable {
+class DRAKE_EXPORT Builder : boost::noncopyable {
  public:
   Builder(const api::RBounds& lane_bounds,
           const api::RBounds& driveable_bounds,

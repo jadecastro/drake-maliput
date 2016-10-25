@@ -15,7 +15,7 @@ class SetOfLaneEnds;
 class BranchChoices;  // TODO(maddog) define me.
 
 
-class DRAKEAUTOMOTIVE_EXPORT Lane {
+class DRAKE_EXPORT Lane {
  public:
   virtual ~Lane() {}
 

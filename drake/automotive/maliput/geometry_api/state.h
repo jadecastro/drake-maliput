@@ -3,7 +3,7 @@
 #include <functional>
 #include <string>
 
-#include "drake/drakeAutomotive_export.h"
+#include "drake/common/drake_export.h"
 
 namespace maliput {
 namespace geometry_api {
@@ -40,7 +40,7 @@ struct LaneEnd {
 };
 
 
-struct DRAKEAUTOMOTIVE_EXPORT Rotation {
+struct DRAKE_EXPORT Rotation {
   Rotation() {}
 
   Rotation(double _roll, double _pitch, double _yaw)
@@ -52,7 +52,7 @@ struct DRAKEAUTOMOTIVE_EXPORT Rotation {
 };
 
 
-struct DRAKEAUTOMOTIVE_EXPORT GeoPosition {
+struct DRAKE_EXPORT GeoPosition {
   GeoPosition() {}
 
   GeoPosition(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
@@ -63,7 +63,7 @@ struct DRAKEAUTOMOTIVE_EXPORT GeoPosition {
 };
 
 
-struct DRAKEAUTOMOTIVE_EXPORT LanePosition {
+struct DRAKE_EXPORT LanePosition {
   LanePosition() {}
 
   LanePosition(double _s, double _r, double _h) : s(_s), r(_r), h(_h) {}
@@ -73,7 +73,7 @@ struct DRAKEAUTOMOTIVE_EXPORT LanePosition {
   double h{};
 };
 
-struct DRAKEAUTOMOTIVE_EXPORT IsoLaneVelocity {
+struct DRAKE_EXPORT IsoLaneVelocity {
   IsoLaneVelocity() {}
 
   IsoLaneVelocity(double _sigma_v, double _rho_v, double _eta_v)
@@ -85,7 +85,7 @@ struct DRAKEAUTOMOTIVE_EXPORT IsoLaneVelocity {
 };
 
 
-struct DRAKEAUTOMOTIVE_EXPORT RoadPosition {
+struct DRAKE_EXPORT RoadPosition {
   RoadPosition() {}
 
   RoadPosition(const Lane* _lane, const LanePosition& _pos)
@@ -96,30 +96,30 @@ struct DRAKEAUTOMOTIVE_EXPORT RoadPosition {
 };
 
 
-struct DRAKEAUTOMOTIVE_EXPORT RBounds {
+struct DRAKE_EXPORT RBounds {
   double r_min;
   double r_max;
 };
 
 
 
-struct DRAKEAUTOMOTIVE_EXPORT LaneId {
+struct DRAKE_EXPORT LaneId {
   std::string id;
 };
 
-struct DRAKEAUTOMOTIVE_EXPORT BranchPointId {
+struct DRAKE_EXPORT BranchPointId {
   std::string id;
 };
 
-struct DRAKEAUTOMOTIVE_EXPORT SegmentId {
+struct DRAKE_EXPORT SegmentId {
   std::string id;
 };
 
-struct DRAKEAUTOMOTIVE_EXPORT JunctionId {
+struct DRAKE_EXPORT JunctionId {
   std::string id;
 };
 
-struct DRAKEAUTOMOTIVE_EXPORT RoadGeometryId {
+struct DRAKE_EXPORT RoadGeometryId {
   std::string id;
 };
 

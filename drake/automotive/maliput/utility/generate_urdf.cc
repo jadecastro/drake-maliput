@@ -18,10 +18,10 @@ namespace {
 }  // namespace
 
 
-void DRAKEAUTOMOTIVE_EXPORT generate_urdf(const std::string& dirname,
-                                          const std::string& fileroot,
-                                          const api::RoadGeometry* rg,
-                                          const double grid_unit) {
+void DRAKE_EXPORT generate_urdf(const std::string& dirname,
+                                const std::string& fileroot,
+                                const api::RoadGeometry* rg,
+                                const double grid_unit) {
   const std::string obj_filename = fileroot + ".obj";
 
   std::ofstream os(dirname + "/" + fileroot + ".urdf");

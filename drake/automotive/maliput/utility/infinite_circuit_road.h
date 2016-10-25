@@ -25,7 +25,7 @@ namespace api = maliput::geometry_api;
 /// Caveats:
 ///  * Only works with a RoadGeometry that has one-lane-per-segment.
 ///  * Source RoadGeometry must have no dead-ends.
-class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
+class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
  public:
   /// Construct an InfiniteCircuitRoad based on @param source, using
   /// @param start as the starting point in the search for a closed circuit.
@@ -67,7 +67,7 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   class Junction;
   class Segment;
 
-  class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
+  class DRAKE_EXPORT Lane : public api::Lane {
    public:
     Lane(const api::LaneId& id, const Segment* segment,
          const api::RoadGeometry* source,
@@ -150,7 +150,7 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   };
 
 
-  class DRAKEAUTOMOTIVE_EXPORT Segment : public api::Segment {
+  class DRAKE_EXPORT Segment : public api::Segment {
    public:
     Segment(const api::SegmentId& id,
             const Junction* junction, const Lane* lane)
@@ -173,7 +173,7 @@ class DRAKEAUTOMOTIVE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   };
 
 
-  class DRAKEAUTOMOTIVE_EXPORT Junction : public api::Junction {
+  class DRAKE_EXPORT Junction : public api::Junction {
    public:
     Junction(const api::JunctionId& id,
              const RoadGeometry* rg, const Segment* segment)

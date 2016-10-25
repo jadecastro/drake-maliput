@@ -10,7 +10,7 @@ namespace monolane {
 
 namespace api = maliput::geometry_api;
 
-class DRAKEAUTOMOTIVE_EXPORT ArcLane : public Lane {
+class DRAKE_EXPORT ArcLane : public Lane {
  public:
   ArcLane(const api::LaneId& id, Segment* segment,
           const V2& center, const double radius,

@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "drake/drakeAutomotive_export.h"
+#include "drake/common/drake_export.h"
 
 namespace maliput {
 
@@ -21,11 +21,11 @@ namespace api = maliput::geometry_api;
 /// interface onto YAML. See (TBD) for more detail of the format.
 
 /// Load the input string as a maliput_monolane_builder document.
-std::unique_ptr<const api::RoadGeometry> DRAKEAUTOMOTIVE_EXPORT
+std::unique_ptr<const api::RoadGeometry> DRAKE_EXPORT
 Load(const std::string& input);
 
 /// Load the named file as a maliput_monolane_builder document.
-std::unique_ptr<const api::RoadGeometry> DRAKEAUTOMOTIVE_EXPORT
+std::unique_ptr<const api::RoadGeometry> DRAKE_EXPORT
 LoadFile(const std::string& filename);
 
 }  // namespace monolane

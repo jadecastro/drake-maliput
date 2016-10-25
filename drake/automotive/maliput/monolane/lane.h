@@ -15,7 +15,7 @@ class BranchPoint;
 class Segment;
 
 
-class DRAKEAUTOMOTIVE_EXPORT Lane : public api::Lane {
+class DRAKE_EXPORT Lane : public api::Lane {
  public:
   Lane(const api::LaneId& id, Segment* segment,
        const api::RBounds& lane_bounds,

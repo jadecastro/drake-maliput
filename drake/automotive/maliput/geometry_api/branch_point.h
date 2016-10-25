@@ -9,7 +9,7 @@ namespace geometry_api {
 
 class RoadGeometry;
 
-class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds {
+class DRAKE_EXPORT SetOfLaneEnds {
  public:
   virtual ~SetOfLaneEnds() {}
 
@@ -27,7 +27,7 @@ class DRAKEAUTOMOTIVE_EXPORT SetOfLaneEnds {
 
 
 
-class DRAKEAUTOMOTIVE_EXPORT BranchPoint {
+class DRAKE_EXPORT BranchPoint {
  public:
   virtual ~BranchPoint() {}
 
