@@ -1,5 +1,6 @@
 #include "drake/automotive/maliput/geometry_api/road_geometry.h"
 
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <vector>
