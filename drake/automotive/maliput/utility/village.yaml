@@ -298,3 +298,14 @@ maliput_monolane_builder:
       start: "connections.C-St_blk2.end"
       arc: [10, 90]
       explicit_end: "reverse connections.Z-Ave_blk2.end"
+
+  groups:
+    A12-YR1: [A1-YR, A2-YR, A1-Y1, A2-Y1]
+
+    B1R-X12: [B1-X1, B1-X2, BR-X1, BR-X2]
+
+#    B12-Y12: [B1-Y1, B1-Y2, B2-Y1, B2-Y2]
+
+#    B2R-Z12: [B2-Z1, B2-Z2, BR-Z1, BR-Z2]
+
+#    C12-Y2R: [C1-Y2, C2-Y2, C1-YR, C2-YR]

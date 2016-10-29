@@ -152,7 +152,10 @@ class DRAKE_EXPORT Group : boost::noncopyable {
         const std::vector<const Connection*>& connections)
       : id_(id), connections_(connections) {}
 
-  void Add(Connection* connection);
+  void Add(const Connection* connection) {
+    // TODO(maddog) Ensure uniqueness.
+    connections_.push_back(connection);
+  }
 
   const std::string& id() const { return id_; }
 

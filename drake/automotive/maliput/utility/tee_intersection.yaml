@@ -42,3 +42,5 @@ maliput_monolane_builder:
       start: "reverse connections.east.start"
       length: 20
       explicit_end: "connections.west.start"
+  groups:
+    tee: [south_west, south_east, east_west]
