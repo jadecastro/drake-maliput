@@ -27,6 +27,13 @@ namespace api = maliput::geometry_api;
 ///  * Source RoadGeometry must have no dead-ends.
 class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
  public:
+  struct Record {
+    const api::Lane* lane;
+    double start_circuit_s;
+    double end_circuit_s;
+    bool is_reversed;
+  };
+
   /// Construct an InfiniteCircuitRoad based on @param source, using
   /// @param start as the starting point in the search for a closed circuit.
   ///
@@ -48,6 +55,12 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
 
   /// @returns a pointer to the underlying source RoadGeometry.
   const api::RoadGeometry* source() const { return source_; }
+
+  int num_path_records() const { return lane_.num_path_records(); }
+
+  const Record path_record(int i) const { return lane_.path_record(i); }
+
+  int GetPathIndex(double s) const { return lane_.GetPathIndex(s); }
 
   /// Project the given LanePosition on the "infinite Lane" back to the
   /// source Lane.
@@ -77,6 +90,12 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
     virtual ~Lane();
 
     double cycle_length() const { return cycle_length_; }
+
+    int num_path_records() const { return records_.size(); }
+
+    const Record path_record(int i) const { return records_[i]; }
+
+    int GetPathIndex(double s) const;
 
     std::pair<api::RoadPosition, bool> ProjectToSourceRoad(
         const api::LanePosition& lane_pos) const;
@@ -129,14 +148,6 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
         const api::GeoPosition&) const override {
       DRAKE_ABORT();  // TODO(maddog)  Implement when someone needs this.
     }
-
-    struct Record {
-      const api::Lane* lane;
-      double start_circuit_s;
-      double end_circuit_s;
-      bool is_reversed;
-    };
-
 
     const api::LaneId id_;
     const Segment* segment_;

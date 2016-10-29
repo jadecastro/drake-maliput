@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include <boost/optional.hpp>
+
 #include "drake/automotive/gen/endless_road_car_state.h"
 #include "drake/automotive/gen/endless_road_oracle_output.h"
 #include "drake/common/drake_export.h"
@@ -54,6 +56,9 @@ class EndlessRoadOracle : public systems::LeafSystem<T> {
   void DoEvalOutput(
       const std::vector<const EndlessRoadCarState<T>*>& car_inputs,
       std::vector<EndlessRoadOracleOutput<T>*>& oracle_outputs) const;
+
+  std::vector<boost::optional<T>> AssessIntersections(
+      const std::vector<const EndlessRoadCarState<T>*>& car_inputs) const;
 
   const maliput::utility::InfiniteCircuitRoad* road_;
   const int num_cars_;

@@ -169,6 +169,23 @@ void InfiniteCircuitRoad::Lane::DoEvalMotionDerivatives(
 }
 
 
+int InfiniteCircuitRoad::Lane::GetPathIndex(const double s) const {
+  // Find phase within the circuit.
+  // TODO(maddog)  Yes, this has obvious precision problems as lane_pos.s_
+  //               grows without bounds.
+  double circuit_s = std::fmod(s, cycle_length_);
+  if (circuit_s < 0.) { circuit_s += cycle_length_; }
+
+  for (size_t i = 0; i < records_.size(); ++i) {
+    const Record& r = records_[i];
+    if (circuit_s < r.end_circuit_s) {
+      return i;
+    }
+  }
+  DRAKE_ABORT(); // I.e., how did we fall off the end?
+}
+
+
 std::pair<api::RoadPosition, bool>
 InfiniteCircuitRoad::Lane::ProjectToSourceRoad(
     const api::LanePosition& lane_pos) const {
@@ -198,6 +215,10 @@ InfiniteCircuitRoad::Lane::ProjectToSourceRoad(
       }
     }
   }
+  std::cerr << "UH OH " << circuit_s
+            << "   cycle " << cycle_length_
+            << "   last " << records_.back().end_circuit_s
+            << std::endl;
   DRAKE_ABORT(); // I.e., how did we fall off the end?
 }
 
