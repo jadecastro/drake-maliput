@@ -300,9 +300,9 @@ maliput_monolane_builder:
       explicit_end: "reverse connections.Z-Ave_blk2.end"
 
   groups:
-    A12-YR1: [A1-YR, A2-YR, A1-Y1, A2-Y1]
+    A12-YR1: [A-St_isY, Y-Ave_isA, A1-YR, A2-YR, A1-Y1, A2-Y1]
 
-    B1R-X12: [B1-X1, B1-X2, BR-X1, BR-X2]
+    B1R-X12: [B-St_isX, X-Ave_isB, B1-X1, B1-X2, BR-X1, BR-X2]
 
 #    B12-Y12: [B1-Y1, B1-Y2, B2-Y1, B2-Y2]
 

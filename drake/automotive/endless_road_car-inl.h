@@ -204,8 +204,23 @@ typename EndlessRoadCar<T>::Accelerations EndlessRoadCar<T>::ComputeIdmAccelerat
 
   const double s_star = s_0 + (v * h) + (v * delta_v / 2. / std::sqrt(a * b));
 
-  const T forward_acceleration =
+  T forward_acceleration =
       a * (1. - std::pow(v / v_0, delta) - pow(s_star / s, 2.));
+
+  const double kFudgeFactor = 9.0;
+  if (std::abs(forward_acceleration) >
+      kFudgeFactor * config_.max_acceleration()) {
+    std::cerr << "TOO MUCH ACCEL "
+              << "  fa " << forward_acceleration
+              << "  max " << (kFudgeFactor * config_.max_acceleration())
+              << "  v_0 " << v_0
+              << "  delta_v " << delta_v
+              << "  delta_s " << s
+              << std::endl;
+    // Clamp acceleration!
+    forward_acceleration = std::copysign(
+        kFudgeFactor * config_.max_acceleration(), forward_acceleration);
+  }
 
   return {forward_acceleration, 0.};
 }

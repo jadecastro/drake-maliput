@@ -26,6 +26,9 @@ namespace api = maliput::geometry_api;
 ///  * Only works with a RoadGeometry that has one-lane-per-segment.
 ///  * Source RoadGeometry must have no dead-ends.
 class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
+ private:
+  class Lane;
+
  public:
   struct Record {
     const api::Lane* lane;
@@ -47,7 +50,7 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   virtual ~InfiniteCircuitRoad();
 
   /// @returns the sole Lane component emulated by this RoadGeometry.
-  const api::Lane* lane() const { return &lane_; }
+  const Lane* lane() const { return &lane_; }
 
   /// @returns the actual length of a single cycle (despite the illusion that
   /// the road is infinitely long).
@@ -90,6 +93,13 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
     virtual ~Lane();
 
     double cycle_length() const { return cycle_length_; }
+
+    /// @returns the position within the fixed-length circuit of the given
+    /// longitudinal position in the emulated 'infinite lane'.
+    double circuit_s(const double s) const {
+      double result = std::fmod(s, cycle_length_);
+      return (result < 0.) ? (result + cycle_length_) : result;
+    }
 
     int num_path_records() const { return records_.size(); }
 

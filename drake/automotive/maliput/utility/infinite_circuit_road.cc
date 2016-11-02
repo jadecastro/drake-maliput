@@ -173,9 +173,7 @@ int InfiniteCircuitRoad::Lane::GetPathIndex(const double s) const {
   // Find phase within the circuit.
   // TODO(maddog)  Yes, this has obvious precision problems as lane_pos.s_
   //               grows without bounds.
-  double circuit_s = std::fmod(s, cycle_length_);
-  if (circuit_s < 0.) { circuit_s += cycle_length_; }
-
+  double circuit_s = this->circuit_s(s);
   for (size_t i = 0; i < records_.size(); ++i) {
     const Record& r = records_[i];
     if (circuit_s < r.end_circuit_s) {
@@ -192,8 +190,7 @@ InfiniteCircuitRoad::Lane::ProjectToSourceRoad(
   // Find phase within the circuit.
   // TODO(maddog)  Yes, this has obvious precision problems as lane_pos.s_
   //               grows without bounds.
-  double circuit_s = std::fmod(lane_pos.s, cycle_length_);
-  if (circuit_s < 0.) { circuit_s += cycle_length_; }
+  double circuit_s = this->circuit_s(lane_pos.s);
 
   for (const Record& r : records_) {
     if (circuit_s < r.end_circuit_s) {
