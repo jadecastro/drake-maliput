@@ -72,12 +72,12 @@ maliput_monolane_builder:
       start: "points.C-St_wend"
       length: 40
       z_end: [0, 0, 0, 0]
-    C-St_isC:
+    C-St_isY:
       start: "connections.C-St_blk1.end"
       length: 20
       z_end: [0, 0, 0, 0]
     C-St_blk2:
-      start: "connections.C-St_isC.end"
+      start: "connections.C-St_isY.end"
       length: 40
       z_end: [0, 0, 0, 0]
 
@@ -119,12 +119,12 @@ maliput_monolane_builder:
       start: "points.Z-Ave_nend"
       length: 40
       z_end: [0, 0, 0, 0]
-    Z-Ave_isC:
+    Z-Ave_isB:
       start: "connections.Z-Ave_blk1.end"
       length: 20
       z_end: [0, 0, 0, 0]
     Z-Ave_blk2:
-      start: "connections.Z-Ave_isC.end"
+      start: "connections.Z-Ave_isB.end"
       length: 40
       z_end: [0, 0, 0, 0]
 
@@ -304,8 +304,8 @@ maliput_monolane_builder:
 
     B1R-X12: [B-St_isX, X-Ave_isB, B1-X1, B1-X2, BR-X1, BR-X2]
 
-#    B12-Y12: [B1-Y1, B1-Y2, B2-Y1, B2-Y2]
+    B12-Y12: [B-St_isY, Y-Ave_isB, B1-Y1, B1-Y2, B2-Y1, B2-Y2]
 
-#    B2R-Z12: [B2-Z1, B2-Z2, BR-Z1, BR-Z2]
+    B2R-Z12: [B-St_isZ, Z-Ave_isB, B2-Z1, B2-Z2, BR-Z1, BR-Z2]
 
-#    C12-Y2R: [C1-Y2, C2-Y2, C1-YR, C2-YR]
+    C12-Y2R: [C-St_isY, Y-Ave_isC, C1-Y2, C2-Y2, C1-YR, C2-YR]
