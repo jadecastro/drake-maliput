@@ -111,13 +111,13 @@ void EndlessRoadOracle<T>::DoEvalOutput(
     const EndlessRoadCarState<T>* self = car_inputs[i];
     const double self_circuit_s = road_->lane()->circuit_s(self->s());
 
-    if (sorted_by_s.find(self_circuit_s) == sorted_by_s.end()) {
-      std::cerr << "ARGH? "
-                << "  i " << i
-                << "  s " << self->s()
-                << "  cs " << self_circuit_s
-                << std::endl;
-    }
+//DBG    if (sorted_by_s.find(self_circuit_s) == sorted_by_s.end()) {
+//DBG      std::cerr << "ARGH? "
+//DBG                << "  i " << i
+//DBG                << "  s " << self->s()
+//DBG                << "  cs " << self_circuit_s
+//DBG                << std::endl;
+//DBG    }
     DRAKE_DEMAND(sorted_by_s.find(self_circuit_s) != sorted_by_s.end());
 
     // Find the next car which is ahead of self_circuit_s, by at least
@@ -142,26 +142,28 @@ void EndlessRoadOracle<T>::DoEvalOutput(
 
     oracle_outputs[i]->set_net_delta_sigma(net_delta_sigma);
     oracle_outputs[i]->set_delta_sigma_dot(
-        self->sigma_dot() - other->sigma_dot());
+        (self->speed() * std::cos(self->heading())) -
+        (other->speed() * std::cos(other->heading())));
 
-    if (i == -1) {
-      std::cerr << "Hmm? "
-                << "  i " << i
-                << "  s " << self->s()
-                << "  cs " << self_circuit_s
-                << "  other " << other_it->second
-                << "  os " << other->s()
-                << "  ocs " << other_circuit_s
-                << "  nds " << net_delta_sigma
-                << std::endl;
-    }
+//DBG    if (i == -1) {
+//DBG      std::cerr << "Hmm? "
+//DBG                << "  i " << i
+//DBG                << "  s " << self->s()
+//DBG                << "  cs " << self_circuit_s
+//DBG                << "  other " << other_it->second
+//DBG                << "  os " << other->s()
+//DBG                << "  ocs " << other_circuit_s
+//DBG                << "  nds " << net_delta_sigma
+//DBG                << std::endl;
+//DBG    }
     if ((collisions_by_car[i]) && (*collisions_by_car[i] < net_delta_sigma)) {
-      std::cerr << "COLL: " << i
-                << "  at dist " << *collisions_by_car[i]
-                << "  not " << net_delta_sigma
-                << std::endl;
+//DBG      std::cerr << "COLL: " << i
+//DBG                << "  at dist " << *collisions_by_car[i]
+//DBG                << "  not " << net_delta_sigma
+//DBG                << std::endl;
       oracle_outputs[i]->set_net_delta_sigma(*collisions_by_car[i]);
-      oracle_outputs[i]->set_delta_sigma_dot(self->sigma_dot() - 0.);
+      oracle_outputs[i]->set_delta_sigma_dot(
+          (self->speed() * std::cos(self->heading())) - 0.);
     }
   }
 }
@@ -193,7 +195,8 @@ std::vector<boost::optional<T>> EndlessRoadOracle<T>::AssessIntersections(
 
   for (int i = 0; i < num_cars_; ++i) {
     const EndlessRoadCarState<T>* state = car_inputs[i];
-    const T lookahead_distance = state->sigma_dot() * kEventHorizon;
+    const double sigma_dot =  state->speed() * std::cos(state->heading());
+    const T lookahead_distance = sigma_dot * kEventHorizon;
     DRAKE_DEMAND(lookahead_distance < (0.5 * road_->cycle_length()));
     const T s0 = road_->lane()->circuit_s(state->s());
     const T lookahead_horizon = s0 + lookahead_distance;
@@ -210,8 +213,8 @@ std::vector<boost::optional<T>> EndlessRoadOracle<T>::AssessIntersections(
       if (s_out < s0) { s_out += road_->cycle_length(); }
 
       // TODO(maddog) time in/out should account for length of vehicle, too.
-      const T time_in = (s_in - s0) / state->sigma_dot();
-      const T time_out = (s_out - s0) / state->sigma_dot();
+      const T time_in = (s_in - s0) / sigma_dot;
+      const T time_out = (s_out - s0) / sigma_dot;
       const TimeBox box = TimeBox{i, path_record.lane,
                                   time_in, time_out,
                                   s_in, s_out};
@@ -219,15 +222,15 @@ std::vector<boost::optional<T>> EndlessRoadOracle<T>::AssessIntersections(
           path_record.lane->segment()->junction();
       boxes_by_junction[junction].push_back(box);
       junctions_by_car[i].push_back(junction);
-      if ((junction->id().id == "j:A12-YR1") ||
-          (junction->id().id == "j:B1R-X12")) {
-        std::cerr << "car " << i
-                  << "  " << junctions_by_car[i].size() << " jnxs"
-                  << "   At " << junction->id().id
-                  << "  " << path_record.lane->id().id
-                  << "  [" << box.time_in << ", " << box.time_out << "]"
-                  << std::endl;
-      }
+//DBG      if ((junction->id().id == "j:A12-YR1") ||
+//DBG          (junction->id().id == "j:B1R-X12")) {
+//DBG        std::cerr << "car " << i
+//DBG                  << "  " << junctions_by_car[i].size() << " jnxs"
+//DBG                  << "   At " << junction->id().id
+//DBG                  << "  " << path_record.lane->id().id
+//DBG                  << "  [" << box.time_in << ", " << box.time_out << "]"
+//DBG                  << std::endl;
+//DBG      }
       // TODO(maddog) Index should decrement for s_dot < 0.
       if (++path_index >= road_->num_path_records()) {
         path_index = 0;
@@ -267,6 +270,8 @@ std::vector<boost::optional<T>> EndlessRoadOracle<T>::AssessIntersections(
 
       // Are there any intersecting TimeBoxes from other cars?
       const bool might_collide = [&](){
+        // If self is *already in* the intersection, don't worry about it.
+        if (self_box.time_in == 0.) { return false; }
         for (const auto& other_box : boxes_by_junction[junction]) {
           // Skip self (car 'i').
           if (other_box.car_index == i) { continue; }

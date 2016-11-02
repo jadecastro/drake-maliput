@@ -9,6 +9,6 @@ struct lcmt_endless_road_car_state_t {
 
   double s;
   double r;
-  double sigma_dot;
-  double rho_dot;
+  double heading;
+  double speed;
 }

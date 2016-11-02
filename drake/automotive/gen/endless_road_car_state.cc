@@ -9,8 +9,8 @@ namespace automotive {
 const int EndlessRoadCarStateIndices::kNumCoordinates;
 const int EndlessRoadCarStateIndices::kS;
 const int EndlessRoadCarStateIndices::kR;
-const int EndlessRoadCarStateIndices::kSigmaDot;
-const int EndlessRoadCarStateIndices::kRhoDot;
+const int EndlessRoadCarStateIndices::kHeading;
+const int EndlessRoadCarStateIndices::kSpeed;
 
 }  // namespace automotive
 }  // namespace drake

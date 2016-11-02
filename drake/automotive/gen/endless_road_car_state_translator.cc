@@ -25,8 +25,8 @@ void EndlessRoadCarStateTranslator::Serialize(
   message.timestamp = static_cast<int64_t>(time * 1000);
   message.s = vector->s();
   message.r = vector->r();
-  message.sigma_dot = vector->sigma_dot();
-  message.rho_dot = vector->rho_dot();
+  message.heading = vector->heading();
+  message.speed = vector->speed();
   const int lcm_message_length = message.getEncodedSize();
   lcm_message_bytes->resize(lcm_message_length);
   message.encode(lcm_message_bytes->data(), 0, lcm_message_length);
@@ -48,8 +48,8 @@ void EndlessRoadCarStateTranslator::Deserialize(
   }
   my_vector->set_s(message.s);
   my_vector->set_r(message.r);
-  my_vector->set_sigma_dot(message.sigma_dot);
-  my_vector->set_rho_dot(message.rho_dot);
+  my_vector->set_heading(message.heading);
+  my_vector->set_speed(message.speed);
 }
 
 }  // namespace automotive

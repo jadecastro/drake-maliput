@@ -132,8 +132,8 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(
   EndlessRoadCarState<T>& initial_state = endless_road_cars_[endless_road_car];
   initial_state.set_s(longitudinal_start);
   initial_state.set_r(lateral_offset);
-  initial_state.set_sigma_dot(speed);
-  initial_state.set_rho_dot(0.);
+  initial_state.set_speed(speed);
+  initial_state.set_heading(0.);
 
   switch (control_type) {
     case EndlessRoadCar<T>::kNone: {

@@ -61,8 +61,8 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
     // followed by srh->xyz rotation of LANE-space orientation.
     maliput::geometry_api::Rotation rot = road_->lane()->GetOrientation(lp);
     // TODO(maddog)  Deal with (sigma_dot < 0).
-    const double theta = std::atan2(input_data->rho_dot(),
-                                    input_data->sigma_dot());
+    const double theta = input_data->heading();
+
     const double ct = std::cos(theta);
     const double st = std::sin(theta);
 

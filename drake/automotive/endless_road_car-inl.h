@@ -164,8 +164,7 @@ typename EndlessRoadCar<T>::Accelerations EndlessRoadCar<T>::ComputeUserAccelera
       * config_.max_acceleration();
 
   // Simplistic steering: lateral acceleration <-- centripetal acceleration.
-  const T speed = std::sqrt((state.sigma_dot() * state.sigma_dot()) +
-                            (state.rho_dot() * state.rho_dot()));
+  const T speed = state.speed();
   T sane_steering_angle = input.steering_angle();
   DRAKE_ASSERT(static_cast<T>(-M_PI) < sane_steering_angle);
   DRAKE_ASSERT(sane_steering_angle < static_cast<T>(M_PI));
@@ -200,7 +199,7 @@ typename EndlessRoadCar<T>::Accelerations EndlessRoadCar<T>::ComputeIdmAccelerat
   // Net distance to car ahead (front bumper to rear bumper)
   const double s = input.net_delta_sigma();
   // Current velocity
-  const double v = state.sigma_dot();
+  const double v = state.speed() * std::cos(state.heading());
 
   const double s_star = s_0 + (v * h) + (v * delta_v / 2. / std::sqrt(a * b));
 
@@ -235,7 +234,9 @@ void EndlessRoadCar<T>::DoEvalTimeDerivatives(
   // Position + velocity ---> position derivatives.
   maliput::geometry_api::LanePosition lane_position(state.s(), state.r(), 0.);
   maliput::geometry_api::IsoLaneVelocity lane_velocity(
-      state.sigma_dot(), state.rho_dot(), 0.);
+      state.speed() * std::cos(state.heading()),
+      state.speed() * std::sin(state.heading()),
+      0.);
   maliput::geometry_api::LanePosition derivatives;
   road_->lane()->EvalMotionDerivatives(
       lane_position, lane_velocity, &derivatives);
@@ -244,18 +245,12 @@ void EndlessRoadCar<T>::DoEvalTimeDerivatives(
   rates->set_r(derivatives.r);
   // Ignore derivatives.h_, which should be zero anyhow.
 
-  // Velocity + control inputs ---> velocity derivatives.
-  // "heading angle w.r.t. s_hat == zero angle"
-  const T heading = std::atan2(state.rho_dot(), state.sigma_dot());
+  const double speed_dot = accelerations.forward;
+  const double heading_dot =
+      (state.speed() == 0.) ? 0. : (accelerations.lateral / state.speed());
 
-  const double sigma_ddot =
-      (accelerations.forward * std::cos(heading)) -
-      (accelerations.lateral * std::sin(heading));
-  const double rho_ddot =
-      (accelerations.forward * std::sin(heading)) +
-      (accelerations.lateral * std::cos(heading));
-  rates->set_sigma_dot(sigma_ddot);
-  rates->set_rho_dot(rho_ddot);
+  rates->set_speed(speed_dot);
+  rates->set_heading(heading_dot);
 }
 
 
