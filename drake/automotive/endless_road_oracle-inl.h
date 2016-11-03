@@ -105,7 +105,7 @@ void EndlessRoadOracle<T>::DoEvalOutput(
   //  - compute/record:
   //     * net true longitudinal distance to other car (delta sigma)
   //     * true longitudinal velocity difference (delta sigma-dot)
-  const double kCarLength = 2.;  // TODO(maddog) Get from somewhere else.
+  const double kCarLength = 4.6;  // TODO(maddog) Get from somewhere else.
   // TODO(maddog)  Do something reasonable if num_cars_ < 2.
   for (int i = 0; i < num_cars_; ++i) {
     const EndlessRoadCarState<T>* self = car_inputs[i];

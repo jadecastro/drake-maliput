@@ -158,7 +158,9 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(
   builder_->Connect(*endless_road_car, *coord_transform);
   AddPublisher(*endless_road_car, vehicle_number);
   AddPublisher(*coord_transform, vehicle_number);
-  AddBoxcar(coord_transform);
+  // TODO(liang.fok) Allow model to be client selectable.
+  AddSdfModel(GetDrakePath() + "/automotive/models/prius/prius_with_lidar.sdf",
+              coord_transform);
 }
 
 template <typename T>
