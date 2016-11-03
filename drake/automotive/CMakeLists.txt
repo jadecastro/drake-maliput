@@ -33,6 +33,9 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   maliput/utility/infinite_circuit_road.cc
   simple_car.cc
   trajectory_car.cc
+  linear_car.cc
+  idm_planner.cc
+  single_lane_ego_and_agent.cc
   )
 target_link_libraries(drakeAutomotive
   drakeCommon
