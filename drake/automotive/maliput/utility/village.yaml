@@ -13,10 +13,10 @@ maliput_monolane_builder:
       zpoint: [0, 0, 0, 0]
     B-St_wend:
       xypoint: [-70, 0, 0]
-      zpoint: [0, 0, 0, 0]
+      zpoint: [5, 0, 0, 0]
     C-St_wend:
       xypoint: [-50, -60, 0]
-      zpoint: [0, 0, 0, 0]
+      zpoint: [7, 0, 0, 0]
 
     X-Ave_nend:
       xypoint: [-60, 50, -90]
@@ -50,7 +50,7 @@ maliput_monolane_builder:
     B-St_isX:
       start: "points.B-St_wend"
       length: 20
-      z_end: [0, 0, 0, 0]
+      z_end: [5, 0, 0, 0]
     B-St_blk1:
       start: "connections.B-St_isX.end"
       length: 40
@@ -71,11 +71,11 @@ maliput_monolane_builder:
     C-St_blk1:
       start: "points.C-St_wend"
       length: 40
-      z_end: [0, 0, 0, 0]
+      z_end: [5, 0, 0, 0]
     C-St_isY:
       start: "connections.C-St_blk1.end"
       length: 20
-      z_end: [0, 0, 0, 0]
+      z_end: [5, 0, 0, 0]
     C-St_blk2:
       start: "connections.C-St_isY.end"
       length: 40
@@ -84,15 +84,15 @@ maliput_monolane_builder:
     X-Ave_blk1:
       start: "points.X-Ave_nend"
       length: 40
-      z_end: [0, 0, 0, 0]
+      z_end: [5, 0, 0, 0]
     X-Ave_isB:
       start: "connections.X-Ave_blk1.end"
       length: 20
-      z_end: [0, 0, 0, 0]
+      z_end: [5, 0, 0, 0]
     X-Ave_blk2:
       start: "connections.X-Ave_isB.end"
       length: 40
-      z_end: [0, 0, 0, 0]
+      z_end: [7, 0, 0, 0]
 
     Y-Ave_isA:
       start: "points.Y-Ave_nend"
@@ -109,11 +109,11 @@ maliput_monolane_builder:
     Y-Ave_blk2:
       start: "connections.Y-Ave_isB.end"
       length: 40
-      z_end: [0, 0, 0, 0]
+      z_end: [5, 0, 0, 0]
     Y-Ave_isC:
       start: "connections.Y-Ave_blk2.end"
       length: 20
-      z_end: [0, 0, 0, 0]
+      z_end: [5, 0, 0, 0]
 
     Z-Ave_blk1:
       start: "points.Z-Ave_nend"
@@ -137,37 +137,53 @@ maliput_monolane_builder:
       start: "connections.Express_N1.end"
       length: 120
       z_end: [0, 0, 0, 0]
-    Express_NE:
+    Express_NE_a:
       start: "connections.Express_N2.end"
-      arc: [60, -90]
+      arc: [60, -45]
+      z_end: [0, 0, 20, 0]
+    Express_NE_b:
+      start: "connections.Express_NE_a.end"
+      arc: [60, -45]
       z_end: [0, 0, 0, 0]
     Express_E:
-      start: "connections.Express_NE.end"
+      start: "connections.Express_NE_b.end"
       length: 120
       z_end: [0, 0, 0, 0]
-    Express_ES:
+    Express_ES_a:
       start: "connections.Express_E.end"
-      arc: [60, -90]
-      z_end: [0, 0, 0, 0]
+      arc: [60, -45]
+      z_end: [0, 0, 20, 0]
+    Express_ES_b:
+      start: "connections.Express_ES_a.end"
+      arc: [60, -45]
+      z_end: [0, 0, 20, 0]
     Express_S1:
-      start: "connections.Express_ES.end"
+      start: "connections.Express_ES_b.end"
       length: 120
       z_end: [0, 0, 0, 0]
     Express_S2:
       start: "connections.Express_S1.end"
       length: 20
       z_end: [0, 0, 0, 0]
-    Express_SW:
+    Express_SW_a:
       start: "connections.Express_S2.end"
-      arc: [60, -90]
+      arc: [60, -45]
+      z_end: [0, 0, 20, 0]
+    Express_SW_b:
+      start: "connections.Express_SW_a.end"
+      arc: [60, -45]
       z_end: [0, 0, 0, 0]
     Express_W:
-      start: "connections.Express_SW.end"
+      start: "connections.Express_SW_b.end"
       length: 120
       z_end: [0, 0, 0, 0]
-    Express_WN:
+    Express_WN_a:
       start: "connections.Express_W.end"
-      arc: [60, -90]
+      arc: [60, -45]
+      z_end: [0, 0, 20, 0]
+    Express_WN_b:
+      start: "connections.Express_WN_a.end"
+      arc: [60, -45]
       explicit_end: "connections.Express_N1.start"
 
     Express_NRamp:
@@ -176,19 +192,27 @@ maliput_monolane_builder:
       explicit_end: "connections.Y-Ave_isA.start"
 
     Express_ERamp:
-      start: "connections.Express_NE.end"
+      start: "connections.Express_NE_b.end"
       arc: [60, -90]
       explicit_end: "reverse connections.B-St_isZ.end"
 
-    Express_SRamp:
+    Express_SRamp_a:
       start: "connections.Y-Ave_isC.end"
-      arc: [50, -90]
+      arc: [50, -60]
+      z_end: [0, 0, 0, 0]
+    Express_SRamp_b:
+      start: "connections.Express_SRamp_a.end"
+      arc: [50, -30]
       explicit_end: "connections.Express_S2.start"
 
-    Express_WRamp:
+    Express_WRamp_a:
       start: "reverse connections.B-St_isX.start"
-      arc: [60, -90]
-      explicit_end: "connections.Express_WN.start"
+      arc: [60, -60]
+      z_end: [0, 0, 0, 0]
+    Express_WRamp_b:
+      start: "connections.Express_WRamp_a.end"
+      arc: [60, -30]
+      explicit_end: "connections.Express_WN_a.start"
 
 
     # Intersection connections
