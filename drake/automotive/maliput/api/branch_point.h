@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lane.h"
+#include "drake/automotive/maliput/api/lane_data.h"
 
 #include <boost/optional.hpp>
 
@@ -9,6 +9,11 @@ namespace maliput {
 namespace api {
 
 class RoadGeometry;
+
+struct DRAKE_EXPORT BranchPointId {
+  std::string id;
+};
+
 
 class DRAKE_EXPORT SetOfLaneEnds {
  public:

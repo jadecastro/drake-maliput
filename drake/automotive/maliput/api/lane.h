@@ -1,6 +1,6 @@
 #pragma once
 
-#include "state.h"
+#include "drake/automotive/maliput/api/lane_data.h"
 
 #include <boost/optional.hpp>
 
@@ -14,6 +14,11 @@ class Segment;
 class SetOfLaneEnds;
 
 class BranchChoices;  // TODO(maddog) define me.
+
+
+struct DRAKE_EXPORT LaneId {
+  std::string id;
+};
 
 
 class DRAKE_EXPORT Lane {

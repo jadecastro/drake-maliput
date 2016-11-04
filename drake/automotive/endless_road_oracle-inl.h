@@ -12,7 +12,7 @@
 
 #include <Eigen/Geometry>
 
-#include "drake/automotive/maliput/api/state.h"
+#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/common/drake_assert.h"
 #include "drake/systems/framework/vector_base.h"

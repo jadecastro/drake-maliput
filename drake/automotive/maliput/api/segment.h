@@ -1,13 +1,17 @@
 #pragma once
 
-#include "state.h"
-
 namespace drake {
 namespace maliput {
 namespace api {
 
 class Junction;
 class Lane;
+
+
+struct DRAKE_EXPORT SegmentId {
+  std::string id;
+};
+
 
 class DRAKE_EXPORT Segment {
  public:

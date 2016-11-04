@@ -1,13 +1,17 @@
 #pragma once
 
-#include "state.h"
-
 namespace drake {
 namespace maliput {
 namespace api {
 
 class RoadGeometry;
 class Segment;
+
+
+struct DRAKE_EXPORT JunctionId {
+  std::string id;
+};
+
 
 /// A Junction is a closed set of Segments which physically overlap,
 /// in the sense that RoadPositions in the domains of two Segments map

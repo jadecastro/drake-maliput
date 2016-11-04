@@ -74,6 +74,7 @@ struct DRAKE_EXPORT LanePosition {
   double h{};
 };
 
+
 struct DRAKE_EXPORT IsoLaneVelocity {
   IsoLaneVelocity() {}
 
@@ -103,26 +104,6 @@ struct DRAKE_EXPORT RBounds {
 };
 
 
-
-struct DRAKE_EXPORT LaneId {
-  std::string id;
-};
-
-struct DRAKE_EXPORT BranchPointId {
-  std::string id;
-};
-
-struct DRAKE_EXPORT SegmentId {
-  std::string id;
-};
-
-struct DRAKE_EXPORT JunctionId {
-  std::string id;
-};
-
-struct DRAKE_EXPORT RoadGeometryId {
-  std::string id;
-};
 
 
 

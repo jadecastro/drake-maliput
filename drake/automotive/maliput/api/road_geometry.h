@@ -1,6 +1,6 @@
 #pragma once
 
-#include "state.h"
+#include "drake/automotive/maliput/api/lane_data.h"
 
 #include <vector>
 
@@ -10,6 +10,12 @@ namespace api {
 
 class BranchPoint;
 class Junction;
+
+
+struct DRAKE_EXPORT RoadGeometryId {
+  std::string id;
+};
+
 
 /// Abstract API for the geometry of a road network, including both
 /// the network topology and the geometry of its embedding in 3-space.

@@ -7,7 +7,7 @@
 
 #include "drake/automotive/automotive_simulator.h"
 #include "drake/automotive/create_trajectory_params.h"
-#include "drake/automotive/maliput/api/state.h"
+#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/monolane/loader.h"
 #include "drake/automotive/maliput/utility/generate_obj.h"
 #include "drake/common/drake_path.h"

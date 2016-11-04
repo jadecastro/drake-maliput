@@ -11,7 +11,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
-#include "drake/automotive/maliput/api/state.h"
+#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 
 #include "drake/common/drake_assert.h"

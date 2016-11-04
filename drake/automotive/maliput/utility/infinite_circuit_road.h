@@ -6,10 +6,10 @@
 
 #include "drake/automotive/maliput/api/branch_point.h"
 #include "drake/automotive/maliput/api/lane.h"
+#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/api/junction.h"
 #include "drake/automotive/maliput/api/road_geometry.h"
 #include "drake/automotive/maliput/api/segment.h"
-#include "drake/automotive/maliput/api/state.h"
 
 #include "drake/common/drake_assert.h"
 
