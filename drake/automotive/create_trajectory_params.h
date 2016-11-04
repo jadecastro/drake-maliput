@@ -22,17 +22,5 @@ namespace automotive {
  */
 std::tuple<Curve2<double>, double, double> CreateTrajectoryParams(int index);
 
-/**
- * Creates TrajectoryRoadCar constructor demo arguments.  The details of the
- * trajectory are not documented / promised by this API.
- *
- * @param index Selects which pre-programmed trajectory to use.
- * @return tuple of road, lateral_offset, speed, start_time
- */
-std::tuple<const maliput::api::RoadGeometry*,
-           double, double, double> CreateTrajectoryRoadParams(
-               const maliput::api::RoadGeometry& road,
-               int index);
-
 }  // namespace automotive
 }  // namespace drake

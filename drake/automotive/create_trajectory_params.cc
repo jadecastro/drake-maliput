@@ -73,28 +73,5 @@ std::tuple<Curve2<double>, double, double> CreateTrajectoryParams(int index) {
   return std::make_tuple(curve, kSpeed, start_time);
 }
 
-std::tuple<const maliput::api::RoadGeometry*,
-           double, double, double> CreateTrajectoryRoadParams(
-               const maliput::api::RoadGeometry& road,
-               int index) {
-  using namespace maliput::api;
-
-  static const double kSubLaneWidth = 4.0;
-
-  // Assume we are dealing with monolane back-end and hence bounds are
-  // constant.
-  const RBounds lane_bounds =
-      road.junction(0)->segment(0)->lane(0)->lane_bounds(0);
-  const double lane_total_width = lane_bounds.r_max - lane_bounds.r_min;
-  const int lanes = lane_total_width / kSubLaneWidth;
-
-  // Magic car placement to make a good visual demo.
-  const double lateral_offset =
-      (index % lanes) * kSubLaneWidth + lane_bounds.r_min;
-  const double start_time = (index / lanes) * 0.8;
-  const double kSpeed = 8.0;
-  return std::make_tuple(&road, lateral_offset, kSpeed, start_time);
-}
-
 }  // namespace automotive
 }  // namespace drake
