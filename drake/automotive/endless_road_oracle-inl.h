@@ -45,6 +45,8 @@ void EndlessRoadOracle<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
+//DBG  std::cerr << "EvalOutput()  ORACLE " << std::endl;
+
   // Obtain the inputs.
   std::vector<const EndlessRoadCarState<T>*> car_inputs;
   for (int i = 0; i < num_cars_; ++i) {
