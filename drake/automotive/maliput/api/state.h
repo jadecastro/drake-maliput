@@ -5,8 +5,9 @@
 
 #include "drake/common/drake_export.h"
 
+namespace drake {
 namespace maliput {
-namespace geometry_api {
+namespace api {
 
 
 class Lane;
@@ -127,3 +128,4 @@ struct DRAKE_EXPORT RoadGeometryId {
 
 }  // namespace geometry_api
 }  // namespace maliput
+}  // namespace drake

@@ -8,18 +8,16 @@
 #include <unordered_map>
 #include <vector>
 
-#include "drake/automotive/maliput/geometry_api/junction.h"
-#include "drake/automotive/maliput/geometry_api/lane.h"
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
-#include "drake/automotive/maliput/geometry_api/segment.h"
+#include "drake/automotive/maliput/api/junction.h"
+#include "drake/automotive/maliput/api/lane.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
+#include "drake/automotive/maliput/api/segment.h"
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace utility {
-
-namespace api = maliput::geometry_api;
-
 
 namespace {
 
@@ -345,3 +343,4 @@ void DRAKE_EXPORT generate_obj(const api::RoadGeometry* rg,
 
 }  // namespace utility
 }  // namespace maliput
+}  // namespace drake

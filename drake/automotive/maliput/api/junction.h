@@ -2,8 +2,9 @@
 
 #include "state.h"
 
+namespace drake {
 namespace maliput {
-namespace geometry_api {
+namespace api {
 
 class RoadGeometry;
 class Segment;
@@ -55,3 +56,4 @@ class DRAKE_EXPORT Junction {
 
 }  // namespace geometry_api
 }  // namespace maliput
+}  // namespace drake

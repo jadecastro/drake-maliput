@@ -10,11 +10,9 @@
 
 #include "gtest/gtest.h"
 
-
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 GTEST_TEST(HodgePodge, Podge) {
   const double kLinearTolerance = 1e-2;
@@ -113,3 +111,4 @@ GTEST_TEST(HodgePodge, Podge) {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

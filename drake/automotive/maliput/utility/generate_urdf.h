@@ -1,12 +1,10 @@
 #pragma once
 
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
 
-
+namespace drake {
 namespace maliput {
 namespace utility {
-
-namespace api = maliput::geometry_api;
 
 void generate_urdf(const std::string& dirname,
                    const std::string& fileroot,
@@ -15,3 +13,4 @@ void generate_urdf(const std::string& dirname,
 
 }  // namespace utility
 }  // namespace maliput
+}  // namespace drake

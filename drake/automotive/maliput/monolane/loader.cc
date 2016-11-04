@@ -13,8 +13,8 @@
 #include "drake/automotive/maliput/monolane/builder.h"
 #include "drake/automotive/maliput/utility/generate_obj.h"
 
-namespace api = maliput::geometry_api;
-namespace mono = maliput::monolane;
+namespace api = drake::maliput::api;
+namespace mono = drake::maliput::monolane;
 
 namespace {
 
@@ -221,7 +221,7 @@ std::unique_ptr<const api::RoadGeometry> BuildFrom(YAML::Node node) {
 
 }  // namespace
 
-
+namespace drake {
 namespace maliput {
 namespace monolane {
 
@@ -236,3 +236,4 @@ std::unique_ptr<const api::RoadGeometry> LoadFile(const std::string& filename) {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

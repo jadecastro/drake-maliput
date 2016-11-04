@@ -2,7 +2,7 @@
 
 #include "drake/automotive/gen/euler_floating_joint_state.h"
 #include "drake/automotive/gen/endless_road_car_state.h"
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/systems/framework/leaf_system.h"
 
@@ -47,9 +47,8 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
         dynamic_cast<EulerFloatingJointState<T>*>(output_vector);
     DRAKE_ASSERT(output_data != nullptr);
 
-    maliput::geometry_api::LanePosition lp(
-        input_data->s(), input_data->r(), 0.);
-    maliput::geometry_api::GeoPosition geo = road_->lane()->ToGeoPosition(lp);
+    maliput::api::LanePosition lp(input_data->s(), input_data->r(), 0.);
+    maliput::api::GeoPosition geo = road_->lane()->ToGeoPosition(lp);
     output_data->set_x(geo.x);
     output_data->set_y(geo.y);
     output_data->set_z(geo.z);
@@ -59,7 +58,7 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
     // Hence, we express forward-orientation of the car as a composition of
     // two rotations:  rotation in sr-plane to align with velocity vector,
     // followed by srh->xyz rotation of LANE-space orientation.
-    maliput::geometry_api::Rotation rot = road_->lane()->GetOrientation(lp);
+    maliput::api::Rotation rot = road_->lane()->GetOrientation(lp);
     // TODO(maddog)  Deal with (sigma_dot < 0).
     const double theta = input_data->heading();
 

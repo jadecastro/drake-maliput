@@ -7,10 +7,9 @@
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 const api::Junction* Segment::do_junction() const {
   return junction_;
@@ -58,7 +57,6 @@ const api::Lane* Segment::do_lane(int index) const {
 }
 
 
-
-
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

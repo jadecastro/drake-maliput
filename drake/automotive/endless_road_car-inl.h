@@ -12,7 +12,7 @@
 
 #include <Eigen/Geometry>
 
-#include "drake/automotive/maliput/geometry_api/state.h"
+#include "drake/automotive/maliput/api/state.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/common/drake_assert.h"
 #include "drake/systems/framework/vector_base.h"
@@ -235,12 +235,12 @@ void EndlessRoadCar<T>::DoEvalTimeDerivatives(
     EndlessRoadCarState<T>* rates) const {
 
   // Position + velocity ---> position derivatives.
-  maliput::geometry_api::LanePosition lane_position(state.s(), state.r(), 0.);
-  maliput::geometry_api::IsoLaneVelocity lane_velocity(
+  maliput::api::LanePosition lane_position(state.s(), state.r(), 0.);
+  maliput::api::IsoLaneVelocity lane_velocity(
       state.speed() * std::cos(state.heading()),
       state.speed() * std::sin(state.heading()),
       0.);
-  maliput::geometry_api::LanePosition derivatives;
+  maliput::api::LanePosition derivatives;
   road_->lane()->EvalMotionDerivatives(
       lane_position, lane_velocity, &derivatives);
 

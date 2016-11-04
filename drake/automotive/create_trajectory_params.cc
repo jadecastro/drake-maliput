@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <vector>
 
-#include "drake/automotive/maliput/geometry_api/junction.h"
-#include "drake/automotive/maliput/geometry_api/lane.h"
-#include "drake/automotive/maliput/geometry_api/segment.h"
+#include "drake/automotive/maliput/api/junction.h"
+#include "drake/automotive/maliput/api/lane.h"
+#include "drake/automotive/maliput/api/segment.h"
 
 namespace drake {
 namespace automotive {
@@ -73,11 +73,11 @@ std::tuple<Curve2<double>, double, double> CreateTrajectoryParams(int index) {
   return std::make_tuple(curve, kSpeed, start_time);
 }
 
-std::tuple<const maliput::geometry_api::RoadGeometry*,
+std::tuple<const maliput::api::RoadGeometry*,
            double, double, double> CreateTrajectoryRoadParams(
-               const maliput::geometry_api::RoadGeometry& road,
+               const maliput::api::RoadGeometry& road,
                int index) {
-  using namespace maliput::geometry_api;
+  using namespace maliput::api;
 
   static const double kSubLaneWidth = 4.0;
 

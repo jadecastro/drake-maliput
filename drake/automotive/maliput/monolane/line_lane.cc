@@ -5,11 +5,9 @@
 #include "drake/automotive/maliput/monolane/ignore.h"
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
-
 
 V2 LineLane::xy_of_p_(const double p) const {
   return V2(x0_ + (p * dx_),
@@ -38,3 +36,4 @@ api::LanePosition LineLane::DoToLanePosition(
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

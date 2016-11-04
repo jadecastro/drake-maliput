@@ -1,15 +1,14 @@
 #pragma once
 
-#include "drake/automotive/maliput/geometry_api/branch_point.h"
-#include "drake/automotive/maliput/geometry_api/lane.h"
-#include "drake/automotive/maliput/geometry_api/segment.h"
+#include "drake/automotive/maliput/api/branch_point.h"
+#include "drake/automotive/maliput/api/lane.h"
+#include "drake/automotive/maliput/api/segment.h"
 
 #include "mathiness.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 class BranchPoint;
 class Segment;
@@ -120,3 +119,4 @@ class DRAKE_EXPORT Lane : public api::Lane {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

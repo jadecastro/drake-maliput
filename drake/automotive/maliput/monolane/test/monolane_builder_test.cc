@@ -5,11 +5,9 @@
 
 #include "gtest/gtest.h"
 
-
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 const double kPositionPrecision = 1e-2;
 const double kVeryExact = 1e-7;
@@ -81,3 +79,4 @@ GTEST_TEST(MonolaneBuilderTest, Fig8) {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

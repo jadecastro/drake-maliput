@@ -7,7 +7,7 @@
 #include "drake/automotive/curve2.h"
 #include "drake/automotive/endless_road_car_to_euler_floating_joint.h"
 #include "drake/automotive/endless_road_car.h"
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/automotive/simple_car.h"
 #include "drake/automotive/simple_car_to_euler_floating_joint.h"
@@ -111,9 +111,9 @@ class AutomotiveSimulator {
   ///
   /// @pre Start() has NOT been called.
   const maliput::utility::InfiniteCircuitRoad* SetRoadGeometry(
-      std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road,
-      const maliput::geometry_api::LaneEnd& start,
-      const std::vector<const maliput::geometry_api::Lane*>& path);
+      std::unique_ptr<const maliput::api::RoadGeometry>* road,
+      const maliput::api::LaneEnd& start,
+      const std::vector<const maliput::api::Lane*>& path);
 
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
@@ -203,7 +203,7 @@ class AutomotiveSimulator {
       std::make_unique<RigidBodyTree<T>>()};
 
   std::unique_ptr<lcm::DrakeLcmInterface> lcm_{};
-  std::unique_ptr<const maliput::geometry_api::RoadGeometry> road_{};
+  std::unique_ptr<const maliput::api::RoadGeometry> road_{};
   std::unique_ptr<const maliput::utility::InfiniteCircuitRoad> endless_road_{};
   std::map<EndlessRoadCar<T>*, EndlessRoadCarState<T>> endless_road_cars_;
 

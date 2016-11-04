@@ -7,7 +7,7 @@
 
 #include "drake/automotive/automotive_simulator.h"
 #include "drake/automotive/create_trajectory_params.h"
-#include "drake/automotive/maliput/geometry_api/state.h"
+#include "drake/automotive/maliput/api/state.h"
 #include "drake/automotive/maliput/monolane/loader.h"
 #include "drake/automotive/maliput/utility/generate_obj.h"
 #include "drake/common/drake_path.h"
@@ -34,14 +34,14 @@ namespace drake {
 namespace automotive {
 namespace {
 
-const maliput::geometry_api::Lane* FindLaneByIdOrDie(
-    const std::string& id, const maliput::geometry_api::RoadGeometry* road) {
+const maliput::api::Lane* FindLaneByIdOrDie(
+    const std::string& id, const maliput::api::RoadGeometry* road) {
   for (int ji = 0; ji < road->num_junctions(); ++ji) {
-    const maliput::geometry_api::Junction* jnx = road->junction(ji);
+    const maliput::api::Junction* jnx = road->junction(ji);
     for (int si = 0; si < jnx->num_segments(); ++si) {
-      const maliput::geometry_api::Segment* seg = jnx->segment(si);
+      const maliput::api::Segment* seg = jnx->segment(si);
       for (int li = 0; li < seg->num_lanes(); ++li) {
-        const maliput::geometry_api::Lane* lane = seg->lane(li);
+        const maliput::api::Lane* lane = seg->lane(li);
         if (lane->id().id == id) {
           return lane;
         }
@@ -95,10 +95,10 @@ int main(int argc, char* argv[]) {
     std::cerr << "building road from " << FLAGS_road_file << std::endl;
     auto base_road = maliput::monolane::LoadFile(FLAGS_road_file);
 
-    maliput::geometry_api::LaneEnd start(
+    maliput::api::LaneEnd start(
         base_road->junction(0)->segment(0)->lane(0),
-        maliput::geometry_api::LaneEnd::kStart);
-    std::vector<const maliput::geometry_api::Lane*> path;
+        maliput::api::LaneEnd::kStart);
+    std::vector<const maliput::api::Lane*> path;
 
     if (! FLAGS_road_path.empty()) {
       std::string end;
@@ -112,10 +112,10 @@ int main(int argc, char* argv[]) {
                   << std::endl;
         return 1;
       }
-      start = maliput::geometry_api::LaneEnd(
+      start = maliput::api::LaneEnd(
           FindLaneByIdOrDie(lane_id, base_road.get()),
-          (end == "start") ? maliput::geometry_api::LaneEnd::kStart :
-          maliput::geometry_api::LaneEnd::kFinish);
+          (end == "start") ? maliput::api::LaneEnd::kStart :
+          maliput::api::LaneEnd::kFinish);
 
       while (std::getline(ss, lane_id, ',')) {
         path.push_back(FindLaneByIdOrDie(lane_id, base_road.get()));

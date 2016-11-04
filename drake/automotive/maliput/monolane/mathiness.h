@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace drake {
 namespace maliput {
 namespace monolane {
 
@@ -148,3 +149,4 @@ class DRAKE_EXPORT CubicPolynomial {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

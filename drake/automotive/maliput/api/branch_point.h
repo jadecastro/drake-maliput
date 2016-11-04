@@ -4,8 +4,9 @@
 
 #include <boost/optional.hpp>
 
+namespace drake {
 namespace maliput {
-namespace geometry_api {
+namespace api {
 
 class RoadGeometry;
 
@@ -70,3 +71,4 @@ class DRAKE_EXPORT BranchPoint {
 
 }  // namespace geometry_api
 }  // namespace maliput
+}  // namespace drake

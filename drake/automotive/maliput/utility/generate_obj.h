@@ -1,13 +1,10 @@
 #pragma once
 
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
 
-
+namespace drake {
 namespace maliput {
 namespace utility {
-
-namespace api = maliput::geometry_api;
-
 
 void generate_obj(const api::RoadGeometry* rg,
                   const std::string& filename,
@@ -15,3 +12,4 @@ void generate_obj(const api::RoadGeometry* rg,
 
 }  // namespace utility
 }  // namespace maliput
+}  // namespace drake

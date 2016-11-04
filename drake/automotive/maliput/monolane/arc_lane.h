@@ -5,10 +5,9 @@
 #include "drake/automotive/maliput/monolane/lane.h"
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 class DRAKE_EXPORT ArcLane : public Lane {
  public:
@@ -48,3 +47,4 @@ class DRAKE_EXPORT ArcLane : public Lane {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

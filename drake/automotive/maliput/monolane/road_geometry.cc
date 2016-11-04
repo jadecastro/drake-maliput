@@ -6,10 +6,9 @@
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 Junction* RoadGeometry::NewJunction(api::JunctionId id) {
   junctions_.push_back(std::make_unique<Junction>(id, this));
@@ -47,3 +46,4 @@ api::RoadPosition RoadGeometry::DoToRoadPosition(
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

@@ -5,15 +5,14 @@
 
 #include "drake/common/drake_export.h"
 
+namespace drake {
 namespace maliput {
 
-namespace geometry_api {
+namespace api {
 class RoadGeometry;
 }
 
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 /// Loader for serialized monolane road networks.
 ///
@@ -30,3 +29,4 @@ LoadFile(const std::string& filename);
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

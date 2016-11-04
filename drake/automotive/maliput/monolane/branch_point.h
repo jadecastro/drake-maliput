@@ -3,16 +3,13 @@
 #include <map>
 #include <vector>
 
-#include "drake/automotive/maliput/geometry_api/branch_point.h"
-#include "drake/automotive/maliput/geometry_api/lane.h"
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/api/branch_point.h"
+#include "drake/automotive/maliput/api/lane.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
 
-
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
-
 
 class BranchPoint;
 class Lane;
@@ -72,3 +69,4 @@ class DRAKE_EXPORT BranchPoint : public api::BranchPoint {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

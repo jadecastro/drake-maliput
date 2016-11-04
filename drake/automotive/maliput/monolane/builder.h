@@ -11,21 +11,19 @@
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 
-#include "drake/automotive/maliput/geometry_api/state.h"
-#include "drake/common/drake_assert.h"
-
+#include "drake/automotive/maliput/api/state.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 
+#include "drake/common/drake_assert.h"
+
+namespace drake {
 namespace maliput {
 
-namespace geometry_api {
+namespace api {
 class RoadGeometry;
 }
 
 namespace monolane {
-
-namespace api = maliput::geometry_api;
-
 
 /// Builder for monolane road networks.
 ///
@@ -285,3 +283,4 @@ class DRAKE_EXPORT Builder : boost::noncopyable {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

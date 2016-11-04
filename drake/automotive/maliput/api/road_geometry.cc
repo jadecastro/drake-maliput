@@ -1,19 +1,20 @@
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
 
 #include <cmath>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
-#include "drake/automotive/maliput/geometry_api/branch_point.h"
-#include "drake/automotive/maliput/geometry_api/junction.h"
-#include "drake/automotive/maliput/geometry_api/lane.h"
-#include "drake/automotive/maliput/geometry_api/segment.h"
+#include "drake/automotive/maliput/api/branch_point.h"
+#include "drake/automotive/maliput/api/junction.h"
+#include "drake/automotive/maliput/api/lane.h"
+#include "drake/automotive/maliput/api/segment.h"
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
-namespace geometry_api {
+namespace api {
 
 namespace {
 
@@ -277,5 +278,6 @@ std::vector<std::string> RoadGeometry::CheckInvariants() const {
 }
 
 
-} // namespace geometry_api
-} // namespace maliput
+}  // namespace geometry_api
+}  // namespace maliput
+}  // namespace drake

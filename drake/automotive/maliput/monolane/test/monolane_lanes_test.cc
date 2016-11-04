@@ -10,11 +10,9 @@
 
 #include "gtest/gtest.h"
 
-
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 const double kLinearTolerance = 1e-2;
 const double kAngularTolerance = 1e-2;
@@ -452,3 +450,4 @@ GTEST_TEST(MonolaneLanesTest, HillIntegration) {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

@@ -3,20 +3,14 @@
 #include <fstream>
 #include <iostream>
 
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
 #include "drake/automotive/maliput/utility/generate_obj.h"
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace utility {
-
-namespace api = maliput::geometry_api;
-
-
-namespace {
-}  // namespace
-
 
 void DRAKE_EXPORT generate_urdf(const std::string& dirname,
                                 const std::string& fileroot,
@@ -53,3 +47,4 @@ void DRAKE_EXPORT generate_urdf(const std::string& dirname,
 
 }  // namespace utility
 }  // namespace maliput
+}  // namespace drake

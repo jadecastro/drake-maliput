@@ -9,11 +9,9 @@
 
 #include "drake/common/drake_assert.h"
 
-
+namespace drake {
 namespace maliput {
 namespace utility {
-
-namespace api = maliput::geometry_api;
 
 InfiniteCircuitRoad::InfiniteCircuitRoad(
     const api::RoadGeometryId& id,
@@ -221,3 +219,4 @@ InfiniteCircuitRoad::Lane::ProjectToSourceRoad(
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

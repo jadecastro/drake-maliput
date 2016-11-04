@@ -4,8 +4,9 @@
 
 #include <vector>
 
+namespace drake {
 namespace maliput {
-namespace geometry_api {
+namespace api {
 
 class BranchPoint;
 class Junction;
@@ -95,5 +96,6 @@ class DRAKE_EXPORT RoadGeometry {
 };
 
 
-}  // namespace geometry_api
+}  // namespace api
 }  // namespace maliput
+}  // namespace drake

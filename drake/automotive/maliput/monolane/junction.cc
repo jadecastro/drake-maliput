@@ -3,12 +3,9 @@
 #include "drake/automotive/maliput/monolane/road_geometry.h"
 #include "drake/automotive/maliput/monolane/segment.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
-
-
 
 const api::RoadGeometry* Junction::do_road_geometry() const {
   return road_geometry_;
@@ -27,3 +24,4 @@ const api::Segment* Junction::do_segment(int index) const {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

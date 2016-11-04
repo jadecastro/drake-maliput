@@ -11,6 +11,7 @@
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
 
@@ -341,3 +342,4 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

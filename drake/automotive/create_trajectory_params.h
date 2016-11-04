@@ -8,7 +8,7 @@
 
 #include "drake/automotive/curve2.h"
 #include "drake/automotive/trajectory_car.h"
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
 
 namespace drake {
 namespace automotive {
@@ -29,9 +29,9 @@ std::tuple<Curve2<double>, double, double> CreateTrajectoryParams(int index);
  * @param index Selects which pre-programmed trajectory to use.
  * @return tuple of road, lateral_offset, speed, start_time
  */
-std::tuple<const maliput::geometry_api::RoadGeometry*,
+std::tuple<const maliput::api::RoadGeometry*,
            double, double, double> CreateTrajectoryRoadParams(
-               const maliput::geometry_api::RoadGeometry& road,
+               const maliput::api::RoadGeometry& road,
                int index);
 
 }  // namespace automotive

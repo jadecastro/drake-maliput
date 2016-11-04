@@ -7,11 +7,9 @@
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
-
 
 const api::LaneEnd& SetOfLaneEnds::do_get(int index) const {
   return ends_[index]; }
@@ -59,3 +57,4 @@ void BranchPoint::SetDefault(const api::LaneEnd& lane_end,
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

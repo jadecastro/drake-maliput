@@ -5,11 +5,9 @@
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
-
 
 const api::Segment* Lane::do_segment() const { return segment_; }
 
@@ -178,3 +176,4 @@ void Lane::DoEvalMotionDerivatives(
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

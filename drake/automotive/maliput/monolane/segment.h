@@ -4,17 +4,15 @@
 
 #include "lane.h"
 
-#include "drake/automotive/maliput/geometry_api/junction.h"
-#include "drake/automotive/maliput/geometry_api/lane.h"
-#include "drake/automotive/maliput/geometry_api/segment.h"
+#include "drake/automotive/maliput/api/junction.h"
+#include "drake/automotive/maliput/api/lane.h"
+#include "drake/automotive/maliput/api/segment.h"
 
 #include "drake/automotive/maliput/monolane/mathiness.h"
 
-
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 class Junction;
 class ArcLane;
@@ -56,3 +54,4 @@ class DRAKE_EXPORT Segment : public api::Segment {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

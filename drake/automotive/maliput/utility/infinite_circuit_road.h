@@ -4,19 +4,18 @@
 #include <utility>
 #include <vector>
 
-#include "drake/automotive/maliput/geometry_api/branch_point.h"
-#include "drake/automotive/maliput/geometry_api/lane.h"
-#include "drake/automotive/maliput/geometry_api/junction.h"
-#include "drake/automotive/maliput/geometry_api/road_geometry.h"
-#include "drake/automotive/maliput/geometry_api/segment.h"
-#include "drake/automotive/maliput/geometry_api/state.h"
+#include "drake/automotive/maliput/api/branch_point.h"
+#include "drake/automotive/maliput/api/lane.h"
+#include "drake/automotive/maliput/api/junction.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
+#include "drake/automotive/maliput/api/segment.h"
+#include "drake/automotive/maliput/api/state.h"
 
 #include "drake/common/drake_assert.h"
 
+namespace drake {
 namespace maliput {
 namespace utility {
-
-namespace api = maliput::geometry_api;
 
 /// A toy adapter class that makes a RoadGeometry look like it has a single
 /// inifinitely long Lane.  Its primary (and perhaps only) purpose is to
@@ -256,3 +255,4 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
 
 }  // namespace utility
 }  // namespace maliput
+}  // namespace drake

@@ -12,7 +12,7 @@
 
 #include <Eigen/Geometry>
 
-#include "drake/automotive/maliput/geometry_api/state.h"
+#include "drake/automotive/maliput/api/state.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/common/drake_assert.h"
 #include "drake/systems/framework/vector_base.h"
@@ -184,16 +184,15 @@ std::vector<boost::optional<T>> EndlessRoadOracle<T>::AssessIntersections(
   // expected to be traversed within kEventHorizon.
   struct TimeBox {
     int car_index;
-    const maliput::geometry_api::Lane* lane;
+    const maliput::api::Lane* lane;
     T time_in;
     T time_out;
     T s_in;
     T s_out;
   };
-  std::map<const maliput::geometry_api::Junction*,
+  std::map<const maliput::api::Junction*,
            std::vector<TimeBox>> boxes_by_junction;
-  std::map<int,
-           std::vector<const maliput::geometry_api::Junction*>> junctions_by_car;
+  std::map<int, std::vector<const maliput::api::Junction*>> junctions_by_car;
 
   for (int i = 0; i < num_cars_; ++i) {
     const EndlessRoadCarState<T>* state = car_inputs[i];
@@ -220,7 +219,7 @@ std::vector<boost::optional<T>> EndlessRoadOracle<T>::AssessIntersections(
       const TimeBox box = TimeBox{i, path_record.lane,
                                   time_in, time_out,
                                   s_in, s_out};
-      const maliput::geometry_api::Junction* junction =
+      const maliput::api::Junction* junction =
           path_record.lane->segment()->junction();
       boxes_by_junction[junction].push_back(box);
       junctions_by_car[i].push_back(junction);

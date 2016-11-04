@@ -166,13 +166,13 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(
 template <typename T>
 const maliput::utility::InfiniteCircuitRoad*
 AutomotiveSimulator<T>::SetRoadGeometry(
-    std::unique_ptr<const maliput::geometry_api::RoadGeometry>* road,
-    const maliput::geometry_api::LaneEnd& start,
-    const std::vector<const maliput::geometry_api::Lane*>& path) {
+    std::unique_ptr<const maliput::api::RoadGeometry>* road,
+    const maliput::api::LaneEnd& start,
+    const std::vector<const maliput::api::Lane*>& path) {
   DRAKE_DEMAND(!started_);
   road_ = std::move(*road);
   endless_road_ = std::make_unique<maliput::utility::InfiniteCircuitRoad>(
-      maliput::geometry_api::RoadGeometryId({"ForeverRoad"}),
+      maliput::api::RoadGeometryId({"ForeverRoad"}),
       road_.get(), start, path);
   return endless_road_.get();
 }

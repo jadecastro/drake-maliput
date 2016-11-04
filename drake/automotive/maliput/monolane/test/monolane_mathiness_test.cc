@@ -10,11 +10,9 @@
 
 #include "gtest/gtest.h"
 
-
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 GTEST_TEST(MonolaneMathinessTest, Rot3) {
   Rot3 yaw90 {M_PI / 2., 0., 0.};
@@ -27,5 +25,6 @@ GTEST_TEST(MonolaneMathinessTest, Rot3) {
   EXPECT_NEAR(yaw90.apply({0., 1., 0.}).z,  0., 1e-6);
 }
 
+}
 }
 }

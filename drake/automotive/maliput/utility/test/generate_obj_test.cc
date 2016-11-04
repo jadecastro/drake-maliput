@@ -14,11 +14,10 @@
 
 #include "gtest/gtest.h"
 
-
+namespace drake {
 namespace maliput {
 namespace utility {
 
-namespace api = maliput::geometry_api;
 namespace mono = maliput::monolane;
 
 GTEST_TEST(GenerateObj, Podge) {
@@ -224,3 +223,4 @@ GTEST_TEST(GenerateObj, Helix) {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake

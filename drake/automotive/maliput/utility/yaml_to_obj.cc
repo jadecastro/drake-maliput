@@ -10,8 +10,7 @@
 #include "drake/automotive/maliput/monolane/loader.h"
 #include "drake/automotive/maliput/utility/generate_obj.h"
 
-namespace api = maliput::geometry_api;
-namespace mono = maliput::monolane;
+namespace mono = drake::maliput::monolane;
 
 DEFINE_string(yaml_file, "",
               "yaml input file defining a monolane road geometry");
@@ -28,11 +27,11 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   std::cerr << "loading road geometry !\n";
-  auto rg = maliput::monolane::LoadFile(FLAGS_yaml_file);
+  auto rg = mono::LoadFile(FLAGS_yaml_file);
 
 
   std::cerr << "generating obj !\n";
-  maliput::utility::generate_obj(rg.get(), FLAGS_obj_file, 1.);
+  drake::maliput::utility::generate_obj(rg.get(), FLAGS_obj_file, 1.);
 
   return 0;
 }

@@ -9,13 +9,14 @@
 #include "drake/common/drake_export.h"
 #include "drake/systems/framework/leaf_system.h"
 
+namespace drake {
+
 namespace maliput {
 namespace utility {
 class InfiniteCircuitRoad;
 }
 }
 
-namespace drake {
 namespace automotive {
 
 

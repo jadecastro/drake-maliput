@@ -2,10 +2,9 @@
 
 #include "lane.h"
 
+namespace drake {
 namespace maliput {
 namespace monolane {
-
-namespace api = maliput::geometry_api;
 
 class DRAKE_EXPORT LineLane : public Lane {
  public:
@@ -46,3 +45,4 @@ class DRAKE_EXPORT LineLane : public Lane {
 
 }  // namespace monolane
 }  // namespace maliput
+}  // namespace drake
