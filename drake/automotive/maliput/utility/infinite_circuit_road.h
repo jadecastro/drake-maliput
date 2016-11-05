@@ -30,10 +30,10 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
 
  public:
   struct Record {
-    const api::Lane* lane;
-    double start_circuit_s;
-    double end_circuit_s;
-    bool is_reversed;
+    const api::Lane* lane{};
+    double start_circuit_s{};
+    double end_circuit_s{};
+    bool is_reversed{};
   };
 
   /// Construct an InfiniteCircuitRoad based on @param source, using
@@ -159,14 +159,14 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
     }
 
     const api::LaneId id_;
-    const Segment* segment_;
+    const Segment* segment_{};
 
     api::RBounds lane_bounds_;
     api::RBounds driveable_bounds_;
 
 
     std::vector<Record> records_;
-    double cycle_length_;
+    double cycle_length_{};
   };
 
 
@@ -188,8 +188,8 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
     const api::Lane* do_lane(int index) const override { return lane_; }
 
     api::SegmentId id_;
-    const Junction* junction_;
-    const Lane* lane_;
+    const Junction* junction_{};
+    const Lane* lane_{};
   };
 
 
@@ -213,8 +213,8 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
     const api::Segment* do_segment(int index) const override { return segment_; }
 
     api::JunctionId id_;
-    const RoadGeometry* road_geometry_;
-    const Segment* segment_;
+    const RoadGeometry* road_geometry_{};
+    const Segment* segment_{};
   };
 
 
@@ -247,7 +247,7 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   }
 
   const api::RoadGeometryId id_;
-  const api::RoadGeometry* const source_;
+  const api::RoadGeometry* const source_{};
   const Junction junction_;
   const Segment segment_;
   const Lane lane_;

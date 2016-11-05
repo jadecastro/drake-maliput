@@ -131,8 +131,8 @@ struct GeoFace {
 
 
 struct IndexVertexWithNormal {
-  int vertex_index_;
-  int normal_index_;
+  int vertex_index_{};
+  int normal_index_{};
 };
 
 struct IndexFace {
@@ -194,8 +194,8 @@ class ObjData {
 struct SRPos {
   SRPos(const double s, const double r) : s_(s), r_(r) {}
 
-  double s_;
-  double r_;
+  double s_{};
+  double r_{};
 };
 
 struct SRFace {

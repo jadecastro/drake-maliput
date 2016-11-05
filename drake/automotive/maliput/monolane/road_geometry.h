@@ -53,8 +53,8 @@ class DRAKE_EXPORT RoadGeometry : public api::RoadGeometry {
   }
 
   api::RoadGeometryId id_;
-  double linear_tolerance_;
-  double angular_tolerance_;
+  double linear_tolerance_{};
+  double angular_tolerance_{};
   std::vector<std::unique_ptr<Junction>> junctions_;
   std::vector<std::unique_ptr<BranchPoint>> branch_points_;
 };

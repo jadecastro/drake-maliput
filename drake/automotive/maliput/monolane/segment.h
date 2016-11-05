@@ -48,7 +48,7 @@ class DRAKE_EXPORT Segment : public api::Segment {
   const api::Lane* do_lane(int index) const override;
 
   api::SegmentId id_;
-  Junction* junction_;
+  Junction* junction_{};
   std::unique_ptr<Lane> lane_;
 };
 

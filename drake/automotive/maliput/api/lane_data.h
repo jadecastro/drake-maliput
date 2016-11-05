@@ -99,8 +99,8 @@ struct DRAKE_EXPORT RoadPosition {
 
 
 struct DRAKE_EXPORT RBounds {
-  double r_min;
-  double r_max;
+  double r_min{};
+  double r_max{};
 };
 
 

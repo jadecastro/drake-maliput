@@ -58,7 +58,7 @@ class DRAKE_EXPORT BranchPoint : public api::BranchPoint {
   const api::SetOfLaneEnds* DoGetBSide() const override { return &b_side_; }
 
   api::BranchPointId id_;
-  RoadGeometry* road_geometry_;
+  RoadGeometry* road_geometry_{};
   SetOfLaneEnds a_side_;
   SetOfLaneEnds b_side_;
 

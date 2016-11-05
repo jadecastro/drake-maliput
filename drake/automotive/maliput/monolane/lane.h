@@ -104,13 +104,13 @@ class DRAKE_EXPORT Lane : public api::Lane {
   V3 r_hat_of_gba_(const Rot3& gba) const;
 
   const api::LaneId id_;
-  const Segment* segment_;
-  BranchPoint* start_bp_;
-  BranchPoint* end_bp_;
+  const Segment* segment_{};
+  BranchPoint* start_bp_{};
+  BranchPoint* end_bp_{};
 
   const api::RBounds lane_bounds_;
   const api::RBounds driveable_bounds_;
-  const double p_scale_;
+  const double p_scale_{};
   // Common elevation and superelevation structures.
   const CubicPolynomial elevation_;
   const CubicPolynomial superelevation_;

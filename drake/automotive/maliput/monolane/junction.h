@@ -32,7 +32,7 @@ class DRAKE_EXPORT Junction : public api::Junction {
   const api::Segment* do_segment(int index) const override;
 
   api::JunctionId id_;
-  RoadGeometry* road_geometry_;
+  RoadGeometry* road_geometry_{};
   std::vector<std::unique_ptr<Segment>> segments_;
 };
 

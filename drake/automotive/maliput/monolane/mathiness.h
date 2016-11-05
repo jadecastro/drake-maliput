@@ -24,9 +24,9 @@ struct DRAKE_EXPORT V3 {
     return V3(x * rhs, y * rhs, z * rhs);
   }
 
-  double x;
-  double y;
-  double z;
+  double x{};
+  double y{};
+  double z{};
 };
 
 inline
@@ -57,10 +57,8 @@ struct DRAKE_EXPORT V2 {
     return std::sqrt((x * x) + (y * y));
   }
 
-
-
-  double x;
-  double y;
+  double x{};
+  double y{};
 };
 
 
@@ -89,9 +87,9 @@ struct DRAKE_EXPORT Rot3 {
         ((ca*cb) * in.z));
   }
 
-  double yaw;
-  double pitch;
-  double roll;
+  double yaw{};
+  double pitch{};
+  double roll{};
 };
 
 

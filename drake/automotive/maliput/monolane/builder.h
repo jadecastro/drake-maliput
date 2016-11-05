@@ -58,11 +58,11 @@ struct ZPoint {
     return {z_, -zdot_, -theta_, -thetadot_};
   }
 
-  double z_;
-  double zdot_;
+  double z_{};
+  double zdot_{};
 
-  double theta_;  // superelevation
-  double thetadot_;
+  double theta_{};  // superelevation
+  double thetadot_{};
 };
 
 
@@ -75,8 +75,8 @@ struct XYZPoint {
     return {xy_.reverse(), z_.reverse()};
   }
 
-  XYPoint xy_;
-  ZPoint z_;
+  XYPoint xy_{};
+  ZPoint z_{};
 };
 
 
@@ -236,8 +236,8 @@ class DRAKE_EXPORT Builder : boost::noncopyable {
     }
 
    private:
-    const double pos_pre_;
-    const double ori_pre_;
+    const double pos_pre_{};
+    const double ori_pre_{};
   };
 
   struct DefaultBranch {
@@ -248,10 +248,10 @@ class DRAKE_EXPORT Builder : boost::noncopyable {
         const Connection* out, const api::LaneEnd::Which out_end)
         : in_(in), in_end_(in_end), out_(out), out_end_(out_end) {}
 
-    const Connection* in_;
-    api::LaneEnd::Which in_end_;
-    const Connection* out_;
-    api::LaneEnd::Which out_end_;
+    const Connection* in_{};
+    api::LaneEnd::Which in_end_{};
+    const Connection* out_{};
+    api::LaneEnd::Which out_end_{};
   };
 
   Lane* BuildConnection(
@@ -272,8 +272,8 @@ class DRAKE_EXPORT Builder : boost::noncopyable {
 
   api::RBounds lane_bounds_;
   api::RBounds driveable_bounds_;
-  double linear_tolerance_;
-  double angular_tolerance_;
+  double linear_tolerance_{};
+  double angular_tolerance_{};
   std::vector<std::unique_ptr<Connection>> connections_;
   std::vector<DefaultBranch> default_branches_;
   std::vector<std::unique_ptr<Group>> groups_;

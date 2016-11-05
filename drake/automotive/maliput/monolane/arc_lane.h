@@ -36,11 +36,11 @@ class DRAKE_EXPORT ArcLane : public Lane {
   double heading_of_p_(const double p) const override;
   double heading_dot_of_p_(const double p) const override;
 
-  double r_;
-  double cx_;
-  double cy_;
-  double theta0_;
-  double d_theta_;
+  double r_{};
+  double cx_{};
+  double cy_{};
+  double theta0_{};
+  double d_theta_{};
 };
 
 

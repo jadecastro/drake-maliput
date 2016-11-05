@@ -33,12 +33,12 @@ class DRAKE_EXPORT LineLane : public Lane {
   double heading_of_p_(const double p) const override;
   double heading_dot_of_p_(const double p) const override;
 
-  const double x0_;
-  const double y0_;
-  const double dx_;
-  const double dy_;
+  const double x0_{};
+  const double y0_{};
+  const double dx_{};
+  const double dy_{};
 
-  const double heading_;  // Memoized; derived from dy_, dx_.
+  const double heading_{};  // Memoized; derived from dy_, dx_.
 };
 
 
