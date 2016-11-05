@@ -173,12 +173,16 @@ maliput_monolane_builder:
       start: "connections.Express_SW_a.end"
       arc: [60, -45]
       z_end: [0, 0, 0, 0]
-    Express_W:
+    Express_W_a:
       start: "connections.Express_SW_b.end"
-      length: 120
+      length: 100
+      z_end: [0, 0, 0, 0]
+    Express_W_b:
+      start: "connections.Express_W_a.end"
+      length: 20
       z_end: [0, 0, 0, 0]
     Express_WN_a:
-      start: "connections.Express_W.end"
+      start: "connections.Express_W_b.end"
       arc: [60, -45]
       z_end: [0, 0, 20, 0]
     Express_WN_b:
@@ -333,3 +337,5 @@ maliput_monolane_builder:
     B2R-Z12: [B-St_isZ, Z-Ave_isB, B2-Z1, B2-Z2, BR-Z1, BR-Z2]
 
     C12-Y2R: [C-St_isY, Y-Ave_isC, C1-Y2, C2-Y2, C1-YR, C2-YR]
+
+    Merge_WRamp: [Express_WRamp_b, Express_W_b]
