@@ -117,26 +117,26 @@ template<> struct LocalHash<GeoNormal> {
 struct GeoFace {
   GeoFace() {}
 
-  GeoFace(const std::vector<GeoVertex>& vs,
-          const std::vector<GeoNormal>& ns)
-      : vs_(vs), ns_(ns) {
+  GeoFace(const std::vector<GeoVertex>& avs,
+          const std::vector<GeoNormal>& ans)
+      : vs(avs), ns(ans) {
     DRAKE_DEMAND(vs.size() == ns.size());
   }
 
-  std::vector<GeoVertex> vs_;
-  std::vector<GeoNormal> ns_;
+  std::vector<GeoVertex> vs;
+  std::vector<GeoNormal> ns;
 };
 
 
 
 
 struct IndexVertexWithNormal {
-  int vertex_index_{};
-  int normal_index_{};
+  int vertex_index{};
+  int normal_index{};
 };
 
 struct IndexFace {
-  std::vector<IndexVertexWithNormal> vns_;
+  std::vector<IndexVertexWithNormal> vns;
 };
 
 
@@ -146,10 +146,10 @@ class ObjData {
 
   void push_face(const GeoFace& geo_face) {
     IndexFace face;
-    for (size_t gi = 0; gi < geo_face.vs_.size(); ++gi) {
-      int vi = vertices_.push_back(geo_face.vs_[gi]);
-      int ni = normals_.push_back(geo_face.ns_[gi]);
-      face.vns_.push_back({vi, ni});
+    for (size_t gi = 0; gi < geo_face.vs.size(); ++gi) {
+      int vi = vertices_.push_back(geo_face.vs[gi]);
+      int ni = normals_.push_back(geo_face.ns[gi]);
+      face.vns.push_back({vi, ni});
     }
     faces_.push_back(face);
   }
@@ -172,11 +172,11 @@ class ObjData {
     }
     for (const IndexFace& f : faces_) {
       os << "f";
-      for (const IndexVertexWithNormal& ivwn : f.vns_) {
+      for (const IndexVertexWithNormal& ivwn : f.vns) {
         os << " "
-           << (ivwn.vertex_index_ + 1)
+           << (ivwn.vertex_index + 1)
            << "//"
-           << (ivwn.normal_index_ + 1);
+           << (ivwn.normal_index + 1);
       }
       os << std::endl;
     }
@@ -192,26 +192,26 @@ class ObjData {
 
 
 struct SRPos {
-  SRPos(const double s, const double r) : s_(s), r_(r) {}
+  SRPos(const double as, const double ar) : s(as), r(ar) {}
 
-  double s_{};
-  double r_{};
+  double s{};
+  double r{};
 };
 
 struct SRFace {
-  SRFace(const std::initializer_list<SRPos> sr) : sr_(sr) {}
+  SRFace(const std::initializer_list<SRPos> asr) : sr(asr) {}
 
-  std::vector<SRPos> sr_;
+  std::vector<SRPos> sr;
 };
 
 
 void push_face(ObjData* obj, const api::Lane* lane, const SRFace srface) {
   GeoFace geoface;
-  for (const SRPos& sr : srface.sr_) {
-    api::GeoPosition v0(lane->ToGeoPosition({sr.s_, sr.r_, 0.}));
-    api::GeoPosition v1(lane->ToGeoPosition({sr.s_, sr.r_, 1.}));
-    geoface.vs_.push_back(GeoVertex(v0));
-    geoface.ns_.push_back(GeoNormal(v0, v1));
+  for (const SRPos& sr : srface.sr) {
+    api::GeoPosition v0(lane->ToGeoPosition({sr.s, sr.r, 0.}));
+    api::GeoPosition v1(lane->ToGeoPosition({sr.s, sr.r, 1.}));
+    geoface.vs.push_back(GeoVertex(v0));
+    geoface.ns.push_back(GeoNormal(v0, v1));
   }
 
   obj->push_face(geoface);

@@ -38,45 +38,45 @@ namespace monolane {
 struct XYPoint {
   XYPoint() {}
 
-  XYPoint(double x, double y, double heading)
-      :x_(x), y_(y), heading_(heading) {}
+  XYPoint(double ax, double ay, double aheading)
+      :x(ax), y(ay), heading(aheading) {}
 
 
   XYPoint reverse() const {
-    return XYPoint(x_, y_,
-                   std::atan2(-std::sin(heading_), -std::cos(heading_)));
+    return XYPoint(x, y,
+                   std::atan2(-std::sin(heading), -std::cos(heading)));
   }
 
-  double x_{};
-  double y_{};
-  double heading_{};  // radians, zero == x direction
+  double x{};
+  double y{};
+  double heading{};  // radians, zero == x direction
 };
 
 
 struct ZPoint {
   ZPoint reverse() const {
-    return {z_, -zdot_, -theta_, -thetadot_};
+    return {z, -zdot, -theta, -thetadot};
   }
 
-  double z_{};
-  double zdot_{};
+  double z{};
+  double zdot{};
 
-  double theta_{};  // superelevation
-  double thetadot_{};
+  double theta{};  // superelevation
+  double thetadot{};
 };
 
 
 struct XYZPoint {
   XYZPoint() {}
 
-  XYZPoint(const XYPoint& xy, const ZPoint& z) : xy_(xy), z_(z) {}
+  XYZPoint(const XYPoint& axy, const ZPoint& az) : xy(axy), z(az) {}
 
   XYZPoint reverse() const {
-    return {xy_.reverse(), z_.reverse()};
+    return {xy.reverse(), z.reverse()};
   }
 
-  XYPoint xy_{};
-  ZPoint z_{};
+  XYPoint xy{};
+  ZPoint z{};
 };
 
 
@@ -86,13 +86,13 @@ struct XYZPoint {
 struct ArcOffset {
   ArcOffset() {}
 
-  ArcOffset(const double radius, const double d_theta)
-      : radius_(radius), d_theta_(d_theta) {
-    DRAKE_DEMAND(radius_ > 0.);
+  ArcOffset(const double aradius, const double ad_theta)
+      : radius(aradius), d_theta(ad_theta) {
+    DRAKE_DEMAND(radius > 0.);
   }
 
-  double radius_{};
-  double d_theta_{};
+  double radius{};
+  double d_theta{};
 };
 
 
@@ -230,7 +230,7 @@ class DRAKE_EXPORT Builder : boost::noncopyable {
     // TODO(maddog) This should perhaps incorporate linear_tolerance.
     bool operator()(const XYZPoint& lhs, const XYZPoint& rhs) const {
       auto as_tuple = [](const XYZPoint& p) {
-        return std::tie(p.xy_.x_, p.xy_.y_, p.z_.z_);
+        return std::tie(p.xy.x, p.xy.y, p.z.z);
       };
       return as_tuple(lhs) < as_tuple(rhs);
     }
@@ -244,14 +244,14 @@ class DRAKE_EXPORT Builder : boost::noncopyable {
     DefaultBranch() {}
 
     DefaultBranch(
-        const Connection* in, const api::LaneEnd::Which in_end,
-        const Connection* out, const api::LaneEnd::Which out_end)
-        : in_(in), in_end_(in_end), out_(out), out_end_(out_end) {}
+        const Connection* ain, const api::LaneEnd::Which ain_end,
+        const Connection* aout, const api::LaneEnd::Which aout_end)
+        : in(ain), in_end(ain_end), out(aout), out_end(aout_end) {}
 
-    const Connection* in_{};
-    api::LaneEnd::Which in_end_{};
-    const Connection* out_{};
-    api::LaneEnd::Which out_end_{};
+    const Connection* in{};
+    api::LaneEnd::Which in_end{};
+    const Connection* out{};
+    api::LaneEnd::Which out_end{};
   };
 
   Lane* BuildConnection(

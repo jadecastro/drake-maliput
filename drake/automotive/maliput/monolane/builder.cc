@@ -40,9 +40,9 @@ const Connection* Builder::Connect(
     const ZPoint& z_end) {
 
   const XYZPoint end(
-      XYPoint(start.xy_.x_ + (length * std::cos(start.xy_.heading_)),
-              start.xy_.y_ + (length * std::sin(start.xy_.heading_)),
-              start.xy_.heading_),
+      XYPoint(start.xy.x + (length * std::cos(start.xy.heading)),
+              start.xy.y + (length * std::sin(start.xy.heading)),
+              start.xy.heading),
       z_end);
   connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kLine, id,
@@ -70,21 +70,21 @@ const Connection* Builder::Connect(
     const XYZPoint& start,
     const ArcOffset& arc,
     const ZPoint& z_end) {
-  const double alpha = start.xy_.heading_;
-  const double theta0 = alpha - std::copysign(M_PI / 2., arc.d_theta_);
-  const double theta1 = theta0 + arc.d_theta_;
+  const double alpha = start.xy.heading;
+  const double theta0 = alpha - std::copysign(M_PI / 2., arc.d_theta);
+  const double theta1 = theta0 + arc.d_theta;
 
-  const double cx = start.xy_.x_ - (arc.radius_ * std::cos(theta0));
-  const double cy = start.xy_.y_ - (arc.radius_ * std::sin(theta0));
+  const double cx = start.xy.x - (arc.radius * std::cos(theta0));
+  const double cy = start.xy.y - (arc.radius * std::sin(theta0));
 
-  const XYZPoint end(XYPoint(cx + (arc.radius_ * std::cos(theta1)),
-                             cy + (arc.radius_ * std::sin(theta1)),
-                             alpha + arc.d_theta_),
+  const XYZPoint end(XYPoint(cx + (arc.radius * std::cos(theta1)),
+                             cy + (arc.radius * std::sin(theta1)),
+                             alpha + arc.d_theta),
                      z_end);
 
   connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kArc, id,
-      start, end, cx, cy, arc.radius_, arc.d_theta_));
+      start, end, cx, cy, arc.radius, arc.d_theta));
   return connections_.back().get();
 }
 
@@ -94,15 +94,15 @@ const Connection* Builder::Connect(
     const XYZPoint& start,
     const ArcOffset& arc,
     const XYZPoint& explicit_end) {
-  const double alpha = start.xy_.heading_;
-  const double theta0 = alpha - std::copysign(M_PI / 2., arc.d_theta_);
+  const double alpha = start.xy.heading;
+  const double theta0 = alpha - std::copysign(M_PI / 2., arc.d_theta);
 
-  const double cx = start.xy_.x_ - (arc.radius_ * std::cos(theta0));
-  const double cy = start.xy_.y_ - (arc.radius_ * std::sin(theta0));
+  const double cx = start.xy.x - (arc.radius * std::cos(theta0));
+  const double cy = start.xy.y - (arc.radius * std::sin(theta0));
 
   connections_.push_back(std::make_unique<Connection>(
       Connection::Type::kArc, id,
-      start, explicit_end, cx, cy, arc.radius_, arc.d_theta_));
+      start, explicit_end, cx, cy, arc.radius, arc.d_theta));
   return connections_.back().get();
 }
 
@@ -226,22 +226,22 @@ Lane* Builder::BuildConnection(
 
   switch (cnx->type()) {
     case Connection::kLine: {
-      const V2 xy0(cnx->start().xy_.x_,
-                   cnx->start().xy_.y_);
-      const V2 dxy(cnx->end().xy_.x_ - xy0.x,
-                   cnx->end().xy_.y_ - xy0.y);
+      const V2 xy0(cnx->start().xy.x,
+                   cnx->start().xy.y);
+      const V2 dxy(cnx->end().xy.x - xy0.x,
+                   cnx->end().xy.y - xy0.y);
       const CubicPolynomial elevation(MakeCubic(
           dxy.length(),
-          cnx->start().z_.z_,
-          cnx->end().z_.z_ - cnx->start().z_.z_,
-          cnx->start().z_.zdot_,
-          cnx->end().z_.zdot_));
+          cnx->start().z.z,
+          cnx->end().z.z - cnx->start().z.z,
+          cnx->start().z.zdot,
+          cnx->end().z.zdot));
       const CubicPolynomial superelevation(MakeCubic(
           dxy.length(),
-          cnx->start().z_.theta_,
-          cnx->end().z_.theta_ - cnx->start().z_.theta_,
-          cnx->start().z_.thetadot_,
-          cnx->end().z_.thetadot_));
+          cnx->start().z.theta,
+          cnx->end().z.theta - cnx->start().z.theta,
+          cnx->start().z.thetadot,
+          cnx->end().z.thetadot));
 
       lane = segment->NewLineLane(lane_id,
                                   xy0, dxy,
@@ -252,24 +252,24 @@ Lane* Builder::BuildConnection(
     case Connection::kArc: {
       const V2 center(cnx->cx(), cnx->cy());
       const double radius = cnx->radius();
-      const double theta0 = std::atan2(cnx->start().xy_.y_ - center.y,
-                                       cnx->start().xy_.x_ - center.x);
+      const double theta0 = std::atan2(cnx->start().xy.y - center.y,
+                                       cnx->start().xy.x - center.x);
       // TODO(maddog) Uh, which direction?  Info lost since cnx constructed!
       //              ...and deal with wrap-arounds, too.
       const double d_theta = cnx->d_theta();
       const double arc_length = radius * std::abs(d_theta);
       const CubicPolynomial elevation(MakeCubic(
           arc_length,
-          cnx->start().z_.z_,
-          cnx->end().z_.z_ - cnx->start().z_.z_,
-          cnx->start().z_.zdot_,
-          cnx->end().z_.zdot_));
+          cnx->start().z.z,
+          cnx->end().z.z - cnx->start().z.z,
+          cnx->start().z.zdot,
+          cnx->end().z.zdot));
       const CubicPolynomial superelevation(MakeCubic(
           arc_length,
-          cnx->start().z_.theta_,
-          cnx->end().z_.theta_ - cnx->start().z_.theta_,
-          cnx->start().z_.thetadot_,
-          cnx->end().z_.thetadot_));
+          cnx->start().z.theta,
+          cnx->end().z.theta - cnx->start().z.theta,
+          cnx->start().z.thetadot,
+          cnx->end().z.thetadot));
 
       lane = segment->NewArcLane(lane_id,
                                  center, radius, theta0, d_theta,
@@ -319,14 +319,14 @@ std::unique_ptr<const api::RoadGeometry> Builder::Build(
   }
 
   for (auto& def : default_branches_) {
-    Lane* in_lane = lane_map[def.in_];
-    Lane* out_lane = lane_map[def.out_];
-    DRAKE_DEMAND((def.in_end_ == api::LaneEnd::kStart) ||
-                 (def.in_end_ == api::LaneEnd::kFinish));
-    ((def.in_end_ == api::LaneEnd::kStart) ?
+    Lane* in_lane = lane_map[def.in];
+    Lane* out_lane = lane_map[def.out];
+    DRAKE_DEMAND((def.in_end == api::LaneEnd::kStart) ||
+                 (def.in_end == api::LaneEnd::kFinish));
+    ((def.in_end == api::LaneEnd::kStart) ?
      in_lane->start_bp() : in_lane->end_bp())
-        ->SetDefault({in_lane, def.in_end_},
-                     {out_lane, def.out_end_});
+        ->SetDefault({in_lane, def.in_end},
+                     {out_lane, def.out_end});
   }
 
   // Make sure we didn't screw up!
