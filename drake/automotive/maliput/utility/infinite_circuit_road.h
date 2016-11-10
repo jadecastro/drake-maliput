@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -135,7 +136,7 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
       DRAKE_ABORT();
     }
 
-    const boost::optional<api::LaneEnd>& DoGetDefaultBranch(
+    std::unique_ptr<api::LaneEnd> DoGetDefaultBranch(
         const api::LaneEnd::Which which_end) const override {
       DRAKE_ABORT();
     }

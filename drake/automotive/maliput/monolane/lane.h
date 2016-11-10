@@ -72,7 +72,7 @@ class DRAKE_EXPORT Lane : public api::Lane {
   const api::SetOfLaneEnds* DoGetOngoingBranches(
       const api::LaneEnd::Which which_end) const override;
 
-  const boost::optional<api::LaneEnd>& DoGetDefaultBranch(
+  std::unique_ptr<api::LaneEnd> DoGetDefaultBranch(
       const api::LaneEnd::Which which_end) const override;
 
   double do_length() const override;

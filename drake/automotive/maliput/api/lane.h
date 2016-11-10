@@ -2,7 +2,7 @@
 
 #include "drake/automotive/maliput/api/lane_data.h"
 
-#include <boost/optional.hpp>
+#include <memory>
 
 namespace drake {
 namespace maliput {
@@ -123,9 +123,11 @@ class DRAKE_EXPORT Lane {
   ///
   /// @returns boost::none if no default branch has been established
   ///          at @p which_end.
-  const boost::optional<LaneEnd>& GetDefaultBranch(
+  // TODO(maddog@tri.global)  The return type yearns to be
+  //                          const boost::optional<LaneEnd>&.
+  std::unique_ptr<LaneEnd> GetDefaultBranch(
       const LaneEnd::Which which_end) const {
-    return DoGetDefaultBranch(which_end);
+    return std::move(DoGetDefaultBranch(which_end));
   }
 
  private:
@@ -210,7 +212,7 @@ class DRAKE_EXPORT Lane {
   ///
   /// @returns boost::none if no default branch has been established
   ///          at @p which_end.
-  virtual const boost::optional<LaneEnd>& DoGetDefaultBranch(
+  virtual std::unique_ptr<LaneEnd> DoGetDefaultBranch(
       const LaneEnd::Which which_end) const = 0;
 };
 

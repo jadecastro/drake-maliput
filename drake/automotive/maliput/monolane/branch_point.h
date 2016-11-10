@@ -53,7 +53,7 @@ class DRAKE_EXPORT BranchPoint : public api::BranchPoint {
   const api::SetOfLaneEnds* DoGetOngoingBranches(
       const api::LaneEnd& end) const override;
 
-  const boost::optional<api::LaneEnd>& DoGetDefaultBranch(
+  std::unique_ptr<api::LaneEnd> DoGetDefaultBranch(
       const api::LaneEnd& end) const override;
 
   const api::SetOfLaneEnds* DoGetASide() const override { return &a_side_; }
@@ -69,7 +69,7 @@ class DRAKE_EXPORT BranchPoint : public api::BranchPoint {
            api::LaneEnd::StrictOrder> confluent_branches_;
   std::map<api::LaneEnd, SetOfLaneEnds*,
            api::LaneEnd::StrictOrder> ongoing_branches_;
-  std::map<api::LaneEnd, boost::optional<api::LaneEnd>,
+  std::map<api::LaneEnd, api::LaneEnd,
            api::LaneEnd::StrictOrder> defaults_;
 };
 
