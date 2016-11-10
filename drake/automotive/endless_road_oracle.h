@@ -58,9 +58,6 @@ class EndlessRoadOracle : public systems::LeafSystem<T> {
       const std::vector<const EndlessRoadCarState<T>*>& car_inputs,
       std::vector<EndlessRoadOracleOutput<T>*>& oracle_outputs) const;
 
-  std::vector<boost::optional<T>> AssessIntersections(
-      const std::vector<const EndlessRoadCarState<T>*>& car_inputs) const;
-
   const maliput::utility::InfiniteCircuitRoad* road_;
   const int num_cars_;
   // TODO(maddog)  Do we need to keep track of these here?
