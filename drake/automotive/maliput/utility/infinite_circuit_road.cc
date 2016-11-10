@@ -68,7 +68,8 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
         (current.end == api::LaneEnd::kStart) ?
         api::LaneEnd::kFinish :
         api::LaneEnd::kStart;
-    const api::SetOfLaneEnds* branches = current.lane->GetBranches(other_end);
+    const api::SetOfLaneEnds* branches =
+        current.lane->GetOngoingBranches(other_end);
     DRAKE_DEMAND(branches->count() > 0);
 
     // If a non-empty path has been supplied, follow it.

@@ -20,9 +20,14 @@ const api::BranchPoint* Lane::DoGetBranchPoint(
   DRAKE_ABORT();
 }
 
-const api::SetOfLaneEnds* Lane::DoGetBranches(
+const api::SetOfLaneEnds* Lane::DoGetConfluentBranches(
     api::LaneEnd::Which which_end) const {
-  return GetBranchPoint(which_end)->GetBranches({this, which_end});
+  return GetBranchPoint(which_end)->GetConfluentBranches({this, which_end});
+}
+
+const api::SetOfLaneEnds* Lane::DoGetOngoingBranches(
+    api::LaneEnd::Which which_end) const {
+  return GetBranchPoint(which_end)->GetOngoingBranches({this, which_end});
 }
 
 const boost::optional<api::LaneEnd>& Lane::DoGetDefaultBranch(

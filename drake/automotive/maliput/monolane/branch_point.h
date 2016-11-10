@@ -47,7 +47,10 @@ class DRAKE_EXPORT BranchPoint : public api::BranchPoint {
 
   const api::RoadGeometry* do_road_geometry() const override;
 
-  const api::SetOfLaneEnds* DoGetBranches(
+  const api::SetOfLaneEnds* DoGetConfluentBranches(
+      const api::LaneEnd& end) const override;
+
+  const api::SetOfLaneEnds* DoGetOngoingBranches(
       const api::LaneEnd& end) const override;
 
   const boost::optional<api::LaneEnd>& DoGetDefaultBranch(
@@ -62,7 +65,10 @@ class DRAKE_EXPORT BranchPoint : public api::BranchPoint {
   SetOfLaneEnds a_side_;
   SetOfLaneEnds b_side_;
 
-  std::map<api::LaneEnd, SetOfLaneEnds*, api::LaneEnd::StrictOrder> branches_;
+  std::map<api::LaneEnd, SetOfLaneEnds*,
+           api::LaneEnd::StrictOrder> confluent_branches_;
+  std::map<api::LaneEnd, SetOfLaneEnds*,
+           api::LaneEnd::StrictOrder> ongoing_branches_;
   std::map<api::LaneEnd, boost::optional<api::LaneEnd>,
            api::LaneEnd::StrictOrder> defaults_;
 };

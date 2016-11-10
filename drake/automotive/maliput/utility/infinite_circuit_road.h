@@ -64,8 +64,8 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
 
   int GetPathIndex(double s) const { return lane_.GetPathIndex(s); }
 
-  /// Project the given LanePosition on the "infinite Lane" back to the
-  /// source Lane.
+  /// Project the given LanePosition @param lane_pos on the "infinite Lane"
+  /// back to a RoadPosition in the source RoadGeometry.
   ///
   /// @returns a pair of:
   /// - RoadPosition indicating the source Lane and position on that Lane;
@@ -125,7 +125,12 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
       DRAKE_ABORT();
     }
 
-    const api::SetOfLaneEnds* DoGetBranches(
+    const api::SetOfLaneEnds* DoGetConfluentBranches(
+        const api::LaneEnd::Which which_end) const override {
+      DRAKE_ABORT();
+    }
+
+    const api::SetOfLaneEnds* DoGetOngoingBranches(
         const api::LaneEnd::Which which_end) const override {
       DRAKE_ABORT();
     }

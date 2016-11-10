@@ -43,8 +43,12 @@ class DRAKE_EXPORT BranchPoint {
   /// @return the RoadGeometry which owns this BranchPoint.
   const RoadGeometry* road_geometry() const { return do_road_geometry(); }
 
-  const SetOfLaneEnds* GetBranches(const LaneEnd& end) const {
-    return DoGetBranches(end);
+  const SetOfLaneEnds* GetConfluentBranches(const LaneEnd& end) const {
+    return DoGetConfluentBranches(end);
+  }
+
+  const SetOfLaneEnds* GetOngoingBranches(const LaneEnd& end) const {
+    return DoGetOngoingBranches(end);
   }
 
   const boost::optional<LaneEnd>& GetDefaultBranch(const LaneEnd& end) const {
@@ -62,7 +66,11 @@ class DRAKE_EXPORT BranchPoint {
   /// @return the RoadGeometry which owns this BranchPoint.
   virtual const RoadGeometry* do_road_geometry() const = 0;
 
-  virtual const SetOfLaneEnds* DoGetBranches(const LaneEnd& end) const = 0;
+  virtual const SetOfLaneEnds* DoGetConfluentBranches(
+      const LaneEnd& end) const = 0;
+
+  virtual const SetOfLaneEnds* DoGetOngoingBranches(
+      const LaneEnd& end) const = 0;
 
   virtual const boost::optional<LaneEnd>& DoGetDefaultBranch(
       const LaneEnd& end) const = 0;

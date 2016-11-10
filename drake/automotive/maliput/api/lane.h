@@ -104,9 +104,19 @@ class DRAKE_EXPORT Lane {
     return DoGetBranchPoint(which_end);
   }
 
-  /// Returns the set of ongoing lanes connected to the lane at @p which_end.
-  const SetOfLaneEnds* GetBranches(const LaneEnd::Which which_end) const {
-    return DoGetBranches(which_end);
+  /// Returns the set of lanes which connect with this lane on the same side
+  /// of the BranchPoint at @p which_end.  At a minimum, this set will include
+  /// this lane.
+  const SetOfLaneEnds* GetConfluentBranches(
+      const LaneEnd::Which which_end) const {
+    return DoGetConfluentBranches(which_end);
+  }
+
+  /// Returns the set of lanes which continue onward from this lane at the
+  /// BranchPoint at @p which_end.
+  const SetOfLaneEnds* GetOngoingBranches(
+      const LaneEnd::Which which_end) const {
+    return DoGetOngoingBranches(which_end);
   }
 
   /// Returns the default ongoing lane connected at @p which_end.
@@ -190,8 +200,10 @@ class DRAKE_EXPORT Lane {
   virtual const BranchPoint* DoGetBranchPoint(
       const LaneEnd::Which which_end) const = 0;
 
-  /// Returns the set of ongoing lanes connected to the lane at @p which_end.
-  virtual const SetOfLaneEnds* DoGetBranches(
+  virtual const SetOfLaneEnds* DoGetConfluentBranches(
+      const LaneEnd::Which which_end) const = 0;
+
+  virtual const SetOfLaneEnds* DoGetOngoingBranches(
       const LaneEnd::Which which_end) const = 0;
 
   /// Returns the default ongoing lane connected at @p which_end.

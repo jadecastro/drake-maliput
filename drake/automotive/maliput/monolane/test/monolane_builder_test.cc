@@ -61,10 +61,12 @@ GTEST_TEST(MonolaneBuilderTest, Fig8) {
     EXPECT_EQ(lane->to_right(), nullptr);
 
     EXPECT_TRUE(lane->GetBranchPoint(api::LaneEnd::kStart) != nullptr);
-    EXPECT_EQ(lane->GetBranches(api::LaneEnd::kStart)->count(), 1);
+    EXPECT_EQ(lane->GetOngoingBranches(api::LaneEnd::kStart)->count(), 1);
+    EXPECT_EQ(lane->GetConfluentBranches(api::LaneEnd::kStart)->count(), 1);
 
     EXPECT_TRUE(lane->GetBranchPoint(api::LaneEnd::kFinish) != nullptr);
-    EXPECT_EQ(lane->GetBranches(api::LaneEnd::kFinish)->count(), 1);
+    EXPECT_EQ(lane->GetOngoingBranches(api::LaneEnd::kFinish)->count(), 1);
+    EXPECT_EQ(lane->GetConfluentBranches(api::LaneEnd::kFinish)->count(), 1);
   }
 
   EXPECT_EQ(rg->num_branch_points(), 8);
