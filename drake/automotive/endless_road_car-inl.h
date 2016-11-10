@@ -99,6 +99,11 @@ template <typename T>
 void EndlessRoadCar<T>::DoEvalOutput(const EndlessRoadCarState<T>& state,
                                      EndlessRoadCarState<T>* output) const {
   output->set_value(state.get_value());
+  // TODO(maddog)  Until we have a way to express this constraint to the
+  //               simulator, forbid exposing negative speeds.
+  if (output->speed() < 0.) {
+    output->set_speed(0.);
+  }
 }
 
 
@@ -202,6 +207,9 @@ typename EndlessRoadCar<T>::Accelerations EndlessRoadCar<T>::ComputeIdmAccelerat
   // Net distance to car ahead (front bumper to rear bumper)
   const double s = input.net_delta_sigma();
   // Current velocity
+  // TODO(maddog)  Demand that we are not pointing backwards, because we are
+  //               not handling that correctly yet.
+  DRAKE_DEMAND(std::cos(state.heading()) >= 0.);
   const double v = state.speed() * std::cos(state.heading());
 
   const double s_star = s_0 + (v * h) + (v * delta_v / 2. / std::sqrt(a * b));
@@ -222,6 +230,18 @@ typename EndlessRoadCar<T>::Accelerations EndlessRoadCar<T>::ComputeIdmAccelerat
     // Clamp acceleration!
     forward_acceleration = std::copysign(
         kFudgeFactor * config_.max_acceleration(), forward_acceleration);
+  }
+  if ((state.speed() <= 0.) && (forward_acceleration < 0.)) {
+    // Speed should be non-negative, so if it has dipped to/below zero,
+    // then we want to clamp any negative acceleration.
+    std::cerr << "CLAMP NEG ACCEL "
+              << "  speed " << state.speed()
+              << "  fa " << forward_acceleration
+              << "  v_0 " << v_0
+              << "  delta_v " << delta_v
+              << "  delta_s " << s
+              << std::endl;
+    forward_acceleration = 0.;
   }
 
   return {forward_acceleration, 0.};
