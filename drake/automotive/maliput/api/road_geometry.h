@@ -12,6 +12,7 @@ class BranchPoint;
 class Junction;
 
 
+/// Persistent identifier for a RoadGeometry element.
 struct DRAKE_EXPORT RoadGeometryId {
   std::string id;
 };
@@ -25,30 +26,47 @@ class DRAKE_EXPORT RoadGeometry {
 
   /// @return the persistent identifier.
   ///
-  // TODO(maddog)  Tie id into a tiling mechanism?
+  // TODO(maddog@tri.global)  Tie id into a tiling mechanism?
   const RoadGeometryId id() const { return do_id(); }
 
-  // TODO(maddog)  Real iteration support over junctions and branch-points.
+  // TODO(maddog@tri.global)  Iterators over junctions and branch-points?
 
   /// @return the number of Junctions in the RoadGeometry.
+  ///
+  /// Return value is non-negative.
   int num_junctions() const { return do_num_junctions(); }
 
   /// @return the Junction indexed by @param index.
+  ///
+  /// @pre @param index must be >= 0 and < num_junctions().
   const Junction* junction(int index) const { return do_junction(index); }
 
-  /// @return the number of BrancPoints n the RoadGeometry.
+  /// @return the number of BranchPoints in the RoadGeometry.
+  ///
+  /// Return value is non-negative.
   int num_branch_points() const { return do_num_branch_points(); }
 
   /// @return the BranchPoint indexed by @param index.
+  ///
+  /// @pre @param index must be >= 0 and < num_branch_points().
   const BranchPoint* branch_point(int index) const {
     return do_branch_point(index);
   }
 
-  /// Figure out the RoadPosition corresponding to GeoPosition @param geo_pos,
+  /// Determine the RoadPosition corresponding to GeoPosition @param geo_pos,
   /// potentially using @param hint to guide the search.
-  // TODO(maddog)  UNDER CONSTRUCTION
+  ///
+  /// For an input value g, this method guarantees that the return
+  /// value will satisfy the condition that
+  ///   ToRoadPosition(g).lane->ToGeoPosition(ToRoadPosition(g).pos)
+  /// is within linear_tolerance() of g.
+  // TODO(maddog@tri.global)  How should the "geo_pos is nowhere near the
+  //                          road surface" case be handled?  Ability to
+  //                          return 'no result'?
+  // TODO(maddog@tri.global)  UNDER CONSTRUCTION
   RoadPosition ToRoadPosition(const GeoPosition& geo_pos,
                               const RoadPosition& hint) const {
+    // TODO(maddog@tri.global)  Assert the linear-tolerance constraint.
     return DoToRoadPosition(geo_pos, hint);
   }
 
