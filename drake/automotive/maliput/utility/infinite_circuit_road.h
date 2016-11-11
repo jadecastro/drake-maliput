@@ -126,12 +126,12 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
       DRAKE_ABORT();
     }
 
-    const api::SetOfLaneEnds* DoGetConfluentBranches(
+    const api::LaneEndSet* DoGetConfluentBranches(
         const api::LaneEnd::Which which_end) const override {
       DRAKE_ABORT();
     }
 
-    const api::SetOfLaneEnds* DoGetOngoingBranches(
+    const api::LaneEndSet* DoGetOngoingBranches(
         const api::LaneEnd::Which which_end) const override {
       DRAKE_ABORT();
     }

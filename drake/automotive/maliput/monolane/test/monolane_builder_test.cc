@@ -61,20 +61,20 @@ GTEST_TEST(MonolaneBuilderTest, Fig8) {
     EXPECT_EQ(lane->to_right(), nullptr);
 
     EXPECT_TRUE(lane->GetBranchPoint(api::LaneEnd::kStart) != nullptr);
-    EXPECT_EQ(lane->GetOngoingBranches(api::LaneEnd::kStart)->count(), 1);
-    EXPECT_EQ(lane->GetConfluentBranches(api::LaneEnd::kStart)->count(), 1);
+    EXPECT_EQ(lane->GetOngoingBranches(api::LaneEnd::kStart)->size(), 1);
+    EXPECT_EQ(lane->GetConfluentBranches(api::LaneEnd::kStart)->size(), 1);
 
     EXPECT_TRUE(lane->GetBranchPoint(api::LaneEnd::kFinish) != nullptr);
-    EXPECT_EQ(lane->GetOngoingBranches(api::LaneEnd::kFinish)->count(), 1);
-    EXPECT_EQ(lane->GetConfluentBranches(api::LaneEnd::kFinish)->count(), 1);
+    EXPECT_EQ(lane->GetOngoingBranches(api::LaneEnd::kFinish)->size(), 1);
+    EXPECT_EQ(lane->GetConfluentBranches(api::LaneEnd::kFinish)->size(), 1);
   }
 
   EXPECT_EQ(rg->num_branch_points(), 8);
   for (int b = 0; b < rg->num_branch_points(); ++b) {
     const api::BranchPoint* bp = rg->branch_point(b);
-    /////    EXPECT_EQ(bp->GetBranches()->count(), 2);
-    EXPECT_EQ(bp->GetASide()->count(), 1);
-    EXPECT_EQ(bp->GetBSide()->count(), 1);
+    /////    EXPECT_EQ(bp->GetBranches()->size(), 2);
+    EXPECT_EQ(bp->GetASide()->size(), 1);
+    EXPECT_EQ(bp->GetBSide()->size(), 1);
   }
 };
 

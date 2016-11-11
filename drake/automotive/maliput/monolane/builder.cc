@@ -194,7 +194,7 @@ void Builder::AttachBranchPoint(
   // Is this the first lane-end added to the branch-point?
   // If so, just stick it on Side-A.
   // (NB: We just test size of A-Side, since A-Side is always populated first.)
-  if (bp->GetASide()->count() == 0) {
+  if (bp->GetASide()->size() == 0) {
     bp->AddABranch({lane, end});
     return;
   }

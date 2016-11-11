@@ -11,7 +11,7 @@ namespace api {
 
 class BranchPoint;
 class Segment;
-class SetOfLaneEnds;
+class LaneEndSet;
 
 
 /// Persistent identifier for a Lane element.
@@ -124,14 +124,14 @@ class DRAKE_EXPORT Lane {
   /// Returns the set of LaneEnd's which connect with this lane on the
   /// same side of the BranchPoint at @p which_end.  At a minimum,
   /// this set will include this Lane.
-  const SetOfLaneEnds* GetConfluentBranches(
+  const LaneEndSet* GetConfluentBranches(
       const LaneEnd::Which which_end) const {
     return DoGetConfluentBranches(which_end);
   }
 
   /// Returns the set of LaneEnd's which continue onward from this lane at the
   /// BranchPoint at @p which_end.
-  const SetOfLaneEnds* GetOngoingBranches(
+  const LaneEndSet* GetOngoingBranches(
       const LaneEnd::Which which_end) const {
     return DoGetOngoingBranches(which_end);
   }
@@ -181,10 +181,10 @@ class DRAKE_EXPORT Lane {
   virtual const BranchPoint* DoGetBranchPoint(
       const LaneEnd::Which which_end) const = 0;
 
-  virtual const SetOfLaneEnds* DoGetConfluentBranches(
+  virtual const LaneEndSet* DoGetConfluentBranches(
       const LaneEnd::Which which_end) const = 0;
 
-  virtual const SetOfLaneEnds* DoGetOngoingBranches(
+  virtual const LaneEndSet* DoGetOngoingBranches(
       const LaneEnd::Which which_end) const = 0;
 
   virtual std::unique_ptr<LaneEnd> DoGetDefaultBranch(

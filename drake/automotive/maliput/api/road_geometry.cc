@@ -202,19 +202,19 @@ std::vector<std::string> RoadGeometry::CheckInvariants() const {
     //     branches;
     //  - orientation *into* BranchPoint for A-side should be same as
     //     orientation *out of* BranchPoint for B-side.
-    if ((bp->GetASide()->count() == 0) &&
-        (bp->GetBSide()->count() == 0)) {
+    if ((bp->GetASide()->size() == 0) &&
+        (bp->GetBSide()->size() == 0)) {
       // TODO(maddog)  Uh, should an pointless BranchPoint be a failure?
       continue;
     }
 
     const LaneEnd ref_end =
-        (bp->GetASide()->count() > 0)
+        (bp->GetASide()->size() > 0)
         ? bp->GetASide()->get(0)
         : bp->GetBSide()->get(0);
     // ...test GEO-space position similarity.
     const GeoPosition ref_geo = LaneEndGeoPosition(ref_end);
-    for (int bi = 0; bi < bp->GetASide()->count(); ++bi) {
+    for (int bi = 0; bi < bp->GetASide()->size(); ++bi) {
       const LaneEnd le = bp->GetASide()->get(bi);
       const double d = Distance(ref_geo, LaneEndGeoPosition(le));
       if (d > linear_tolerance()) {
@@ -225,7 +225,7 @@ std::vector<std::string> RoadGeometry::CheckInvariants() const {
         failures.push_back(ss.str());
       }
     }
-    for (int bi = 0; bi < bp->GetBSide()->count(); ++bi) {
+    for (int bi = 0; bi < bp->GetBSide()->size(); ++bi) {
       const LaneEnd le = bp->GetBSide()->get(bi);
       const double d = Distance(ref_geo, LaneEndGeoPosition(le));
       if (d > linear_tolerance()) {
@@ -238,10 +238,10 @@ std::vector<std::string> RoadGeometry::CheckInvariants() const {
     }
     // ...test orientation similarity.
     const Rotation ref_rot =
-        (bp->GetASide()->count() > 0)
+        (bp->GetASide()->size() > 0)
         ? OrientationOutFromLane(bp->GetASide()->get(0))
         : OrientationIntoLane(bp->GetBSide()->get(0));
-    for (int bi = 0; bi < bp->GetASide()->count(); ++bi) {
+    for (int bi = 0; bi < bp->GetASide()->size(); ++bi) {
       const LaneEnd le = bp->GetASide()->get(bi);
       const double d = Distance(ref_rot, OrientationOutFromLane(le));
       if (d > angular_tolerance()) {
@@ -252,7 +252,7 @@ std::vector<std::string> RoadGeometry::CheckInvariants() const {
         failures.push_back(ss.str());
       }
     }
-    for (int bi = 0; bi < bp->GetBSide()->count(); ++bi) {
+    for (int bi = 0; bi < bp->GetBSide()->size(); ++bi) {
       const LaneEnd le = bp->GetBSide()->get(bi);
       const double d = Distance(ref_rot, OrientationIntoLane(le));
       if (d > angular_tolerance()) {

@@ -66,10 +66,10 @@ class DRAKE_EXPORT Lane : public api::Lane {
   const api::BranchPoint* DoGetBranchPoint(
       const api::LaneEnd::Which which_end) const override;
 
-  const api::SetOfLaneEnds* DoGetConfluentBranches(
+  const api::LaneEndSet* DoGetConfluentBranches(
       const api::LaneEnd::Which which_end) const override;
 
-  const api::SetOfLaneEnds* DoGetOngoingBranches(
+  const api::LaneEndSet* DoGetOngoingBranches(
       const api::LaneEnd::Which which_end) const override;
 
   std::unique_ptr<api::LaneEnd> DoGetDefaultBranch(

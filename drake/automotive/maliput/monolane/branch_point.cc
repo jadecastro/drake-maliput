@@ -11,7 +11,7 @@ namespace drake {
 namespace maliput {
 namespace monolane {
 
-const api::LaneEnd& SetOfLaneEnds::do_get(int index) const {
+const api::LaneEnd& LaneEndSet::do_get(int index) const {
   return ends_[index]; }
 
 
@@ -22,12 +22,12 @@ const api::RoadGeometry* BranchPoint::do_road_geometry() const {
   return road_geometry_;
 }
 
-const api::SetOfLaneEnds* BranchPoint::DoGetConfluentBranches(
+const api::LaneEndSet* BranchPoint::DoGetConfluentBranches(
     const api::LaneEnd& end) const {
   return confluent_branches_.at(end);
 }
 
-const api::SetOfLaneEnds* BranchPoint::DoGetOngoingBranches(
+const api::LaneEndSet* BranchPoint::DoGetOngoingBranches(
     const api::LaneEnd& end) const {
   return ongoing_branches_.at(end);
 }

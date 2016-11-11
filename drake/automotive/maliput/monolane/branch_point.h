@@ -16,14 +16,14 @@ class Lane;
 class RoadGeometry;
 
 
-class DRAKE_EXPORT SetOfLaneEnds : public api::SetOfLaneEnds {
+class DRAKE_EXPORT LaneEndSet : public api::LaneEndSet {
  public:
-  virtual ~SetOfLaneEnds() {}
+  virtual ~LaneEndSet() {}
 
   void add(const api::LaneEnd& end) { ends_.push_back(end); }
 
  private:
-  int do_count() const override { return ends_.size(); }
+  int do_size() const override { return ends_.size(); }
 
   const api::LaneEnd& do_get(int index) const override;
 
@@ -47,27 +47,27 @@ class DRAKE_EXPORT BranchPoint : public api::BranchPoint {
 
   const api::RoadGeometry* do_road_geometry() const override;
 
-  const api::SetOfLaneEnds* DoGetConfluentBranches(
+  const api::LaneEndSet* DoGetConfluentBranches(
       const api::LaneEnd& end) const override;
 
-  const api::SetOfLaneEnds* DoGetOngoingBranches(
+  const api::LaneEndSet* DoGetOngoingBranches(
       const api::LaneEnd& end) const override;
 
   std::unique_ptr<api::LaneEnd> DoGetDefaultBranch(
       const api::LaneEnd& end) const override;
 
-  const api::SetOfLaneEnds* DoGetASide() const override { return &a_side_; }
+  const api::LaneEndSet* DoGetASide() const override { return &a_side_; }
 
-  const api::SetOfLaneEnds* DoGetBSide() const override { return &b_side_; }
+  const api::LaneEndSet* DoGetBSide() const override { return &b_side_; }
 
   api::BranchPointId id_;
   RoadGeometry* road_geometry_{};
-  SetOfLaneEnds a_side_;
-  SetOfLaneEnds b_side_;
+  LaneEndSet a_side_;
+  LaneEndSet b_side_;
 
-  std::map<api::LaneEnd, SetOfLaneEnds*,
+  std::map<api::LaneEnd, LaneEndSet*,
            api::LaneEnd::StrictOrder> confluent_branches_;
-  std::map<api::LaneEnd, SetOfLaneEnds*,
+  std::map<api::LaneEnd, LaneEndSet*,
            api::LaneEnd::StrictOrder> ongoing_branches_;
   std::map<api::LaneEnd, api::LaneEnd,
            api::LaneEnd::StrictOrder> defaults_;

@@ -17,25 +17,25 @@ struct DRAKE_EXPORT BranchPointId {
 
 
 /// A set of LaneEnds.
-class DRAKE_EXPORT SetOfLaneEnds {
+class DRAKE_EXPORT LaneEndSet {
  public:
-  virtual ~SetOfLaneEnds() {}
+  virtual ~LaneEndSet() {}
 
   /// @return the number of LaneEnds in this set.
   ///
   /// Return value is non-negative.
-  int count() const { return do_count(); }
+  int size() const { return do_size(); }
 
   /// @return the LaneEnd indexed by @p index.
   ///
-  /// @pre @p index must be >= 0 and < count().
+  /// @pre @p index must be >= 0 and < size().
   const LaneEnd& get(int index) const { return do_get(index); }
 
  private:
   /// NVI implementations of the public methods.
   /// These must satisfy the constraint/invariants of the public methods.
   //@{
-  virtual int do_count() const = 0;
+  virtual int do_size() const = 0;
 
   virtual const LaneEnd& do_get(int index) const = 0;
   //@}
@@ -67,7 +67,7 @@ class DRAKE_EXPORT BranchPoint {
   /// The returned set includes the given @p end.
   ///
   /// @pre @p end must be connected to the BranchPoint.
-  const SetOfLaneEnds* GetConfluentBranches(const LaneEnd& end) const {
+  const LaneEndSet* GetConfluentBranches(const LaneEnd& end) const {
     return DoGetConfluentBranches(end);
   }
 
@@ -75,7 +75,7 @@ class DRAKE_EXPORT BranchPoint {
   /// e.g., the LaneEnds which @p end flows into.
   ///
   /// @pre @p end must be connected to the BranchPoint.
-  const SetOfLaneEnds* GetOngoingBranches(const LaneEnd& end) const {
+  const LaneEndSet* GetOngoingBranches(const LaneEnd& end) const {
     return DoGetOngoingBranches(end);
   }
 
@@ -94,10 +94,10 @@ class DRAKE_EXPORT BranchPoint {
   }
 
   /// @return the set of LaneEnds grouped together on the "A-side".
-  const SetOfLaneEnds* GetASide() const { return DoGetASide(); }
+  const LaneEndSet* GetASide() const { return DoGetASide(); }
 
   /// @return the set of LaneEnds grouped together on the "B-side".
-  const SetOfLaneEnds* GetBSide() const { return DoGetBSide(); }
+  const LaneEndSet* GetBSide() const { return DoGetBSide(); }
 
  private:
   /// NVI implementations of the public methods.
@@ -107,18 +107,18 @@ class DRAKE_EXPORT BranchPoint {
 
   virtual const RoadGeometry* do_road_geometry() const = 0;
 
-  virtual const SetOfLaneEnds* DoGetConfluentBranches(
+  virtual const LaneEndSet* DoGetConfluentBranches(
       const LaneEnd& end) const = 0;
 
-  virtual const SetOfLaneEnds* DoGetOngoingBranches(
+  virtual const LaneEndSet* DoGetOngoingBranches(
       const LaneEnd& end) const = 0;
 
   virtual std::unique_ptr<LaneEnd> DoGetDefaultBranch(
       const LaneEnd& end) const = 0;
 
-  virtual const SetOfLaneEnds* DoGetASide() const = 0;
+  virtual const LaneEndSet* DoGetASide() const = 0;
 
-  virtual const SetOfLaneEnds* DoGetBSide() const = 0;
+  virtual const LaneEndSet* DoGetBSide() const = 0;
   //@}
 };
 

@@ -68,9 +68,9 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
         (current.end == api::LaneEnd::kStart) ?
         api::LaneEnd::kFinish :
         api::LaneEnd::kStart;
-    const api::SetOfLaneEnds* branches =
+    const api::LaneEndSet* branches =
         current.lane->GetOngoingBranches(other_end);
-    DRAKE_DEMAND(branches->count() > 0);
+    DRAKE_DEMAND(branches->size() > 0);
 
     // If a non-empty path has been supplied, follow it.
     // Otherwise, simply use the first branch every time.
@@ -79,7 +79,7 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
       int bi = 0;
       while (branches->get(bi).lane != specified_lane) {
         ++bi;
-        if (bi >= branches->count()) {
+        if (bi >= branches->size()) {
           std::cerr << "OOOPS:  Lane " << specified_lane->id().id
                     << " was not found at "
                     << ((current.end == api::LaneEnd::kStart)
@@ -93,7 +93,7 @@ InfiniteCircuitRoad::Lane::Lane(const api::LaneId& id,
     } else {
       current = branches->get(0);
     }
-    std::cerr << branches->count() << " branches, "
+    std::cerr << branches->size() << " branches, "
               << " 0 ---> lane " << current.lane->id().id
               << ", end " << current.end
               << std::endl;
