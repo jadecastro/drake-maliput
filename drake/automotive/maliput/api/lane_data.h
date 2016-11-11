@@ -13,10 +13,10 @@ namespace api {
 class Lane;
 
 
-/// The endpoint of a specific Lane.
+/// A specific endpoint of a specific Lane.
 struct LaneEnd {
-  /// Labels for the endpoints of a Lane.  kStart is the "s == 0"
-  /// end, and kFinish is the other end.
+  /// Labels for the endpoints of a Lane.  kStart is the "s == 0" end,
+  /// and kFinish is the other end.
   enum Which { kStart, kFinish, };
 
   /// An arbitrary strict complete ordering, useful for, e.g., std::map.
@@ -33,7 +33,7 @@ struct LaneEnd {
   /// Default constructor.
   LaneEnd() {}
 
-  /// The specified @param end of the specified @param lane.
+  /// Construct a LaneEnd specifying the @p end of @p lane.
   LaneEnd(const Lane* _lane, Which _end) : lane(_lane), end(_end) {}
 
   const Lane* lane{};
@@ -41,9 +41,13 @@ struct LaneEnd {
 };
 
 
+/// A 3-dimensional rotation, expressed as a roll around X, followed
+/// by pitch around Y, followed by yaw around Z.
 struct DRAKE_EXPORT Rotation {
+  /// Default constructor.
   Rotation() {}
 
+  /// Fully parameterized constructor.
   Rotation(double _roll, double _pitch, double _yaw)
       : roll(_roll), pitch(_pitch), yaw(_yaw) {}
 
@@ -53,9 +57,12 @@ struct DRAKE_EXPORT Rotation {
 };
 
 
+/// A position in 3-dimensional geographical Cartesian space.
 struct DRAKE_EXPORT GeoPosition {
+  /// Default constructor.
   GeoPosition() {}
 
+  /// Fully parameterized constructor.
   GeoPosition(double _x, double _y, double _z) : x(_x), y(_y), z(_z) {}
 
   double x{};
@@ -64,9 +71,15 @@ struct DRAKE_EXPORT GeoPosition {
 };
 
 
+/// A 3-dimensional position in LANE-space, consisting of three components:
+///  * s is longitudinal position, as arc-length along a Lane's reference line.
+///  * r is lateral position, perpendicular to the reference line at s.
+///  * h is height above the road surface.
 struct DRAKE_EXPORT LanePosition {
+  /// Default constructor.
   LanePosition() {}
 
+  /// Fully parameterized constructor.
   LanePosition(double _s, double _r, double _h) : s(_s), r(_r), h(_h) {}
 
   double s{};
@@ -75,9 +88,12 @@ struct DRAKE_EXPORT LanePosition {
 };
 
 
+/// Isometric velocity vector in LANE-space.
 struct DRAKE_EXPORT IsoLaneVelocity {
+  /// Default constructor.
   IsoLaneVelocity() {}
 
+  /// Fully parameterized constructor.
   IsoLaneVelocity(double _sigma_v, double _rho_v, double _eta_v)
       : sigma_v(_sigma_v), rho_v(_rho_v), eta_v(_eta_v) {}
 
@@ -87,9 +103,13 @@ struct DRAKE_EXPORT IsoLaneVelocity {
 };
 
 
+/// A position in the road network, consisting of a pointer to a specific
+/// Lane and a LANE-space position on that Lane.
 struct DRAKE_EXPORT RoadPosition {
+  /// Default constructor.
   RoadPosition() {}
 
+  /// Fully parameterized constructor.
   RoadPosition(const Lane* _lane, const LanePosition& _pos)
       : lane(_lane), pos(_pos) {}
 
@@ -98,15 +118,19 @@ struct DRAKE_EXPORT RoadPosition {
 };
 
 
+/// Bounds in the lateral dimension (r component) of LANE-space, consisting
+/// of a pair of minimum and maximum r value.
 struct DRAKE_EXPORT RBounds {
+  /// Default constructor.
+  RBounds() {}
+
+  /// Fully parameterized constructor.
+  RBounds(double rmin, double rmax) : r_min(rmin), r_max(rmax) {}
+
   double r_min{};
   double r_max{};
 };
 
-
-
-
-
-}  // namespace geometry_api
+}  // namespace api
 }  // namespace maliput
 }  // namespace drake

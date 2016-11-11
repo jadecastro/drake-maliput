@@ -13,25 +13,33 @@ class BranchPoint;
 class Segment;
 class SetOfLaneEnds;
 
-class BranchChoices;  // TODO(maddog) define me.
 
-
+/// Persistent identifier for a Lane element.
 struct DRAKE_EXPORT LaneId {
   std::string id;
 };
 
 
+/// A Lane represents a lane of travel in a road network.  A Lane defines
+/// a curvilinear coordinate system covering the road surface, with a
+/// longitudinal 's' coordinate that expresses the arc-length along a
+/// central reference curve.  The reference curve nominally represents
+/// an ideal travel trajectory along the Lane.
+///
+/// Lanes are grouped by Segments.  All Lanes belonging to a Segment
+/// represent the same road surface, but with different coordinate
+/// parameterizations (e.g., each Lane has its own reference curve).
 class DRAKE_EXPORT Lane {
  public:
   virtual ~Lane() {}
 
-  /// Returns a persistent identifier for this Lane.
+  /// @return the persistent identifier.
   const LaneId id() const { return do_id(); }
 
-  /// Returns a non-null pointer to the Segment to which this Lane belongs.
+  /// @return the Segment to which this Lane belongs.
   const Segment* segment() const { return do_segment(); }
 
-  /// Returns the index of this Lane within the Segment which owns it.
+  /// @return the index of this Lane within the Segment which owns it.
   int index() const { return do_index(); }
 
   /// Returns a pointer to the adjacent Lane to the left of this Lane.
@@ -50,9 +58,9 @@ class DRAKE_EXPORT Lane {
   /// @returns nullptr iff parent Segment has no Lane to the right.
   const Lane* to_right() const { return do_to_right(); }
 
-  /// Returns the arc-length of the lane along its reference curve.
+  /// Returns the arc-length of the Lane along its reference curve.
   ///
-  /// The value of length() is also the maximum s-coordinate for this lane;
+  /// The value of length() is also the maximum s-coordinate for this Lane;
   /// i.e., the domain of s is [0, length()].
   double length() const { return do_length(); }
 
@@ -78,14 +86,23 @@ class DRAKE_EXPORT Lane {
     return DoToGeoPosition(lane_pos);
   }
 
+  /// Calculate position in the LANE-space domain of the Lane which maps to
+  /// the GEO-space point closest (per Cartesian metric) to the specified
+  /// @p geo_pos.
+  // TODO(maddog@tri.global)  UNDER CONSTRUCTION
+  // TODO(maddog@tri.global)  Return the minimal-distance, too?
+  // TODO(maddog@tri.global)  Select between lane_bounds and driveable_bounds?
   LanePosition ToLanePosition(const GeoPosition& geo_pos) const {
     return DoToLanePosition(geo_pos);
   }
 
-  // TODO(maddog)  Method to convert LanePosition to that of another Lane.
-  //               (Should assert that both lanes belong to same Segment.)
+  // TODO(maddog@tri.global) Method to convert LanePosition to that of
+  //                         another Lane.  (Should assert that both
+  //                         lanes belong to same Segment.)
 
-  /// Return the rotation which transforms LANE basis into GEO basis.
+  /// Return the rotation which expresses the orientation of the
+  /// LANE-space basis at @p lane_pos with regards to the (single, global)
+  /// GEO-space basis.
   Rotation GetOrientation(const LanePosition& lane_pos) const {
     return DoGetOrientation(lane_pos);
   }
@@ -104,24 +121,24 @@ class DRAKE_EXPORT Lane {
     return DoGetBranchPoint(which_end);
   }
 
-  /// Returns the set of lanes which connect with this lane on the same side
-  /// of the BranchPoint at @p which_end.  At a minimum, this set will include
-  /// this lane.
+  /// Returns the set of LaneEnd's which connect with this lane on the
+  /// same side of the BranchPoint at @p which_end.  At a minimum,
+  /// this set will include this Lane.
   const SetOfLaneEnds* GetConfluentBranches(
       const LaneEnd::Which which_end) const {
     return DoGetConfluentBranches(which_end);
   }
 
-  /// Returns the set of lanes which continue onward from this lane at the
+  /// Returns the set of LaneEnd's which continue onward from this lane at the
   /// BranchPoint at @p which_end.
   const SetOfLaneEnds* GetOngoingBranches(
       const LaneEnd::Which which_end) const {
     return DoGetOngoingBranches(which_end);
   }
 
-  /// Returns the default ongoing lane connected at @p which_end.
+  /// Returns the default ongoing LaneEnd connected at @p which_end.
   ///
-  /// @returns boost::none if no default branch has been established
+  /// @returns nullptr if no default branch has been established
   ///          at @p which_end.
   // TODO(maddog@tri.global)  The return type yearns to be
   //                          const boost::optional<LaneEnd>&.
@@ -131,63 +148,29 @@ class DRAKE_EXPORT Lane {
   }
 
  private:
-    /// Returns a persistent identifier for this Lane.
+  /// NVI implementations of the public methods.
+  /// These must satisfy the constraint/invariants of the public methods.
+  //@{
   virtual const LaneId do_id() const = 0;
 
-  /// Returns a non-null pointer to the Segment to which this Lane belongs.
   virtual const Segment* do_segment() const = 0;
 
-  /// Returns the index of this Lane within the Segment which owns it.
   virtual int do_index() const = 0;
 
-  /// Returns a pointer to the adjacent Lane to the left of this Lane.
-  ///
-  /// Left is considered the +r direction with regards to the (s,r,h) frame,
-  /// e.g., "to the left along the +s direction".
-  ///
-  /// @returns nullptr iff parent Segment has no Lane to the left.
   virtual const Lane* do_to_left() const = 0;
 
-  /// Returns a pointer to the adjacent Lane to the right of this Lane.
-  ///
-  /// Right is considered the -r direction with regards to the (s,r,h) frame,
-  /// e.g., "to the right along the +s direction".
-  ///
-  /// @returns nullptr iff parent Segment has no Lane to the right.
   virtual const Lane* do_to_right() const = 0;
 
-  /// Returns the arc-length of the lane along its reference curve.
-  ///
-  /// The value of length() is also the maximum s-coordinate for this lane;
-  /// i.e., the domain of s is [0, length()].
   virtual double do_length() const = 0;
 
-  /// Returns the nominal lateral (r) bounds for the lane as a function of s.
-  ///
-  /// These are the lateral bounds for a position that is considered to be
-  /// "staying in the lane".
   virtual RBounds do_lane_bounds(double s) const = 0;
 
-  /// Returns the driveable lateral (r) bounds of the lane as a function of s.
-  ///
-  /// These are the lateral bounds for a position that is considered to be
-  /// "on pavement", reflecting the physical extent of the paved surface of
-  /// the lane's segment.
   virtual RBounds do_driveable_bounds(double s) const = 0;
 
-  /// Returns the GeoPosition corresponding to the given LanePosition.
-  ///
-  /// @pre The s component of @p lane_pos must be in domain [0, Lane::length()].
-  /// @pre The r component of @p lane_pos must be in domain [Rmin, Rmax]
-  ///      derived from Lane::driveable_bounds().
   virtual GeoPosition DoToGeoPosition(const LanePosition& lane_pos) const = 0;
 
   virtual LanePosition DoToLanePosition(const GeoPosition& geo_pos) const = 0;
 
-  // TODO(maddog)  Method to convert LanePosition to that of another Lane.
-  //               (Should assert that both lanes belong to same Segment.)
-
-  /// Return the rotation which transforms LANE basis into GEO basis.
   virtual Rotation DoGetOrientation(const LanePosition& lane_pos) const = 0;
 
 
@@ -195,10 +178,6 @@ class DRAKE_EXPORT Lane {
                                        const IsoLaneVelocity& velocity,
                                        LanePosition* position_dot) const = 0;
 
-  // TODO(maddog) virtual void EvalSurfaceDerivatives(...) const = 0;
-
-
-  /// Returns the lane's BranchPoint for the end specificed by @p which_end.
   virtual const BranchPoint* DoGetBranchPoint(
       const LaneEnd::Which which_end) const = 0;
 
@@ -208,14 +187,11 @@ class DRAKE_EXPORT Lane {
   virtual const SetOfLaneEnds* DoGetOngoingBranches(
       const LaneEnd::Which which_end) const = 0;
 
-  /// Returns the default ongoing lane connected at @p which_end.
-  ///
-  /// @returns boost::none if no default branch has been established
-  ///          at @p which_end.
   virtual std::unique_ptr<LaneEnd> DoGetDefaultBranch(
       const LaneEnd::Which which_end) const = 0;
+  //@}
 };
 
-}  // namespace geometry_api
+}  // namespace api
 }  // namespace maliput
 }  // namespace drake

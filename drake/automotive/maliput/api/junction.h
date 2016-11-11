@@ -36,9 +36,9 @@ class DRAKE_EXPORT Junction {
   /// Return value is non-negative.
   int num_segments() const { return do_num_segments(); }
 
-  /// @return the Segment indexed by @param index.
+  /// @return the Segment indexed by @p index.
   ///
-  /// @pre @param index must be >= 0 and < num_segments().
+  /// @pre @p index must be >= 0 and < num_segments().
   const Segment* segment(int index) const { return do_segment(index); }
 
  private:

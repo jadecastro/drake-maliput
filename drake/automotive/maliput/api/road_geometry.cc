@@ -277,7 +277,6 @@ std::vector<std::string> RoadGeometry::CheckInvariants() const {
   return failures;
 }
 
-
-}  // namespace geometry_api
+}  // namespace api
 }  // namespace maliput
 }  // namespace drake

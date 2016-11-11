@@ -36,11 +36,11 @@ class DRAKE_EXPORT Segment {
   /// Return value is non-negative.
   int num_lanes() const { return do_num_lanes(); }
 
-  /// @return the Lane indexed by @param index.
+  /// @return the Lane indexed by @p index.
   /// The indexing order is meaningful; numerically adjacent indices correspond
   /// to geometrically adjacent Lanes.
   ///
-  /// @pre @param index must be >= 0 and < num_lanes().
+  /// @pre @p index must be >= 0 and < num_lanes().
   const Lane* lane(int index) const { return do_lane(index); }
 
  private:

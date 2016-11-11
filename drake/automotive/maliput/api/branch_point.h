@@ -26,9 +26,9 @@ class DRAKE_EXPORT SetOfLaneEnds {
   /// Return value is non-negative.
   int count() const { return do_count(); }
 
-  /// @return the LaneEnd indexed by @param index.
+  /// @return the LaneEnd indexed by @p index.
   ///
-  /// @pre @param index must be >= 0 and < count().
+  /// @pre @p index must be >= 0 and < count().
   const LaneEnd& get(int index) const { return do_get(index); }
 
  private:
@@ -61,32 +61,32 @@ class DRAKE_EXPORT BranchPoint {
   /// @return the RoadGeometry to which this BranchPoint belongs.
   const RoadGeometry* road_geometry() const { return do_road_geometry(); }
 
-  /// @return the set of LaneEnds on the same side as the given @param end,
-  /// e.g., the LaneEnds merging with the given @param end.
+  /// @return the set of LaneEnds on the same side as the given @p end,
+  /// e.g., the LaneEnds merging with the given @p end.
   ///
-  /// The returned set includes the given @param end.
+  /// The returned set includes the given @p end.
   ///
-  /// @pre @param end must be connected to the BranchPoint.
+  /// @pre @p end must be connected to the BranchPoint.
   const SetOfLaneEnds* GetConfluentBranches(const LaneEnd& end) const {
     return DoGetConfluentBranches(end);
   }
 
-  /// @return the set of LaneEnds on the other side from the given @param end,
-  /// e.g., the LaneEnds which @param end flows into.
+  /// @return the set of LaneEnds on the other side from the given @p end,
+  /// e.g., the LaneEnds which @p end flows into.
   ///
-  /// @pre @param end must be connected to the BranchPoint.
+  /// @pre @p end must be connected to the BranchPoint.
   const SetOfLaneEnds* GetOngoingBranches(const LaneEnd& end) const {
     return DoGetOngoingBranches(end);
   }
 
-  /// @return the default ongoing branch (if any) for the given @param end.
+  /// @return the default ongoing branch (if any) for the given @p end.
   /// This typically represents what would be considered "continuing through
-  /// traffic" from @param end (e.g., as opposed to a branch executing a turn).
+  /// traffic" from @p end (e.g., as opposed to a branch executing a turn).
   ///
-  /// If @param end has not default-branch at this BranchPoint, the return
+  /// If @p end has no default-branch at this BranchPoint, the return
   /// value will be nullptr.
   ///
-  /// @pre @param end must be connected to the BranchPoint.
+  /// @pre @p end must be connected to the BranchPoint.
   // TODO(maddog@tri.global)  The return type yearns to be
   //                          const boost::optional<LaneEnd>&.
   std::unique_ptr<LaneEnd> GetDefaultBranch(const LaneEnd& end) const {
@@ -122,8 +122,6 @@ class DRAKE_EXPORT BranchPoint {
   //@}
 };
 
-
-
-}  // namespace geometry_api
+}  // namespace api
 }  // namespace maliput
 }  // namespace drake

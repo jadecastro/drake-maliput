@@ -29,16 +29,16 @@ class DRAKE_EXPORT RoadGeometry {
   // TODO(maddog@tri.global)  Tie id into a tiling mechanism?
   const RoadGeometryId id() const { return do_id(); }
 
-  // TODO(maddog@tri.global)  Iterators over junctions and branch-points?
+  // TODO(maddog@tri.global) Proper iterators over junctions and branch-points?
 
   /// @return the number of Junctions in the RoadGeometry.
   ///
   /// Return value is non-negative.
   int num_junctions() const { return do_num_junctions(); }
 
-  /// @return the Junction indexed by @param index.
+  /// @return the Junction indexed by @p index.
   ///
-  /// @pre @param index must be >= 0 and < num_junctions().
+  /// @pre @p index must be >= 0 and < num_junctions().
   const Junction* junction(int index) const { return do_junction(index); }
 
   /// @return the number of BranchPoints in the RoadGeometry.
@@ -46,15 +46,15 @@ class DRAKE_EXPORT RoadGeometry {
   /// Return value is non-negative.
   int num_branch_points() const { return do_num_branch_points(); }
 
-  /// @return the BranchPoint indexed by @param index.
+  /// @return the BranchPoint indexed by @p index.
   ///
-  /// @pre @param index must be >= 0 and < num_branch_points().
+  /// @pre @p index must be >= 0 and < num_branch_points().
   const BranchPoint* branch_point(int index) const {
     return do_branch_point(index);
   }
 
-  /// Determine the RoadPosition corresponding to GeoPosition @param geo_pos,
-  /// potentially using @param hint to guide the search.
+  /// Determine the RoadPosition corresponding to GeoPosition @p geo_pos,
+  /// potentially using @p hint to guide the search.
   ///
   /// For an input value g, this method guarantees that the return
   /// value will satisfy the condition that
@@ -87,35 +87,24 @@ class DRAKE_EXPORT RoadGeometry {
   std::vector<std::string> CheckInvariants() const;
 
  private:
-  /// @return the persistent identifier.
-  ///
-  // TODO(maddog)  Tie id into a tiling mechanism?
+  /// NVI implementations of the public methods.
+  /// These must satisfy the constraint/invariants of the public methods.
+  //@{
   virtual const RoadGeometryId do_id() const = 0;
 
-  // TODO(maddog)  Real iteration support over junctions and branch-points.
-
-  /// @return the number of Junctions in the RoadGeometry.
   virtual int do_num_junctions() const = 0;
 
-  /// @return the Junction indexed by @param index.
   virtual const Junction* do_junction(int index) const = 0;
 
-  /// @return the number of BrancPoints n the RoadGeometry.
   virtual int do_num_branch_points() const = 0;
 
-  /// @return the BranchPoint indexed by @param index.
   virtual const BranchPoint* do_branch_point(int index) const = 0;
 
-  /// Figure out the RoadPosition corresponding to GeoPosition @param geo_pos,
-  /// potentially using @param hint to guide the search.
-  // TODO(maddog)  UNDER CONSTRUCTION
   virtual RoadPosition DoToRoadPosition(const GeoPosition& geo_pos,
                                         const RoadPosition& hint) const = 0;
 
-  /// @return the tolerance guaranteed for linear measurements (positions).
   virtual double do_linear_tolerance() const = 0;
 
-  /// @return the tolerance guaranteed for angular measurements (orientations).
   virtual double do_angular_tolerance() const = 0;
 };
 
