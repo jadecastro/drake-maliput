@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lane.h"
+#include "drake/automotive/maliput/monolane/lane.h"
 
 namespace drake {
 namespace maliput {

@@ -1,4 +1,4 @@
-#include "generate_obj.h"
+#include "drake/automotive/maliput/utility/generate_obj.h"
 
 #include <cstddef>
 #include <fstream>

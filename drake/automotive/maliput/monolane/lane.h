@@ -4,7 +4,7 @@
 #include "drake/automotive/maliput/api/lane.h"
 #include "drake/automotive/maliput/api/segment.h"
 
-#include "mathiness.h"
+#include "drake/automotive/maliput/monolane/mathiness.h"
 
 namespace drake {
 namespace maliput {

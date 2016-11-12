@@ -1,4 +1,4 @@
-#include "lane.h"
+#include "drake/automotive/maliput/monolane/lane.h"
 
 #include "drake/automotive/maliput/monolane/branch_point.h"
 #include "drake/automotive/maliput/monolane/segment.h"

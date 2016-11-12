@@ -1,4 +1,4 @@
-#include "generate_urdf.h"
+#include "drake/automotive/maliput/utility/generate_urdf.h"
 
 #include <fstream>
 #include <iostream>

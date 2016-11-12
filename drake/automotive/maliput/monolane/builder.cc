@@ -3,11 +3,11 @@
 #include <cmath>
 #include <iostream>
 
-#include "arc_lane.h"
-#include "branch_point.h"
+#include "drake/automotive/maliput/monolane/arc_lane.h"
+#include "drake/automotive/maliput/monolane/branch_point.h"
 #include "ignore.h"
-#include "line_lane.h"
-#include "road_geometry.h"
+#include "drake/automotive/maliput/monolane/line_lane.h"
+#include "drake/automotive/maliput/monolane/road_geometry.h"
 
 #include "drake/common/drake_assert.h"
 

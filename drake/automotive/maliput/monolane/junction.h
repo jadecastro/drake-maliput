@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "segment.h"
+#include "drake/automotive/maliput/monolane/segment.h"
 
 #include "drake/automotive/maliput/api/junction.h"
 #include "drake/automotive/maliput/api/road_geometry.h"

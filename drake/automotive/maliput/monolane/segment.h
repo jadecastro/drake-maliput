@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "lane.h"
+#include "drake/automotive/maliput/monolane/lane.h"
 
 #include "drake/automotive/maliput/api/junction.h"
 #include "drake/automotive/maliput/api/lane.h"
