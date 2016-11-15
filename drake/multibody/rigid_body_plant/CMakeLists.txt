@@ -51,6 +51,7 @@ drake_install_headers(
 
 pods_install_libraries(drakeRigidBodyPlant)
 drake_install_pkg_config_file(drake-rigid-body-plant
+  TARGET drakeRigidBodyPlant
   CFLAGS -I${CMAKE_INSTALL_PREFIX}/include
   LIBS -ldrakeRigidBodyPlant
   REQUIRES
