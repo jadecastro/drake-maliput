@@ -96,8 +96,9 @@ class AutomotiveSimulator {
   /// EulerFloatingJoint output.
   /// @pre Start() has NOT been called.
   /// @pre SetRoadGeometry() HAS been called.
-  void AddEndlessRoadCar(
+  int AddEndlessRoadCar(
       const std::string& id,
+      const std::string& sdf_filename,
       double longitudinal_start, double lateral_offset, double speed,
       typename EndlessRoadCar<T>::ControlType control_type);
 
@@ -179,8 +180,8 @@ class AutomotiveSimulator {
   int AddSdfModel(const std::string& sdf_filename,
                   const SimpleCarToEulerFloatingJoint<T>*);
 
-  void AddSdfModel(const std::string& sdf_filename,
-                   const EndlessRoadCarToEulerFloatingJoint<T>*);
+  int AddSdfModel(const std::string& sdf_filename,
+                  const EndlessRoadCarToEulerFloatingJoint<T>*);
 
   // Connects the systems that output the pose of each vehicle to the
   // visualizer. This is done by using multiplexers to connect systems that

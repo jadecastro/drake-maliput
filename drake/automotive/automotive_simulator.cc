@@ -111,8 +111,9 @@ int AutomotiveSimulator<T>::AddTrajectoryCarFromSdf(
 
 
 template <typename T>
-void AutomotiveSimulator<T>::AddEndlessRoadCar(
+int AutomotiveSimulator<T>::AddEndlessRoadCar(
     const std::string& id,
+    const std::string& sdf_filename,
     double longitudinal_start,
     double lateral_offset,
     double speed,
@@ -158,9 +159,7 @@ void AutomotiveSimulator<T>::AddEndlessRoadCar(
   builder_->Connect(*endless_road_car, *coord_transform);
   AddPublisher(*endless_road_car, vehicle_number);
   AddPublisher(*coord_transform, vehicle_number);
-  // TODO(liang.fok) Allow model to be client selectable.
-  AddSdfModel(GetDrakePath() + "/automotive/models/prius/prius_with_lidar.sdf",
-              coord_transform);
+  return AddSdfModel(sdf_filename, coord_transform);
 }
 
 template <typename T>
@@ -196,7 +195,7 @@ int AutomotiveSimulator<T>::AddSdfModel(
 }
 
 template <typename T>
-void AutomotiveSimulator<T>::AddSdfModel(
+int AutomotiveSimulator<T>::AddSdfModel(
     const std::string& sdf_filename,
     const EndlessRoadCarToEulerFloatingJoint<T>* coord_transform) {
   const parsers::ModelInstanceIdTable table =
@@ -209,6 +208,7 @@ void AutomotiveSimulator<T>::AddSdfModel(
   const int model_instance_id = table.begin()->second;
   rigid_body_tree_publisher_inputs_.push_back(
       std::make_pair(model_instance_id, coord_transform));
+  return model_instance_id;
 }
 
 template <typename T>
