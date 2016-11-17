@@ -2,7 +2,6 @@
 
 #include <cmath>
 
-#include "drake/automotive/maliput/monolane/ignore.h"
 #include "drake/common/drake_assert.h"
 
 namespace drake {
@@ -27,9 +26,7 @@ double LineLane::heading_of_p_(const double) const { return heading_; }
 double LineLane::heading_dot_of_p_(const double) const { return 0.; }
 
 
-api::LanePosition LineLane::DoToLanePosition(
-    const api::GeoPosition& geo_pos) const {
-  ignore(geo_pos.x);  // TODO(maddog) temp warning quashing
+api::LanePosition LineLane::DoToLanePosition(const api::GeoPosition&) const {
   DRAKE_ABORT();  // TODO(maddog) Implement me.
 }
 

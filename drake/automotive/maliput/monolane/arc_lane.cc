@@ -1,8 +1,8 @@
 #include "drake/automotive/maliput/monolane/arc_lane.h"
 
-#include "drake/automotive/maliput/monolane/ignore.h"
-
 #include <cmath>
+
+#include "drake/common/drake_assert.h"
 
 namespace drake {
 namespace maliput {
@@ -35,9 +35,7 @@ double ArcLane::heading_dot_of_p_(const double p) const {
 }
 
 
-api::LanePosition ArcLane::DoToLanePosition(
-    const api::GeoPosition& geo_pos) const {
-  ignore(geo_pos.x);  // TODO(maddog) temp warning quashing
+api::LanePosition ArcLane::DoToLanePosition(const api::GeoPosition&) const {
   DRAKE_ABORT();  // TODO(maddog) Implement me.
 }
 

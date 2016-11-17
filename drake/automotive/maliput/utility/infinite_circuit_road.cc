@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "drake/automotive/maliput/monolane/branch_point.h"
-#include "drake/automotive/maliput/monolane/ignore.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 
 #include "drake/common/drake_assert.h"

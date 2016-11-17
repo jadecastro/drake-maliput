@@ -5,7 +5,6 @@
 
 #include "drake/automotive/maliput/monolane/arc_lane.h"
 #include "drake/automotive/maliput/monolane/branch_point.h"
-#include "ignore.h"
 #include "drake/automotive/maliput/monolane/line_lane.h"
 #include "drake/automotive/maliput/monolane/road_geometry.h"
 
@@ -19,10 +18,8 @@ Builder::XYZPointFuzzyOrder::
 XYZPointFuzzyOrder(const double linear_tolerance,
                    const double angular_tolerance)
         : pos_pre_(linear_tolerance),
-          ori_pre_(angular_tolerance) {
-      ignore(pos_pre_);
-      ignore(ori_pre_);
-    }
+          ori_pre_(angular_tolerance) {}
+
 
 Builder::Builder(const api::RBounds& lane_bounds,
                  const api::RBounds& driveable_bounds,
@@ -166,7 +163,6 @@ BranchPoint* Builder::FindOrCreateBranchPoint(
   BranchPoint* bp = rg->NewBranchPoint(
       {"bp:" + std::to_string(rg->num_branch_points())});
   auto result = bp_map->emplace(point, bp);
-  ignore(result);
   DRAKE_DEMAND(result.second);
   return bp;
 }

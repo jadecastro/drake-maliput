@@ -1,7 +1,6 @@
 #include "drake/automotive/maliput/monolane/road_geometry.h"
 
 #include "drake/automotive/maliput/monolane/branch_point.h"
-#include "drake/automotive/maliput/monolane/ignore.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 
 #include "drake/common/drake_assert.h"
@@ -35,10 +34,7 @@ const api::BranchPoint* RoadGeometry::do_branch_point(int index) const {
 
 
 api::RoadPosition RoadGeometry::DoToRoadPosition(
-    const api::GeoPosition& geo_pos,
-    const api::RoadPosition& hint) const {
-  ignore(&geo_pos);
-  ignore(&hint);  // TODO(maddog) temp warning quashing
+    const api::GeoPosition&, const api::RoadPosition&) const {
   DRAKE_ABORT();  // TODO(maddog) Implement me.
 }
 
