@@ -4,8 +4,6 @@
 #include <iostream>
 #include <string>
 
-#include <boost/optional.hpp>
-
 #include <gflags/gflags.h>
 #include "yaml-cpp/yaml.h"
 
@@ -60,7 +58,7 @@ mono::ArcOffset arc_offset(const YAML::Node& node) {
 }
 
 
-boost::optional<mono::XYZPoint> ResolvePointReference(
+std::unique_ptr<mono::XYZPoint> ResolvePointReference(
     const std::string& ref,
     const std::map<std::string, mono::XYZPoint>& xyzpoints) {
   auto parsed = [&](){
@@ -74,9 +72,11 @@ boost::optional<mono::XYZPoint> ResolvePointReference(
   }();
   auto it = xyzpoints.find(parsed.first);
   if (it == xyzpoints.end()) {
-    return boost::none;
+    return nullptr;
   }
-  return parsed.second ? it->second.reverse() : it->second;
+  return std::move(
+      std::make_unique<mono::XYZPoint>(
+          parsed.second ? it->second.reverse() : it->second));
 }
 
 
@@ -88,12 +88,12 @@ const mono::Connection* maybe_make_connection(
   DRAKE_DEMAND(node.IsMap());
 
   // Check if needed symbols are available.
-  boost::optional<mono::XYZPoint> start_point =
+  std::unique_ptr<mono::XYZPoint> start_point =
       ResolvePointReference(node["start"].as<std::string>(), xyzpoints);
   if (! start_point) { return nullptr; }
 
   // Discover segment type.
-  boost::optional<mono::XYZPoint> ee_point;
+  std::unique_ptr<mono::XYZPoint> ee_point;
   enum SegmentType{ kLine, kArc } segment_type{};
   for (const auto& kv : node) {
     std::string key = kv.first.as<std::string>();

@@ -8,9 +8,6 @@
 #include <tuple>
 #include <vector>
 
-#include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
-
 #include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 
@@ -96,7 +93,8 @@ struct ArcOffset {
 };
 
 
-class DRAKE_EXPORT Connection : boost::noncopyable {
+// TODO(maddog)  Make non-copyable.
+class DRAKE_EXPORT Connection {
  public:
   enum Type { kLine, kArc };
 
@@ -142,7 +140,8 @@ class DRAKE_EXPORT Connection : boost::noncopyable {
 };
 
 
-class DRAKE_EXPORT Group : boost::noncopyable {
+// TODO(maddog) make noncopyable
+class DRAKE_EXPORT Group {
  public:
   explicit Group(const std::string& id) : id_(id) {}
 
@@ -167,7 +166,8 @@ class DRAKE_EXPORT Group : boost::noncopyable {
 };
 
 
-class DRAKE_EXPORT Builder : boost::noncopyable {
+// TODO(maddog) make noncopyable
+class DRAKE_EXPORT Builder {
  public:
   Builder(const api::RBounds& lane_bounds,
           const api::RBounds& driveable_bounds,
