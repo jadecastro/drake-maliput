@@ -68,7 +68,8 @@ drake_install_pkg_config_file(drake-automotive
     drake-rbsystem
     drake-shapes
     drake-system-analysis
-    drake-system-framework)
+    drake-system-framework
+    eigen3)
 
 add_subdirectory(maliput)
 
