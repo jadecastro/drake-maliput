@@ -8,9 +8,6 @@ if(lcm_FOUND)
     endless_road_oracle_output_translator.h
     euler_floating_joint_state.h
     euler_floating_joint_state_translator.h
-    idm_with_trajectory_agent_parameters.h
-    idm_with_trajectory_agent_state.h
-    idm_with_trajectory_agent_state_translator.h
     simple_car_config.h
     simple_car_config_translator.h
     simple_car_state.h
