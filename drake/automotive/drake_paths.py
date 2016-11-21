@@ -20,7 +20,8 @@ if not os.path.exists(DRAKE_INSTALL_BIN_DIR):
         "cannot find DRAKE_DIST_BUILD_DIR at " + DRAKE_DIST_BUILD_DIR)
 
 DRAKE_DRAKE_BIN_DIR = os.path.join(DRAKE_DIST_BUILD_DIR, "drake", "bin")
-DRAKE_DRAKE_AUTOMOTIVE_DIR = os.path.join(DRAKE_DIST_BUILD_DIR, "drake", "automotive")
+DRAKE_DRAKE_AUTOMOTIVE_DIR = os.path.join(
+    DRAKE_DIST_BUILD_DIR, "drake", "automotive")
 
 DRAKE_LCMTYPES_DIR = os.path.join(
     DRAKE_DIST_BUILD_DIR, 'drake', 'lcmtypes')

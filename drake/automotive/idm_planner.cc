@@ -28,7 +28,7 @@ IdmPlanner<T>::IdmPlanner(const T& v_ref) : v_ref_(v_ref) {
                          systems::kContinuousSampling);
   // Declare the output port.
   this->DeclareOutputPort(systems::kVectorValued,
-                          1,  // We have a single linear acceleration value.
+                          2,  // Longitudinal and lateral acceleration.
                           systems::kContinuousSampling);
 }
 
@@ -74,23 +74,26 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   const T& delta = params.delta();
   const T& l_a = params.l_a();
 
-  const T& x_ego = input_ego->GetAtIndex(0);
-  const T& v_ego = input_ego->GetAtIndex(1);
-  const T& x_agent = input_agent->GetAtIndex(0);
-  const T& v_agent = input_agent->GetAtIndex(1);
+  const T& s_ego = input_ego->GetAtIndex(0);
+  const T& r_ego = input_ego->GetAtIndex(1);
+  const T& s_agent = input_agent->GetAtIndex(0);
+  const T& r_agent = input_agent->GetAtIndex(1);
 
-  // Ensure that we are supplying the planner with sane parameters and
-  // input values.
+  // Check that we're supplying the planner with sane parameters and
+  // inputs.
   DRAKE_DEMAND(a > 0.0);
   DRAKE_DEMAND(b > 0.0);
-  DRAKE_DEMAND(x_agent > (l_a + x_ego));
+  DRAKE_DEMAND(s_agent > (l_a + s_ego));
+
+  const T r_rel = r_ego - r_agent;  // Relative approach speed of two cars.
+  const T s_rel = s_agent - s_ego - l_a;  // Relative distance between two cars.
+  const T s_star = s_0 + r_ego * time_headway
+      + r_ego * r_rel / (2 * sqrt(a * b));
 
   output_vector->SetAtIndex(
-      0, a * (1.0 - pow(v_ego / v_ref, delta) -
-              pow((s_0 + v_ego * time_headway +
-                   v_ego * (v_ego - v_agent) / (2 * sqrt(a * b))) /
-                      (x_agent - x_ego - l_a),
-                  2.0)));
+      0, a * (1.0 - pow(r_ego / v_ref, delta) -
+              pow( s_star / s_rel, 2.0)));  // Longitudinal acceleration.
+  output_vector->SetAtIndex(1, 0.0);  // Lateral acceleration.
 }
 
 template <typename T>
@@ -98,11 +101,11 @@ std::unique_ptr<systems::Parameters<T>> IdmPlanner<T>::AllocateParameters()
     const {
   // Default values from https://en.wikipedia.org/wiki/Intelligent_driver_model.
   auto params = std::make_unique<IdmPlannerParameters<T>>();
-  params->set_v_ref(v_ref_);         // desired velocity in free traffic.
-  params->set_a(T(1.0));             // max acceleration.
-  params->set_b(T(3.0));             // comfortable braking deceleration.
-  params->set_s_0(T(1.0));           // minimum desired net distance.
-  params->set_time_headway(T(0.1));  // desired time headway to lead vehicle.
+  params->set_v_ref(v_ref_);         // desired velocity in free traffic. (30)
+  params->set_a(T(4.0));             // max acceleration.
+  params->set_b(T(12.0));            // comfortable braking deceleration.
+  params->set_s_0(T(2.0));           // minimum desired net distance.
+  params->set_time_headway(T(1.0));  // desired time headway to lead vehicle.
   params->set_delta(T(4.0));  // recommended choice of free-road exponent.
   params->set_l_a(T(4.5));    // length of leading car.
   return std::make_unique<systems::Parameters<T>>(std::move(params));

@@ -211,6 +211,7 @@ typename EndlessRoadCar<T>::Accelerations EndlessRoadCar<T>::ComputeIdmAccelerat
   //               not handling that correctly yet.
   DRAKE_DEMAND(std::cos(state.heading()) >= 0.);
   const double v = state.speed() * std::cos(state.heading());
+  // NB(jadecastro): state.heading() is heading relative to the road.
 
   const double s_star = s_0 + (v * h) + (v * delta_v / 2. / std::sqrt(a * b));
 

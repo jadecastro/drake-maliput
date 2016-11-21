@@ -9,6 +9,8 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   curve2.cc
   endless_road_car.cc
   endless_road_oracle.cc
+  endless_road_simple_car.cc
+  endless_road_traffic_car.cc
   gen/driving_command.cc
   gen/endless_road_car_state.cc
   gen/endless_road_oracle_output.cc
@@ -48,6 +50,8 @@ drake_install_headers(
   endless_road_car-inl.h
   endless_road_oracle.h
   endless_road_oracle-inl.h
+  endless_road_simple_car.h
+  endless_road_traffic_car.h
   idm_planner.h
   linear_car.h
   simple_car.h

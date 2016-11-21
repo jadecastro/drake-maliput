@@ -16,7 +16,7 @@ template <typename T>
 LinearCar<T>::LinearCar(const T& x_init, const T& v_init)
     : x_init_(x_init), v_init_(v_init) {
   this->DeclareInputPort(systems::kVectorValued,
-                         1,  // Acceleration is the sole input.
+                         2,  // Accepts longitudinal and lateral accelerations.
                          systems::kContinuousSampling);
   this->DeclareOutputPort(systems::kVectorValued,
                           2,  // Two outputs: x, v.
@@ -59,6 +59,7 @@ void LinearCar<T>::EvalTimeDerivatives(
   // Obtain the state.
   const systems::VectorBase<T>& context_state =
       context.get_continuous_state_vector();
+  // Get longitudinal (forward) acceleration; ignore the lateral component.
   const systems::BasicVector<T>* input = this->EvalVectorInput(context, 0);
   DRAKE_ASSERT(input != nullptr);
 
