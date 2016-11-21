@@ -34,7 +34,7 @@ class IdmPlannerTest : public ::testing::Test {
 
     context_->FixInputPort(dut_->get_ego_port().get_index(),
                            std::move(input_ego));
-    context_->FixInputPort(dut_->get_agent_port().get_index(),
+    context_->FixInputPort(dut_->get_target_port().get_index(),
                            std::move(input_agent));
   }
 
@@ -49,7 +49,7 @@ class IdmPlannerTest : public ::testing::Test {
 TEST_F(IdmPlannerTest, Topology) {
   ASSERT_EQ(2, dut_->get_num_input_ports());
   const auto& input_ego = dut_->get_ego_port();
-  const auto& input_agent = dut_->get_agent_port();
+  const auto& input_agent = dut_->get_target_port();
   EXPECT_EQ(systems::kVectorValued, input_ego.get_data_type());
   EXPECT_EQ(systems::kVectorValued, input_agent.get_data_type());
   EXPECT_EQ(systems::kInputPort, input_ego.get_face());

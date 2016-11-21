@@ -21,6 +21,8 @@ SingleLaneEgoAndAgent<T>::SingleLaneEgoAndAgent(
       std::make_unique<LinearCar<T>>(x_agent_init, v_agent_init));
   ego_car_ =
       builder.AddSystem(std::make_unique<LinearCar<T>>(x_ego_init, v_ego_init));
+  // TODO(jadecastro): The above isn't correct anymore. Replace with
+  // relative quantities.
 
   // Instantiate additional subsystems feed the two cars their inputs.
   const systems::ConstantVectorSource<T>* value =
@@ -32,7 +34,7 @@ SingleLaneEgoAndAgent<T>::SingleLaneEgoAndAgent(
   builder.Connect(*planner_, *ego_car_);
   builder.Connect(*value, *agent_car_);
   builder.Connect(ego_car_->get_output_port(), planner_->get_ego_port());
-  builder.Connect(agent_car_->get_output_port(), planner_->get_agent_port());
+  builder.Connect(agent_car_->get_output_port(), planner_->get_target_port());
 
   builder.ExportOutput(ego_car_->get_output_port());    // Exports to port 0.
   builder.ExportOutput(agent_car_->get_output_port());  // Exports to port 1.

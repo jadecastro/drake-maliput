@@ -22,8 +22,8 @@ namespace automotive {
 /// Inputs:
 ///   0: @p x_ego ego car position (scalar) [m]
 ///   1: @p v_ego ego car velocity (scalar) [m/s]
-///   2: @p x_agent agent car position (scalar) [m]
-///   3: @p v_agent agent car velocity (scalar) [m/s]
+///   2: @p x_target relative position wrt target (scalar) [m]
+///   3: @p v_target relative closing velocity wrt target (scalar) [m/s]
 /// Outputs:
 ///   0: @p vdot_ego linear acceleration of the ego car (scalar) [m/s^2].
 template <typename T>
@@ -33,11 +33,11 @@ class IdmPlanner : public systems::LeafSystem<T> {
   explicit IdmPlanner(const T& v_ref);
   ~IdmPlanner() override;
 
-  /// Returns the port to the ego car input subvector.
+  /// Returns the port to the input subvector collecting ego car states.
   const systems::SystemPortDescriptor<T>& get_ego_port() const;
 
-  /// Returns the port to the agent car input subvector.
-  const systems::SystemPortDescriptor<T>& get_agent_port() const;
+  /// Returns the port to the input subvector collecting relative target states.
+  const systems::SystemPortDescriptor<T>& get_target_port() const;
 
   // System<T> overrides.
   // The output of this system is an algebraic relation of its inputs.
@@ -55,7 +55,7 @@ class IdmPlanner : public systems::LeafSystem<T> {
   IdmPlanner& operator=(IdmPlanner<T>&&) = delete;
 
  private:
-  const T v_ref_;  // Desired vehicle velocity.
+  const T v_ref_;  // Desired velocity.
 };
 
 }  // namespace automotive

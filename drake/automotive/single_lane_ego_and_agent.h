@@ -11,6 +11,9 @@
 namespace drake {
 namespace automotive {
 
+/// TODO(jadecastro): Revisit diagram: introduce summers now that
+/// we're bringing in relative target position/velocitiy to the IDM planner.
+
 /// System consisting of two cars: an ego and an agent, where the ego
 /// is governed by an IDM (intelligent driver model) planner, and
 /// where the agent is fed a constant acceleration input.

@@ -41,7 +41,7 @@ const systems::SystemPortDescriptor<T>& IdmPlanner<T>::get_ego_port() const {
 }
 
 template <typename T>
-const systems::SystemPortDescriptor<T>& IdmPlanner<T>::get_agent_port() const {
+const systems::SystemPortDescriptor<T>& IdmPlanner<T>::get_target_port() const {
   return systems::System<T>::get_input_port(1);
 }
 
@@ -54,8 +54,8 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   // Obtain the input/output structures we need to read from and write into.
   const systems::BasicVector<T>* input_ego =
       this->EvalVectorInput(context, this->get_ego_port().get_index());
-  const systems::BasicVector<T>* input_agent =
-      this->EvalVectorInput(context, this->get_agent_port().get_index());
+  const systems::BasicVector<T>* input_target =
+      this->EvalVectorInput(context, this->get_target_port().get_index());
   systems::BasicVector<T>* const output_vector =
       output->GetMutableVectorData(0);
   DRAKE_ASSERT(output_vector != nullptr);
@@ -75,23 +75,21 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   const T& l_a = params.l_a();
 
   const T& s_ego = input_ego->GetAtIndex(0);
-  const T& r_ego = input_ego->GetAtIndex(1);
-  const T& s_agent = input_agent->GetAtIndex(0);
-  const T& r_agent = input_agent->GetAtIndex(1);
+  const T& v_ego = input_ego->GetAtIndex(1);
+  const T& s_rel = input_target->GetAtIndex(0);
+  const T& v_rel = input_target->GetAtIndex(1);
 
   // Check that we're supplying the planner with sane parameters and
   // inputs.
   DRAKE_DEMAND(a > 0.0);
   DRAKE_DEMAND(b > 0.0);
-  DRAKE_DEMAND(s_agent > (l_a + s_ego));
+  DRAKE_DEMAND(s_rel > (l_a + s_ego));
 
-  const T r_rel = r_ego - r_agent;  // Relative approach speed of two cars.
-  const T s_rel = s_agent - s_ego - l_a;  // Relative distance between two cars.
-  const T s_star = s_0 + r_ego * time_headway
-      + r_ego * r_rel / (2 * sqrt(a * b));
+  const T s_star = s_0 + v_ego * time_headway
+      + v_ego * v_rel / (2 * sqrt(a * b));
 
   output_vector->SetAtIndex(
-      0, a * (1.0 - pow(r_ego / v_ref, delta) -
+      0, a * (1.0 - pow(v_ego / v_ref, delta) -
               pow( s_star / s_rel, 2.0)));  // Longitudinal acceleration.
   output_vector->SetAtIndex(1, 0.0);  // Lateral acceleration.
 }

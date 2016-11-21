@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "drake/automotive/decision_layer.h"
 #include "drake/automotive/endless_road_simple_car.h"
 #include "drake/automotive/gen/endless_road_car_state.h"
 #include "drake/automotive/gen/endless_road_oracle_output.h"
@@ -14,7 +15,10 @@ namespace automotive {
 
 /// System consisting of a car and planner.
 ///
-///  x_targ, v_targ
+/// TODO(jadecastro): Add in a description of the DecisionLayer.
+///
+///  sigma_target,
+///  sigma_dot_target
 ///       |
 ///       | port
 ///       |  1   +--------------+         +-------------+
@@ -43,6 +47,7 @@ class EndlessRoadTrafficCar : public systems::Diagram<T> {
   /// @p v_ref desired velocity of the ego (controlled) car.
   /// @p a_agent constant acceleration of the agent car.
   EndlessRoadTrafficCar(const std::string& id,
+                        const int num_cars,
                         const maliput::utility::InfiniteCircuitRoad* road,
                         const T& x_init, const T& v_init, const T& v_ref);
 
@@ -63,8 +68,10 @@ class EndlessRoadTrafficCar : public systems::Diagram<T> {
 
  private:
   const std::string id_;
+  const int num_cars_;
   const EndlessRoadSimpleCar<T>* car_ = nullptr;
   const IdmPlanner<T>* planner_ = nullptr;
+  std::unique_ptr<const maliput::utility::InfiniteCircuitRoad> endless_road_{};
 };
 
 }  // namespace automotive

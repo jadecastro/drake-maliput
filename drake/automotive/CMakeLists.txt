@@ -7,6 +7,7 @@ endif()
 add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   create_trajectory_params.cc
   curve2.cc
+  decision_layer.cc
   endless_road_car.cc
   endless_road_oracle.cc
   endless_road_simple_car.cc
@@ -46,6 +47,7 @@ pods_install_libraries(drakeAutomotive)
 drake_install_headers(
   create_trajectory_params.h
   curve2.h
+  decision_layer.h
   endless_road_car.h
   endless_road_car-inl.h
   endless_road_oracle.h
