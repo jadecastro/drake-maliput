@@ -28,6 +28,9 @@ DRAKE_LCMTYPES_DIR = os.path.join(
 LCM_PYTHON_DIR = os.path.join(
     DRAKE_DIST_BUILD_DIR, 'externals', 'lcm', 'lib', 'python2.7')
 
+# Temp. path to deal with Director not compiling.
+DRAKE_DIRECTOR_DIR = os.path.join(
+    DRAKE_DIST_BUILD_DIR, "..", "..", "drake-distro", "build", "install", "bin")
 
 def _add_path(apath):
     if apath not in sys.path:

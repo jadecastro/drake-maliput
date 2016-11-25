@@ -22,7 +22,8 @@ import sys
 import time
 
 from drake_paths import (add_module_search_paths, DRAKE_DIST_BUILD_DIR,
-                         DRAKE_INSTALL_BIN_DIR, DRAKE_DRAKE_AUTOMOTIVE_DIR)
+                         DRAKE_INSTALL_BIN_DIR, DRAKE_DRAKE_AUTOMOTIVE_DIR,
+                         DRAKE_DIRECTOR_DIR)
 
 add_module_search_paths()  # so we can find lcm stuff.
 
@@ -205,8 +206,10 @@ def main():
         bot_spy_that_actually_works()
 
         if args.launch_visualizer:
+        #    the_launcher.launch(
+        #        [os.path.join(DRAKE_INSTALL_BIN_DIR, "drake-visualizer")])
             the_launcher.launch(
-                [os.path.join(DRAKE_INSTALL_BIN_DIR, "drake-visualizer")])
+                [os.path.join(DRAKE_DIRECTOR_DIR, "drake-visualizer")])
 
             # Await a message on the DRAKE_VIEWER_STATUS channel indicating
             # that drake-visualizer is ready. This ensures that the demo app's
