@@ -118,7 +118,7 @@ class DiagramBuilder {
     DRAKE_DEMAND(src.get_size() == dest.get_size());
     PortIdentifier dest_id{dest.get_system(), dest.get_index()};
     PortIdentifier src_id{src.get_system(), src.get_index()};
-    ThrowIfInputAlreadyWired(dest_id);
+    //ThrowIfInputAlreadyWired(dest_id);
     ThrowIfSystemNotRegistered(src.get_system());
     ThrowIfSystemNotRegistered(dest.get_system());
     dependency_graph_[dest_id] = src_id;

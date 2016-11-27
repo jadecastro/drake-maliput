@@ -21,14 +21,36 @@ namespace automotive {
 
 template <typename T>
 EndlessRoadSimpleCar<T>::EndlessRoadSimpleCar(
-    const maliput::utility::InfiniteCircuitRoad* road)
-    : road_(road) {
+                const maliput::utility::InfiniteCircuitRoad* road,
+                const T& s_init, const T& r_init,
+                const T& v_init, const T& heading_init)
+  : road_(road),
+    s_init_(s_init), r_init_(r_init),
+    v_init_(v_init), heading_init_(heading_init) {
   this->DeclareInputPort(systems::kVectorValued,
                          2,
                          systems::kContinuousSampling);
+  // Declare an output port collecting the states.
   this->DeclareOutputPort(systems::kVectorValued,
                           EndlessRoadCarStateIndices::kNumCoordinates,
                           systems::kContinuousSampling);
+  // Declare an output port collecting the s-axis position and velocity.
+  this->DeclareOutputPort(systems::kVectorValued,
+                          2,
+                          systems::kContinuousSampling);
+  this->DeclareContinuousState(EndlessRoadCarStateIndices::kNumCoordinates);
+}
+
+template <typename T>
+const systems::SystemPortDescriptor<T>&
+EndlessRoadSimpleCar<T>::get_state_output_port() const {
+  return systems::System<T>::get_output_port(0);
+}
+
+template <typename T>
+const systems::SystemPortDescriptor<T>&
+EndlessRoadSimpleCar<T>::get_s_axis_output_port() const {
+  return systems::System<T>::get_output_port(1);
 }
 
 template <typename T>
@@ -128,6 +150,22 @@ void EndlessRoadSimpleCar<T>::DoEvalTimeDerivatives(
 }
 
 template <typename T>
+void EndlessRoadSimpleCar<T>::SetDefaultState(systems::Context<T>* context)
+    const {
+  // Obtain mutable references to the contexts for each car.
+  DRAKE_DEMAND(context != nullptr);
+  systems::ContinuousState<T>* state = context->get_mutable_continuous_state();
+  DRAKE_DEMAND(state != nullptr);
+
+  // Set the elements of the state vector to pre-defined values.
+  (*state->get_mutable_vector())[0] = s_init_;  // initial s
+  (*state->get_mutable_vector())[1] = r_init_;  // initial r
+  (*state->get_mutable_vector())[2] = v_init_;  // initial v
+  (*state->get_mutable_vector())[3] = heading_init_;  // initial heading
+}
+
+  /*
+template <typename T>
 std::unique_ptr<systems::ContinuousState<T>>
 EndlessRoadSimpleCar<T>::AllocateContinuousState() const {
   return std::make_unique<systems::ContinuousState<T>>(
@@ -140,6 +178,7 @@ EndlessRoadSimpleCar<T>::AllocateOutputVector(
     const systems::SystemPortDescriptor<T>& descriptor) const {
   return std::make_unique<EndlessRoadCarState<T>>();
 }
+  */
 
 // These instantiations must match the API documentation in simple_car.h.
 // TODO(jadecastro): Fix to allow for the wider set of scalar types.

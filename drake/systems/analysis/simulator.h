@@ -257,14 +257,18 @@ void Simulator<T>::Initialize() {
   // TODO(sherm1) Invoke System's initial conditions computation.
 
   // Initialize the integrator.
+  std::cerr << "integrator initialize...\n";
   integrator_->Initialize();
 
   // Do a publish before the simulation starts.
+  std::cerr << "system_.Publish()...\n";
   system_.Publish(*context_);
 
   // Restore default values.
+  std::cerr << "ResetStatistics()...\n";
   ResetStatistics();
 
+  std::cerr << "Done.\n";
   // Initialize runtime variables.
   initialization_done_ = true;
 }

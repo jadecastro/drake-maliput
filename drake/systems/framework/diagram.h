@@ -184,6 +184,10 @@ class Diagram : public System<T>,
     // Add each constituent system to the Context.
     for (int i = 0; i < num_systems; ++i) {
       const System<T>* const sys = sorted_systems_[i];
+      std::cerr << " CreateDefaultContext: Number of subsystem inputs: " <<
+        sys->get_num_input_ports() << ".\n";
+      std::cerr << " CreateDefaultContext: Number of subsystem outputs: " <<
+        sys->get_num_output_ports() << ".\n";
       auto subcontext = sys->CreateDefaultContext();
       auto suboutput = sys->AllocateOutput(*subcontext);
       context->AddSystem(i, std::move(subcontext), std::move(suboutput));
@@ -385,6 +389,7 @@ class Diagram : public System<T>,
   void DoPublish(const Context<T>& context) const override {
     auto diagram_context = dynamic_cast<const DiagramContext<T>*>(&context);
     DRAKE_DEMAND(diagram_context != nullptr);
+    std::cerr << "System::Publish...\n";
 
     for (const System<T>* const system : sorted_systems_) {
       const int i = GetSystemIndexOrAbort(system);
@@ -567,6 +572,10 @@ class Diagram : public System<T>,
     sorted_systems_ = blueprint.sorted_systems;
     input_port_ids_ = blueprint.input_port_ids;
     output_port_ids_ = blueprint.output_port_ids;
+    std::cerr << "   Diagram::Initialize: Number of input ports: " <<
+        this->get_num_input_ports() << " \n";
+    std::cerr << "   Diagram::Initialize: Number of output ports: " <<
+        this->get_num_output_ports() << " \n";
 
     // Generate a map from the System pointer to its index in the sort order.
     for (int i = 0; i < num_subsystems(); ++i) {
@@ -587,6 +596,11 @@ class Diagram : public System<T>,
     for (const PortIdentifier& id : output_port_ids_) {
       ExportOutput(id);
     }
+    std::cerr << "   Diagram::Initialize: Number of input ports: " <<
+        this->get_num_input_ports() << " \n";
+    std::cerr << "   Diagram::Initialize: Number of output ports: " <<
+        this->get_num_output_ports() << " \n";
+
   }
 
   // Takes ownership of the @p registered_systems from DiagramBuilder.

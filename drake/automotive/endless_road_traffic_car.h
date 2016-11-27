@@ -11,6 +11,11 @@
 #include "drake/systems/framework/diagram.h"
 
 namespace drake {
+namespace maliput {
+namespace utility {
+class InfiniteCircuitRoad;
+}  //namespace utility
+}  //namespace maliput
 namespace automotive {
 
 /// System consisting of a car and planner.
@@ -42,6 +47,7 @@ namespace automotive {
 template <typename T>
 class EndlessRoadTrafficCar : public systems::Diagram<T> {
  public:
+
   /// Constructs a two-car system.
   ///
   /// @p v_ref desired velocity of the ego (controlled) car.
@@ -49,9 +55,13 @@ class EndlessRoadTrafficCar : public systems::Diagram<T> {
   EndlessRoadTrafficCar(const std::string& id,
                         const int num_cars,
                         const maliput::utility::InfiniteCircuitRoad* road,
-                        const T& x_init, const T& v_init, const T& v_ref);
+                        const T& s_init, const T& r_init, const T& v_init,
+                        const T& heading_init, const T& v_ref);
 
   ~EndlessRoadTrafficCar() override {}
+
+  /// Gets the car id.
+  const std::string get_id() const { return id_; }
 
   /// Sets the continuous states in @p context to default values.
   void SetDefaultState(systems::Context<T>* context) const;

@@ -37,9 +37,16 @@ template <typename T>
 class EndlessRoadSimpleCar : public systems::LeafSystem<T> {
  public:
 
-  EndlessRoadSimpleCar(const maliput::utility::InfiniteCircuitRoad* road);
+  EndlessRoadSimpleCar(const maliput::utility::InfiniteCircuitRoad* road,
+                       const T& s_init, const T& r_init,
+                       const T& v_init, const T& heading_init);
 
- public:
+  /// Returns the state output port.
+  const systems::SystemPortDescriptor<T>& get_state_output_port() const;
+
+  /// Returns the s-axis output port.
+  const systems::SystemPortDescriptor<T>& get_s_axis_output_port() const;
+
   // System<T> overrides
   bool has_any_direct_feedthrough() const override;
 
@@ -50,6 +57,10 @@ class EndlessRoadSimpleCar : public systems::LeafSystem<T> {
       const systems::Context<T>& context,
       systems::ContinuousState<T>* derivatives) const override;
 
+  /// Sets the continuous states in @p context to default values.
+  void SetDefaultState(systems::Context<T>* context) const;
+
+  /*
  protected:
   // LeafSystem<T> overrides
   std::unique_ptr<systems::ContinuousState<T>
@@ -57,6 +68,7 @@ class EndlessRoadSimpleCar : public systems::LeafSystem<T> {
 
   std::unique_ptr<systems::BasicVector<T>> AllocateOutputVector(
       const systems::SystemPortDescriptor<T>& descriptor) const override;
+  */
 
  private:
   struct Accelerations {
@@ -75,6 +87,10 @@ class EndlessRoadSimpleCar : public systems::LeafSystem<T> {
                              EndlessRoadCarState<T>*) const;
 
   const maliput::utility::InfiniteCircuitRoad* road_;
+  const T& s_init_;
+  const T& r_init_;
+  const T& v_init_;
+  const T& heading_init_;
 };
 
 }  // namespace automotive

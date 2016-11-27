@@ -7,6 +7,7 @@
 #include "drake/automotive/endless_road_car.h"
 #include "drake/automotive/endless_road_car_to_euler_floating_joint.h"
 #include "drake/automotive/endless_road_oracle.h"
+#include "drake/automotive/endless_road_traffic_car.h"
 #include "drake/automotive/gen/driving_command_translator.h"
 #include "drake/automotive/gen/endless_road_car_state_translator.h"
 #include "drake/automotive/gen/euler_floating_joint_state_translator.h"
@@ -32,6 +33,8 @@
 #include "drake/multibody/parser_sdf.h"
 #include "drake/multibody/parser_urdf.h"
 #include "drake/multibody/rigid_body_plant/drake_visualizer.h"
+
+#include <iostream>
 
 namespace drake {
 namespace automotive {
@@ -111,7 +114,7 @@ int AutomotiveSimulator<T>::AddTrajectoryCarFromSdf(
 
 
 template <typename T>
-int AutomotiveSimulator<T>::AddEndlessRoadCar(
+int AutomotiveSimulator<T>::AddEndlessRoadEgoCar(
     const std::string& id,
     const std::string& sdf_filename,
     double longitudinal_start,
@@ -122,7 +125,8 @@ int AutomotiveSimulator<T>::AddEndlessRoadCar(
   DRAKE_DEMAND((bool)endless_road_);
   const int vehicle_number = allocate_vehicle_number();
 
-  auto endless_road_car = builder_->template AddSystem<EndlessRoadCar<T>>(
+  auto endless_road_ego_car =
+    builder_->template AddSystem<EndlessRoadCar<T>>(
       id, endless_road_.get(), control_type);
   auto coord_transform =
       builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
@@ -130,35 +134,72 @@ int AutomotiveSimulator<T>::AddEndlessRoadCar(
 
   // Save the desired initial state in order to initialize the Simulator later,
   // when we have a Simulator to initialize.
-  EndlessRoadCarState<T>& initial_state = endless_road_cars_[endless_road_car];
+  EndlessRoadCarState<T>& initial_state =
+    endless_road_ego_cars_[endless_road_ego_car];
   initial_state.set_s(longitudinal_start);
   initial_state.set_r(lateral_offset);
   initial_state.set_speed(speed);
   initial_state.set_heading(0.);
 
-  switch (control_type) {
-    case EndlessRoadCar<T>::kNone: {
-      break;
-    }
-    case EndlessRoadCar<T>::kUser: {
-      static const DrivingCommandTranslator driving_command_translator;
-      auto command_subscriber =
-          builder_->template AddSystem<systems::lcm::LcmSubscriberSystem>(
-              "DRIVING_COMMAND", driving_command_translator, lcm_.get());
-      builder_->Connect(*command_subscriber, *endless_road_car);
-      break;
-    }
-    case EndlessRoadCar<T>::kIdm: {
-      // Nothing to do here.  At Start(), we will construct the central
-      // EndlessRoadOracle and attach it to endless_road_cars_ as needed.
-      break;
-    }
-    default: { DRAKE_ABORT(); }
-  };
+  static const DrivingCommandTranslator driving_command_translator;
+  auto command_subscriber =
+    builder_->template AddSystem<systems::lcm::LcmSubscriberSystem>(
+                   "DRIVING_COMMAND", driving_command_translator, lcm_.get());
+  builder_->Connect(*command_subscriber, *endless_road_ego_car);
+  std::cerr << "Connected CommandSubscriber to EndlessRoadCar.\n";
 
-  builder_->Connect(*endless_road_car, *coord_transform);
-  AddPublisher(*endless_road_car, vehicle_number);
+  builder_->Connect(*endless_road_ego_car, *coord_transform);
+  std::cerr << "Connected EndlessRoadCar to CoordTransform.\n";
+  AddPublisher(*endless_road_ego_car, vehicle_number);
   AddPublisher(*coord_transform, vehicle_number);
+  return AddSdfModel(sdf_filename, coord_transform);
+}
+
+
+template <typename T>
+int AutomotiveSimulator<T>::AddEndlessRoadTrafficCar(
+    const std::string& id,
+    const std::string& sdf_filename,
+    const double s_init,
+    const double r_init,
+    const double v_init,
+    const int num_cars) {
+  DRAKE_DEMAND(!started_);
+  DRAKE_DEMAND((bool)endless_road_);
+  const int vehicle_number = allocate_vehicle_number();
+
+  // TODO(jadecastro): Initialize heading also?
+  // TODO(jadecastro): Do something smarter to set v_ref.
+  auto endless_road_traffic_car =
+    builder_->template AddSystem<EndlessRoadTrafficCar<T>>(
+      id, num_cars, endless_road_.get(),
+      s_init, r_init, v_init, 0., 30.);
+  std::cerr << "   Number of output ports: " <<
+    endless_road_traffic_car->get_num_output_ports() << " \n";
+  std::cerr << "Adding the CoordTransform...\n";
+  auto coord_transform =
+      builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
+          endless_road_.get());
+
+  // Save the desired initial state in order to initialize the
+  // Simulator later, when we have a Simulator to initialize.
+  // TODO(jadecastro): We don't actually need to save the initial
+  // states anymore.
+  EndlessRoadCarState<T>& initial_state =
+    endless_road_traffic_cars_[endless_road_traffic_car];
+  initial_state.set_s(s_init);
+  initial_state.set_r(r_init);
+  initial_state.set_speed(v_init);
+  initial_state.set_heading(0.);
+
+  std::cerr << "Attempting to connect to CoordTransform...\n";
+  builder_->Connect(endless_road_traffic_car->get_output_port(0),
+                    coord_transform->get_input_port(0));
+  std::cerr << "Connected EndlessRoadTrafficCar to CoordTransform.\n";
+  AddPublisher(*endless_road_traffic_car, vehicle_number);
+  std::cerr << "Added EndlessRoadTrafficCar publisher.\n";
+  AddPublisher(*coord_transform, vehicle_number);
+  std::cerr << "Added CoordTransform publisher.\n";
   return AddSdfModel(sdf_filename, coord_transform);
 }
 
@@ -245,6 +286,19 @@ void AutomotiveSimulator<T>::AddPublisher(const EndlessRoadCar<T>& system,
           std::to_string(vehicle_number) + "_ENDLESS_ROAD_CAR_STATE",
           translator, lcm_.get());
   builder_->Connect(system, *publisher);
+}
+
+template <typename T>
+void AutomotiveSimulator<T>::AddPublisher(
+              const EndlessRoadTrafficCar<T>& system, int vehicle_number) {
+  DRAKE_DEMAND(!started_);
+  static const EndlessRoadCarStateTranslator translator;
+  auto publisher =
+      builder_->template AddSystem<systems::lcm::LcmPublisherSystem>(
+          std::to_string(vehicle_number) + "_ENDLESS_ROAD_CAR_STATE",
+          translator, lcm_.get());
+  builder_->Connect(system.get_output_port(0), publisher->get_input_port(0));
+  std::cerr << "Connected EndlessRoadTrafficCar to Publisher.\n";
 }
 
 template <typename T>
@@ -352,6 +406,7 @@ void AutomotiveSimulator<T>::ConnectJointStateSourcesToVisualizer() {
         builder_->template AddSystem<systems::DrakeVisualizer>(
             *rigid_body_tree_, lcm_.get());
     builder_->Connect(*multiplexer, *rigid_body_tree_publisher);
+    std::cerr << "Connected Multiplexer to RBTreePublisher.\n";
 
     // Connects systems that provide joint positions to the mux position inputs.
     // Connects a zero-velocity source to each of the mux velocity inputs.
@@ -444,46 +499,89 @@ void AutomotiveSimulator<T>::Start() {
   // it should be safe to compile the tree.
   rigid_body_tree_->compile();
 
+  std::cerr << "Attempting to connect states to visualizer...\n";
   ConnectJointStateSourcesToVisualizer();
 
-  if (endless_road_) {
-    // Now that we have all the cars, construct an appropriately tentacled
-    // EndlessRoadOracle and hook everything up.
-    const int num_cars = endless_road_cars_.size();
+  // Now that we have all the cars, construct an appropriately tentacled
+  // EndlessRoadOracle and hook everything up.
+  const int num_ego_cars = endless_road_ego_cars_.size();
+  //const int num_traffic_cars = endless_road_traffic_cars_.size();
 
-    auto oracle = builder_->template AddSystem<EndlessRoadOracle<T>>(
-        endless_road_.get(), num_cars);
-    int i = 0;
-    for (const auto& item: endless_road_cars_) {
-      EndlessRoadCar<T>* car = item.first;
+  // TODO(jadecastro): Deprecate the oracle for the ego cars.
+  const EndlessRoadOracle<T>* oracle = nullptr;
+  if (num_ego_cars) {
+    oracle = builder_->template AddSystem<EndlessRoadOracle<T>>(
+                                             endless_road_.get(), num_ego_cars);
+  }
 
-      // Every car is visible to the Oracle...
-      builder_->Connect(car->get_output_port(0), oracle->get_input_port(i));
-      // ...however, only IDM-controlled cars care about Oracle output.
-      // TODO(maddog)  Optimization:  Oracle should not bother to compute
-      //               output for cars which will ignore it.
-      switch (car->control_type()) {
-        case EndlessRoadCar<T>::kNone: {
-          break;  // No input.
-        }
-        case EndlessRoadCar<T>::kUser: {
-          break;  // Already connected to controls.
-        }
-        case EndlessRoadCar<T>::kIdm: {
-          builder_->Connect(oracle->get_output_port(i), car->get_input_port(0));
-          break;
-        }
-        default: { DRAKE_ABORT(); }
-      }
-      ++i;
+  std::cerr << "Attempting to connect each 'ego' car to each traffic car...\n";
+  int i = 0;
+  for (const auto& ego_car_item: endless_road_ego_cars_) {
+    EndlessRoadCar<T>* ego_car = ego_car_item.first;
+
+    // Every car is visible to the Oracle...
+    builder_->Connect(ego_car->get_output_port(0), oracle->get_input_port(i));
+    std::cerr << "Connected 'ego' car to oracle.\n";
+    for (const auto& traffic_car_item: endless_road_traffic_cars_) {
+      EndlessRoadTrafficCar<T>* traffic_car = traffic_car_item.first;
+      builder_->Connect(ego_car->get_output_port(0),
+                        traffic_car->get_input_port(i));
     }
+    std::cerr << "Connected 'ego' car " << i << " to " <<
+      endless_road_traffic_cars_.size() << " traffic cars.\n";
+    // ...however, only IDM-controlled cars care about Oracle output.
+    // TODO(maddog)  Optimization:  Oracle should not bother to compute
+    //               output for cars which will ignore it.
+    switch (ego_car->control_type()) {
+    case EndlessRoadCar<T>::kNone: {
+      break;  // No input.
+    }
+    case EndlessRoadCar<T>::kUser: {
+      break;  // Already connected to controls.
+    }
+    default: { DRAKE_ABORT(); }
+    }
+    ++i;
+  }
+
+  int j = num_ego_cars;  // For debugging only.
+  // TODO(jadecastro): Check the style guide on "globally-scoped" iterators.
+  for (const auto& sensed_item: endless_road_traffic_cars_) {
+    EndlessRoadTrafficCar<T>* sensed_traffic_car = sensed_item.first;
+
+    //if (j >= sensed_traffic_car->get_num_input_ports()) { break; }
+    // TODO(jadecastro): ^Make this less hacky.
+
+    int k = 0;
+    std::cerr << "Number of car inputs: " <<
+      sensed_traffic_car->get_num_input_ports() << ".\n";
+    for (const auto& item: endless_road_traffic_cars_) {
+      EndlessRoadTrafficCar<T>* traffic_car = item.first;
+      // Traffic cars can sense all cars but themselves.
+      if (sensed_traffic_car->get_id().compare(traffic_car->get_id())
+          != 0) {
+        std::cerr << "Attempting to connect traffic car " <<
+            traffic_car->get_id() << " to a sensed traffic car " <<
+            sensed_traffic_car->get_id() << ".\n";
+        std::cerr << "  Input port: " << k << ".\n";
+        // TODO(jadecastro): Fix strange behavior of
+        // ThrowIfInputAlreadyWired() in line 121 in DiagramBuilder.
+        builder_->Connect(sensed_traffic_car->get_output_port(0),
+                          traffic_car->get_input_port(k));
+        ++k;
+      }
+    }
+    ++j;
   }
 
   diagram_ = builder_->Build();
   simulator_ = std::make_unique<systems::Simulator<T>>(*diagram_);
 
   // Initialize the state of the EndlessRoadCars.
-  for (auto& pair : endless_road_cars_) {
+  // TODO(jadecastro): State-instantiation for "ego" cars is a bit
+  // convoluted. Deprecate it.
+  std::cerr << "Initializing the ego car states...\n";
+  for (auto& pair : endless_road_ego_cars_) {
     systems::Context<T>* context =
         diagram_->GetMutableSubsystemContext(simulator_->get_mutable_context(),
                                              pair.first);
@@ -496,9 +594,22 @@ void AutomotiveSimulator<T>::Start() {
     //               (I.e., until lcm_vector_gen.py makes an operator=()....)
     state->set_value(pair.second.get_value());
   }
+  // TODO(jadecastro): We don't actually need to store a std::map of
+  // cars and their initial conditions anymore.
+  std::cerr << "Initializing the traffic car states...\n";
+  for (auto& pair : endless_road_traffic_cars_) {
+    EndlessRoadTrafficCar<T>* this_car = pair.first;
+    systems::Context<T>* context =
+      diagram_->GetMutableSubsystemContext(simulator_->get_mutable_context(),
+                                           this_car);
+    this_car->SetDefaultState(context);
+  }
 
   lcm_->StartReceiveThread();
 
+  // TODO(jadecastro): Should simulator_->Intialize() allow for state
+  // initialization?
+  std::cerr << "Simulator initialize...\n";
   simulator_->Initialize();
 
   started_ = true;

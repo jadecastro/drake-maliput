@@ -56,6 +56,12 @@ DecisionLayer<T>::get_world_input_port(const int i) const {
 }
 
 template <typename T>
+const systems::SystemPortDescriptor<T>&
+DecisionLayer<T>::get_output_port() const {
+  return systems::System<T>::get_output_port(0);
+}
+
+template <typename T>
 void DecisionLayer<T>::EvalOutput(const systems::Context<T>& context,
                                       systems::SystemOutput<T>* output) const {
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));

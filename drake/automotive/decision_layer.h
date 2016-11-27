@@ -53,6 +53,9 @@ class DecisionLayer : public systems::LeafSystem<T> {
   const systems::SystemPortDescriptor<T>&
       get_world_input_port(const int i) const;
 
+  /// Returns the output port.
+  const systems::SystemPortDescriptor<T>& get_output_port() const;
+
   // System<T> overrides.
   // The output of DecisionLayer is an algebraic relation of its inputs.
   bool has_any_direct_feedthrough() const override { return true; }
