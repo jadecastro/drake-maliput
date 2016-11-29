@@ -72,21 +72,31 @@ void DecisionLayer<T>::EvalOutput(const systems::Context<T>& context,
   // Obtain the self-car input.
   const systems::BasicVector<T>* basic_input_self =
       this->EvalVectorInput(context, this->get_self_input_port().get_index());
+  //std::cerr << "DecisionLayer EvalVectorInput...\n";
   DRAKE_ASSERT(basic_input_self);
-  const EndlessRoadCarState<T>* const input_self_car =
-    dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_self);
+  //const EndlessRoadCarState<T>* const input_self_car =
+  //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_self);
+  //DRAKE_ASSERT(input_self_car);
+  std::cerr << "  self position: " << basic_input_self->GetAtIndex(0) << "\n";
 
   // Obtain the world-car inputs.
-  std::vector<const EndlessRoadCarState<T>*> inputs_world;
-  for (int i = 0; i < num_cars_; ++i) {
+  //std::vector<const EndlessRoadCarState<T>*> inputs_world;
+  std::vector<const systems::BasicVector<T>*> inputs_world;
+  for (int i = 0; i < num_cars_-1; ++i) {
+    //std::cerr << "DecisionLayer EvalVectorInput 1...\n";
     const systems::BasicVector<T>* basic_input_world =
       this->EvalVectorInput(context,
                             this->get_world_input_port(i).get_index());
+    //std::cerr << "DecisionLayer EvalVectorInput 2...\n";
     DRAKE_ASSERT(basic_input_world);
-    const EndlessRoadCarState<T>* const input_world =
-      dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_world);
-    DRAKE_ASSERT(input_world);
-    inputs_world.push_back(input_world);
+    //const EndlessRoadCarState<T>* const input_world =
+    //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_world);
+    //DRAKE_ASSERT(input_world);
+    //inputs_world.push_back(input_world);
+    std::cerr << "  world car " << i<< " position: " <<
+        basic_input_world->GetAtIndex(0) << "\n";
+
+    inputs_world.push_back(basic_input_world);
   }
 
   // Obtain the output pointers.
@@ -99,7 +109,10 @@ void DecisionLayer<T>::EvalOutput(const systems::Context<T>& context,
     target_outputs.push_back(output_vector);
   }
 
-  DoEvalOutput(input_self_car, inputs_world, target_outputs);
+  //std::cerr << "DecisionLayer EvalVectorInput 3...\n";
+  //DoEvalOutput(input_self_car, inputs_world, target_outputs);
+  DoEvalOutput(basic_input_self, inputs_world, target_outputs);
+  //std::cerr << "DecisionLayer EvalVectorInput 4...\n";
 }
 
 const double kEnormousDistance = 1e12;
@@ -110,8 +123,8 @@ const double kPerceptionDistance = 30.0;  // Targets are imperceptible
 
 template <typename T>
 void DecisionLayer<T>::DoEvalOutput(
-    const EndlessRoadCarState<T>* self_car_input,
-    const std::vector<const EndlessRoadCarState<T>*>& world_car_inputs,
+    const systems::BasicVector<T>* self_car_input,
+    const std::vector<const systems::BasicVector<T>*>& world_car_inputs,
     std::vector<EndlessRoadOracleOutput<T>*>& target_outputs) const {
   // The goal here is, for each car, to calculate the distance and
   // differential velocity to the nearest other car/obstacle ahead.
@@ -153,8 +166,8 @@ void DecisionLayer<T>::DoEvalOutput(
 
 template <typename T>
 void DecisionLayer<T>::UnwrapEndlessRoadCarState(
-    const EndlessRoadCarState<double>* self_car_input,
-    const std::vector<const EndlessRoadCarState<double>*>& world_car_inputs,
+    const systems::BasicVector<double>* self_car_input,
+    const std::vector<const systems::BasicVector<double>*>& world_car_inputs,
     const maliput::utility::InfiniteCircuitRoad* road,
     const double horizon_seconds,
     SourceState* self_source_state,
@@ -167,28 +180,35 @@ void DecisionLayer<T>::UnwrapEndlessRoadCarState(
   for (size_t i = 0; i < world_car_inputs.size()+1; ++i) {
     // NB(jadecastro): Not really meaningful to call it `self`
     // anymore, but whatevs.
-    const EndlessRoadCarState<double>* self =
+    //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState...\n";
+    //std::cerr << "     i: " << i << "\n";
+    //std::cerr << "     num world cars: " << world_car_inputs.size() << "\n";
+    const systems::BasicVector<double>* self =
       (i == 0) ? self_car_input : world_car_inputs[i-1];
+    std::cerr << "  position: " << self->GetAtIndex(0) << "\n";
     const maliput::api::RoadPosition rp = road->ProjectToSourceRoad(
-        {self->s(), 0., 0.}).first;
+        {self->GetAtIndex(0), 0., 0.}).first;
+    //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState 0...\n";
     // TODO(maddog)  Until we deal with cars going the wrong way.
-    DRAKE_DEMAND(std::cos(self->heading()) >= 0.);
-    DRAKE_DEMAND(self->speed() >= 0.);
+    DRAKE_DEMAND(std::cos(self->GetAtIndex(2)) >= 0.);
+    DRAKE_DEMAND(self->GetAtIndex(3) >= 0.);
     const double longitudinal_speed =
-        self->speed() * std::cos(self->heading());
+        self->GetAtIndex(3) * std::cos(self->GetAtIndex(2));
 
+    //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState 1...\n";
     if (i == 0) {
       self_source_state->rp = rp;
       self_source_state->longitudinal_speed = longitudinal_speed;
     } else {
       world_source_states->emplace_back(rp, longitudinal_speed);
     }
+    //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState 2...\n";
 
     const double horizon_meters = longitudinal_speed * horizon_seconds;
     // TODO(maddog)  Is this < constraint relevant anymore???
     DRAKE_DEMAND(horizon_meters < (0.5 * road->cycle_length()));
     DRAKE_DEMAND(horizon_meters >= 0.);
-    const double circuit_s0 = road->lane()->circuit_s(self->s());
+    const double circuit_s0 = road->lane()->circuit_s(self->GetAtIndex(0));
 
     int path_index = road->GetPathIndex(circuit_s0);
     maliput::utility::InfiniteCircuitRoad::Record path_record =

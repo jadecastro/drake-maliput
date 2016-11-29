@@ -113,7 +113,7 @@ void EndlessRoadCar<T>::EvalTimeDerivatives(
     systems::ContinuousState<T>* derivatives) const {
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
 
-//DBG  std::cerr << "EvalTimeDerivatives()  CAR " << id_ << std::endl;
+  std::cerr << "EvalTimeDerivatives()  CAR " << id_ << std::endl;
 
   // Obtain the state.
   const systems::VectorBase<T>& context_state =

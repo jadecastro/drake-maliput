@@ -18,15 +18,16 @@ EndlessRoadCarStateTranslator::AllocateOutputVector() const {
 void EndlessRoadCarStateTranslator::Serialize(
     double time, const systems::VectorBase<double>& vector_base,
     std::vector<uint8_t>* lcm_message_bytes) const {
-  const auto* const vector =
-      dynamic_cast<const EndlessRoadCarState<double>*>(&vector_base);
-  DRAKE_DEMAND(vector != nullptr);
+  std::cerr << "EndlessRoadCarStateTranslator::Serialize...\n";
+  //const auto* const vector =
+  //    dynamic_cast<const EndlessRoadCarState<double>*>(&vector_base);
+  //DRAKE_DEMAND(vector != nullptr);
   drake::lcmt_endless_road_car_state_t message;
   message.timestamp = static_cast<int64_t>(time * 1000);
-  message.s = vector->s();
-  message.r = vector->r();
-  message.heading = vector->heading();
-  message.speed = vector->speed();
+  message.s = vector_base.GetAtIndex(0);  //vector->s();
+  message.r = vector_base.GetAtIndex(1);  //vector->r();
+  message.heading = vector_base.GetAtIndex(2);  //vector->heading();
+  message.speed = vector_base.GetAtIndex(3);  //vector->speed();
   const int lcm_message_length = message.getEncodedSize();
   lcm_message_bytes->resize(lcm_message_length);
   message.encode(lcm_message_bytes->data(), 0, lcm_message_length);
@@ -36,9 +37,9 @@ void EndlessRoadCarStateTranslator::Deserialize(
     const void* lcm_message_bytes, int lcm_message_length,
     systems::VectorBase<double>* vector_base) const {
   DRAKE_DEMAND(vector_base != nullptr);
-  auto* const my_vector =
-      dynamic_cast<EndlessRoadCarState<double>*>(vector_base);
-  DRAKE_DEMAND(my_vector != nullptr);
+  //auto* const my_vector =
+  //    dynamic_cast<EndlessRoadCarState<double>*>(vector_base);
+  //DRAKE_DEMAND(my_vector != nullptr);
 
   drake::lcmt_endless_road_car_state_t message;
   int status = message.decode(lcm_message_bytes, 0, lcm_message_length);
@@ -46,10 +47,14 @@ void EndlessRoadCarStateTranslator::Deserialize(
     throw std::runtime_error(
         "Failed to decode LCM message endless_road_car_state.");
   }
-  my_vector->set_s(message.s);
-  my_vector->set_r(message.r);
-  my_vector->set_heading(message.heading);
-  my_vector->set_speed(message.speed);
+  //my_vector->set_s(message.s);
+  //my_vector->set_r(message.r);
+  //my_vector->set_heading(message.heading);
+  //my_vector->set_speed(message.speed);
+  vector_base->SetAtIndex(0, message.s);
+  vector_base->SetAtIndex(1, message.r);
+  vector_base->SetAtIndex(2, message.heading);
+  vector_base->SetAtIndex(3, message.speed);
 }
 
 }  // namespace automotive

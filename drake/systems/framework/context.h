@@ -178,11 +178,17 @@ class Context {
   const InputPort* EvalInputPort(
       const detail::InputPortEvaluatorInterface<T>* evaluator,
       const SystemPortDescriptor<T>& descriptor) const {
+    //std::cerr << "Context::EvalInputPort...\n";
     const InputPort* port = GetInputPort(descriptor.get_index());
+    //std::cerr << "Context::EvalInputPort 2...\n";
+    //if (port == nullptr) { std::cerr << "Context::EvalInputPort nullptr...\n"; }
     if (port == nullptr) return nullptr;
     if (port->requires_evaluation()) {
+      //std::cerr << "Context::EvalInputPort requires_evaluation()...\n";
       DRAKE_DEMAND(evaluator != nullptr);
+      //std::cerr << "Context::EvalInputPort 3...\n";
       evaluator->EvaluateSubsystemInputPort(parent_, descriptor);
+      //std::cerr << "Context::EvalInputPort evaluator\n";
     }
     return port;
   }
@@ -200,9 +206,14 @@ class Context {
   const BasicVector<T>* EvalVectorInput(
       const detail::InputPortEvaluatorInterface<T>* evaluator,
       const SystemPortDescriptor<T>& descriptor) const {
+    //std::cerr << "Context::EvalVectorInput...\n";
     const InputPort* port = EvalInputPort(evaluator, descriptor);
+    if (port == nullptr) { std::cerr << "   nullptr!!"; }
+    //std::cerr << "Context::EvalVectorInput 2...\n";
     if (port == nullptr) return nullptr;
-    return port->template get_vector_data<T>();
+    auto thing = port->template get_vector_data<T>();
+    //std::cerr << "Context::EvalVectorInput.\n";
+    return thing;
   }
 
   /// Evaluates and returns the abstract data of the input port at @p index.
@@ -216,6 +227,7 @@ class Context {
   const AbstractValue* EvalAbstractInput(
       const detail::InputPortEvaluatorInterface<T>* evaluator,
       const SystemPortDescriptor<T>& descriptor) const {
+    //std::cerr << "Context::EvalAbstractInput...\n";
     const InputPort* port = EvalInputPort(evaluator, descriptor);
     if (port == nullptr) return nullptr;
     return port->get_abstract_data();
@@ -311,6 +323,7 @@ class Context {
   /// Returns nullptr if the given port has never been set with SetInputPort.
   /// Asserts if @p index is out of range.
   static const InputPort* GetInputPort(const Context<T>& context, int index) {
+    //std::cerr << "Context::GetInputPort...\n";
     return context.GetInputPort(index);
   }
 

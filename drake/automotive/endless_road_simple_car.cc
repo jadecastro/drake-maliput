@@ -27,6 +27,7 @@ EndlessRoadSimpleCar<T>::EndlessRoadSimpleCar(
   : road_(road),
     s_init_(s_init), r_init_(r_init),
     v_init_(v_init), heading_init_(heading_init) {
+  std::cerr << "   EndlessRoadSimpleCar s_init: " << s_init_ << " \n";
   this->DeclareInputPort(systems::kVectorValued,
                          2,
                          systems::kContinuousSampling);
@@ -64,25 +65,46 @@ void EndlessRoadSimpleCar<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
+  std::cerr << " %%%%%%%%%% EndlessRoadSimpleCar::EvalOutput ..." <<
+      std::endl;
+
+  std::cerr << "EndlessRoadSimpleCar::EvalOutput...\n";
   // Obtain the state.
   const systems::VectorBase<T>& context_state =
       context.get_continuous_state_vector();
-  const EndlessRoadCarState<T>* const state =
-      dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
-  DRAKE_ASSERT(state);
+  //const EndlessRoadCarState<T>* const state =
+  //    dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
+  //DRAKE_ASSERT(state);
+  std::cerr << "EndlessRoadSimpleCar::EvalOutput 1...\n";
 
-  // Obtain the output pointer.
-  EndlessRoadCarState<T>* const output_vector =
-      dynamic_cast<EndlessRoadCarState<T>*>(output->GetMutableVectorData(0));
-  DRAKE_ASSERT(output_vector);
+  // Obtain the output pointer for the output port containing the state vector.
+  //EndlessRoadCarState<T>* const output_vector_state =
+  //    dynamic_cast<EndlessRoadCarState<T>*>(output->GetMutableVectorData(0));
+  systems::BasicVector<T>*
+    output_vector_state = output->GetMutableVectorData(0);
+  DRAKE_ASSERT(output_vector_state);
+  std::cerr << "EndlessRoadSimpleCar::EvalOutput 2...\n";
 
-  DoEvalOutput(*state, output_vector);
-}
+  std::cerr << "  s: " << context_state.GetAtIndex(0) << "\n";
+  std::cerr << "  r: " << context_state.GetAtIndex(1) << "\n";
+  std::cerr << "  heading: " << context_state.GetAtIndex(2) << "\n";
+  std::cerr << "  speed: " << context_state.GetAtIndex(3) << "\n";
 
-template <typename T>
-void EndlessRoadSimpleCar<T>::DoEvalOutput(const EndlessRoadCarState<T>& state,
-                                EndlessRoadCarState<T>* output) const {
-  output->set_value(state.get_value());
+  output_vector_state->SetAtIndex(0, context_state.GetAtIndex(0));
+  output_vector_state->SetAtIndex(1, context_state.GetAtIndex(1));
+  output_vector_state->SetAtIndex(2, context_state.GetAtIndex(2));
+  output_vector_state->SetAtIndex(3, context_state.GetAtIndex(3));
+
+  //output_vector_state->set_value(state->get_value());
+
+  std::cerr << "EndlessRoadSimpleCar::EvalOutput 3...\n";
+  // Set the output port collecting the s-axis quantities.
+  systems::BasicVector<T>*
+    output_vector_s_axis = output->GetMutableVectorData(1);
+  output_vector_s_axis->SetAtIndex(0, context_state.GetAtIndex(0));
+  output_vector_s_axis->SetAtIndex(1, context_state.GetAtIndex(3));
+
+  std::cerr << "EndlessRoadSimpleCar::EvalOutput.\n";
 }
 
 template <typename T>
@@ -91,12 +113,15 @@ void EndlessRoadSimpleCar<T>::EvalTimeDerivatives(
     systems::ContinuousState<T>* derivatives) const {
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
 
+  std::cerr << " ****** EndlessRoadSimpleCar::EvalTimeDerivatives ..." <<
+      std::endl;
+
   // Obtain the state.
   const systems::VectorBase<T>& context_state =
       context.get_continuous_state_vector();
-  const EndlessRoadCarState<T>* const state =
-      dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
-  DRAKE_ASSERT(state);
+  //const EndlessRoadCarState<T>* const state =
+  //    dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
+  //DRAKE_ASSERT(state);
 
   // Obtain the input acceleration requests to the car.
   // TODO(jadecastro): are acceleration components the best input?
@@ -112,11 +137,46 @@ void EndlessRoadSimpleCar<T>::EvalTimeDerivatives(
   systems::VectorBase<T>* const vector_derivatives =
       derivatives->get_mutable_vector();
   DRAKE_ASSERT(vector_derivatives);
-  EndlessRoadCarState<T>* const rates =
-      dynamic_cast<EndlessRoadCarState<T>*>(vector_derivatives);
-  DRAKE_ASSERT(rates);
+  //EndlessRoadCarState<T>* const rates =
+  //    dynamic_cast<EndlessRoadCarState<T>*>(vector_derivatives);
+  //DRAKE_ASSERT(rates);
 
-  DoEvalTimeDerivatives(*state, accelerations, rates);
+  DoEvalTimeDerivatives(context_state, accelerations, vector_derivatives);
+}
+
+template <typename T>
+void EndlessRoadSimpleCar<T>::DoEvalTimeDerivatives(
+    const systems::VectorBase<T>& state,
+    const Accelerations& accelerations,
+    systems::VectorBase<T>* rates) const {
+
+  std::cerr << "   ****  DoEvalTimeDerivatives s_init: " <<
+      state.GetAtIndex(0) << std::endl;
+
+  // Position + velocity ---> position derivatives.
+  maliput::api::LanePosition
+    lane_position(state.GetAtIndex(0), state.GetAtIndex(1), 0.);
+  maliput::api::IsoLaneVelocity lane_velocity(
+      state.GetAtIndex(3) * std::cos(state.GetAtIndex(2)),
+      state.GetAtIndex(3) * std::sin(state.GetAtIndex(2)),
+      0.);
+  maliput::api::LanePosition derivatives;
+  road_->lane()->EvalMotionDerivatives(
+      lane_position, lane_velocity, &derivatives);
+
+  rates->SetAtIndex(0, derivatives.s);
+  rates->SetAtIndex(1, derivatives.r);
+  // Ignore derivatives.h_, which should be zero anyhow.
+
+  const double speed_dot = accelerations.forward;
+  const double heading_dot =
+      (state.GetAtIndex(3) == 0.) ? 0. :
+    (accelerations.lateral / state.GetAtIndex(3));
+
+  rates->SetAtIndex(3, speed_dot);
+  rates->SetAtIndex(2, heading_dot);
+  // TODO(jadecastro): Similar to SimpleCar, cap the steering angle
+  // and max/min accelerations based on vehicle-intrinsic params.
 }
 
 template <typename T>
@@ -156,6 +216,8 @@ void EndlessRoadSimpleCar<T>::SetDefaultState(systems::Context<T>* context)
   DRAKE_DEMAND(context != nullptr);
   systems::ContinuousState<T>* state = context->get_mutable_continuous_state();
   DRAKE_DEMAND(state != nullptr);
+
+  std::cerr << "  s_init: " << s_init_ << "\n";
 
   // Set the elements of the state vector to pre-defined values.
   (*state->get_mutable_vector())[0] = s_init_;  // initial s

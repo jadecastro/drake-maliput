@@ -83,15 +83,19 @@ const std::string& LcmPublisherSystem::get_channel_name() const {
 void LcmPublisherSystem::DoPublish(const Context<double>& context) const {
   SPDLOG_TRACE(drake::log(), "Publishing LCM {} message", channel_);
   DRAKE_ASSERT((translator_ != nullptr) != (serializer_.get() != nullptr));
+  //std::cerr << "LCM::DoPublish...\n";
 
   // Converts the input into LCM message bytes.
   std::vector<uint8_t> message_bytes;
   if (translator_ != nullptr) {
+    //std::cerr << "LCM::DoPublish... translator_ != nullptr\n";
     const VectorBase<double>* const input_vector =
         this->EvalVectorInput(context, kPortIndex);
     DRAKE_ASSERT(input_vector != nullptr);
+    //std::cerr << "LCM::DoPublish... translator_->Serialize()\n";
     translator_->Serialize(context.get_time(), *input_vector, &message_bytes);
   } else {
+    //std::cerr << "LCM::DoPublish... translator_ == nullptr\n";
     const AbstractValue* const input_value =
         this->EvalAbstractInput(context, kPortIndex);
     DRAKE_ASSERT(input_value != nullptr);
@@ -99,6 +103,7 @@ void LcmPublisherSystem::DoPublish(const Context<double>& context) const {
   }
 
   // Publishes onto the specified LCM channel.
+  //std::cerr << "LCM::DoPublish... lcm_->Publish()\n";
   lcm_->Publish(channel_, message_bytes.data(), message_bytes.size());
 }
 

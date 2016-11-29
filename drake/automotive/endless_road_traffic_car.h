@@ -81,7 +81,6 @@ class EndlessRoadTrafficCar : public systems::Diagram<T> {
   const int num_cars_;
   const EndlessRoadSimpleCar<T>* car_ = nullptr;
   const IdmPlanner<T>* planner_ = nullptr;
-  std::unique_ptr<const maliput::utility::InfiniteCircuitRoad> endless_road_{};
 };
 
 }  // namespace automotive

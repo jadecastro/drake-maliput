@@ -22,7 +22,7 @@ EndlessRoadTrafficCar<T>::EndlessRoadTrafficCar(
     const maliput::utility::InfiniteCircuitRoad* road,
     const T& s_init, const T& r_init, const T& v_init, const T& heading_init,
     const T& v_ref)
-  : id_(id), num_cars_(num_cars) {
+    : id_(id), num_cars_(num_cars) {
   /*
   for (int i = 0; i < num_cars - 1; ++i) {
     // Expect to mate each input port with a port in `target_inports`
@@ -43,10 +43,11 @@ EndlessRoadTrafficCar<T>::EndlessRoadTrafficCar(
   systems::DiagramBuilder<T> builder;
 
   const DecisionLayer<T>* decision_layer = builder.AddSystem(
-      std::make_unique<DecisionLayer<T>>(endless_road_.get(),
+      std::make_unique<DecisionLayer<T>>(road,
                                          num_cars_,
                                          1 /* IDM expects one target */));
 
+  std::cerr << "   EndlessRoadTrafficCar s_init: " << s_init << " \n";
   // Instantiate EndlessRoadSimpleCar systems at some initial state.
   car_ = builder.AddSystem(
            std::make_unique<EndlessRoadSimpleCar<T>>(road,
@@ -93,6 +94,9 @@ void EndlessRoadTrafficCar<T>::SetDefaultState(
   systems::Context<T>* context_car =
       this->GetMutableSubsystemContext(context, car_);
   DRAKE_DEMAND(context_car != nullptr);
+
+  const double& thing = car_->get_s_init();
+  std::cerr << "  EndlessRoadTrafficCar s_init: " << thing << ".\n";
 
   // Set the default state based on the member fields.
   car_->SetDefaultState(context_car);

@@ -47,6 +47,8 @@ class EndlessRoadSimpleCar : public systems::LeafSystem<T> {
   /// Returns the s-axis output port.
   const systems::SystemPortDescriptor<T>& get_s_axis_output_port() const;
 
+  const T& get_s_init() const { return s_init_; }
+
   // System<T> overrides
   bool has_any_direct_feedthrough() const override;
 
@@ -81,6 +83,11 @@ class EndlessRoadSimpleCar : public systems::LeafSystem<T> {
 
   void DoEvalOutput(const EndlessRoadCarState<T>&,
                     EndlessRoadCarState<T>*) const;
+
+  // TODO(jadecastro): This is a complete mess.
+  void DoEvalTimeDerivatives(const systems::VectorBase<T>&,
+                             const Accelerations& accelerations,
+                             systems::VectorBase<T>*) const;
 
   void DoEvalTimeDerivatives(const EndlessRoadCarState<T>&,
                              const Accelerations& accelerations,

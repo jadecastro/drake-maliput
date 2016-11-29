@@ -51,6 +51,8 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
+  std::cerr << "  $$$$$$$$ IdmPlanner::EvalOutput ..." << std::endl;
+
   // Obtain the input/output structures we need to read from and write into.
   const systems::BasicVector<T>* input_ego =
       this->EvalVectorInput(context, this->get_ego_port().get_index());
@@ -88,10 +90,19 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   const T s_star = s_0 + v_ego * time_headway
       + v_ego * v_rel / (2 * sqrt(a * b));
 
+  std::cerr << "  IdmPlanner v_ref: " << v_ref << std::endl;
+  std::cerr << "  IdmPlanner s_ego: " << s_ego << std::endl;
+  std::cerr << "  IdmPlanner v_ego: " << v_ego << std::endl;
+  std::cerr << "  IdmPlanner s_rel: " << s_rel << std::endl;
+  std::cerr << "  IdmPlanner v_rel: " << v_rel << std::endl;
+
   output_vector->SetAtIndex(
       0, a * (1.0 - pow(v_ego / v_ref, delta) -
               pow( s_star / s_rel, 2.0)));  // Longitudinal acceleration.
   output_vector->SetAtIndex(1, 0.0);  // Lateral acceleration.
+
+  std::cerr << "  IdmPlanner accel cmd: " <<
+      output_vector->GetAtIndex(0) << std::endl;
 }
 
 template <typename T>
@@ -99,7 +110,10 @@ std::unique_ptr<systems::Parameters<T>> IdmPlanner<T>::AllocateParameters()
     const {
   // Default values from https://en.wikipedia.org/wiki/Intelligent_driver_model.
   auto params = std::make_unique<IdmPlannerParameters<T>>();
-  params->set_v_ref(v_ref_);         // desired velocity in free traffic. (30)
+  // TODO(jadecastro): Workaround ince input arguments aren't working
+  // in the simulator.
+  params->set_v_ref(T(10.));         // desired velocity in free traffic. (30)
+  //params->set_v_ref(v_ref_);         // desired velocity in free traffic. (30)
   params->set_a(T(4.0));             // max acceleration.
   params->set_b(T(12.0));            // comfortable braking deceleration.
   params->set_s_0(T(2.0));           // minimum desired net distance.

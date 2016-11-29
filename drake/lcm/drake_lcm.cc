@@ -2,6 +2,8 @@
 
 #include "drake/common/drake_assert.h"
 
+#include <iostream>
+
 namespace drake {
 namespace lcm {
 
@@ -46,6 +48,7 @@ void DrakeLcm::StopReceiveThread() {
 
 void DrakeLcm::Publish(const std::string& channel, const void* data,
                        int data_size) {
+  std::cerr << "DrakeLcm::Publish...\n";
   lcm_.publish(channel, data, data_size);
 }
 

@@ -184,10 +184,10 @@ class Diagram : public System<T>,
     // Add each constituent system to the Context.
     for (int i = 0; i < num_systems; ++i) {
       const System<T>* const sys = sorted_systems_[i];
-      std::cerr << " CreateDefaultContext: Number of subsystem inputs: " <<
-        sys->get_num_input_ports() << ".\n";
-      std::cerr << " CreateDefaultContext: Number of subsystem outputs: " <<
-        sys->get_num_output_ports() << ".\n";
+      //std::cerr << " CreateDefaultContext: Number of subsystem inputs: " <<
+      //  sys->get_num_input_ports() << ".\n";
+      //std::cerr << " CreateDefaultContext: Number of subsystem outputs: " <<
+      //  sys->get_num_output_ports() << ".\n";
       auto subcontext = sys->CreateDefaultContext();
       auto suboutput = sys->AllocateOutput(*subcontext);
       context->AddSystem(i, std::move(subcontext), std::move(suboutput));
@@ -239,6 +239,7 @@ class Diagram : public System<T>,
     // Since the diagram output now contains pointers to the subsystem outputs,
     // all we need to do is ask those subsystem outputs to evaluate themselves.
     // They will recursively evaluate any intermediate inputs that they need.
+    //std::cerr << "  " << std::endl;
     for (const PortIdentifier& id : output_port_ids_) {
       EvaluateOutputPort(*diagram_context, id);
     }
@@ -285,6 +286,11 @@ class Diagram : public System<T>,
       ContinuousState<T>* subderivatives =
           diagram_derivatives->get_mutable_substate(i);
       sorted_systems_[i]->EvalTimeDerivatives(*subcontext, subderivatives);
+      //if (subderivatives->get_vector().size() > 0) {
+      //  std::cerr << "  Diagram : subsystem " << i <<
+      //      " sub derivative at 0: " <<
+      //      subderivatives->get_vector().GetAtIndex(0) << std::endl;
+      //}
     }
   }
 
@@ -357,28 +363,37 @@ class Diagram : public System<T>,
   void EvaluateSubsystemInputPort(
       const Context<T>* context,
       const SystemPortDescriptor<T>& descriptor) const override {
+    //std::cerr << "EvaluateSubsysteInputPort...\n";
     // Find the output port connected to the given input port.
     const PortIdentifier id{descriptor.get_system(), descriptor.get_index()};
+    //std::cerr << "EvaluateSubsysteInputPort 1...\n";
     const auto upstream_it = dependency_graph_.find(id);
+    //std::cerr << "EvaluateSubsysteInputPort 2...\n";
 
     auto diagram_context = dynamic_cast<const DiagramContext<T>*>(context);
+    //std::cerr << "EvaluateSubsysteInputPort 3...\n";
 
     // If the upstream output port exists in this Diagram, evaluate it.
     // TODO(david-german-tri): Add online algebraic loop detection here.
     if (upstream_it != dependency_graph_.end()) {
       DRAKE_DEMAND(diagram_context != nullptr);
       const PortIdentifier& prerequisite = upstream_it->second;
+      //std::cerr << "EvaluateOutputPort...\n";
       this->EvaluateOutputPort(*diagram_context, prerequisite);
+      //std::cerr << "EvaluateOutputPort.\n";
     }
 
     // If the upstream output port is an input of this whole Diagram, ask our
     // parent to evaluate it.
     const auto external_it =
         std::find(input_port_ids_.begin(), input_port_ids_.end(), id);
+    //std::cerr << "EvaluateSubsysteInputPort 4...\n";
     if (external_it != input_port_ids_.end()) {
       const int i = external_it - input_port_ids_.begin();
+      //std::cerr << "EvalInputPort...\n";
       this->EvalInputPort(*diagram_context, i);
     }
+    //std::cerr << "EvaluateSubsysteInputPort.\n";
   }
 
  protected:
@@ -389,10 +404,11 @@ class Diagram : public System<T>,
   void DoPublish(const Context<T>& context) const override {
     auto diagram_context = dynamic_cast<const DiagramContext<T>*>(&context);
     DRAKE_DEMAND(diagram_context != nullptr);
-    std::cerr << "System::Publish...\n";
+    //std::cerr << "Diagram::DoPublish.\n";
 
     for (const System<T>* const system : sorted_systems_) {
       const int i = GetSystemIndexOrAbort(system);
+      //std::cerr << " Index: " << i << ".\n";
       system->Publish(*diagram_context->GetSubsystemContext(i));
     }
   }
@@ -572,10 +588,10 @@ class Diagram : public System<T>,
     sorted_systems_ = blueprint.sorted_systems;
     input_port_ids_ = blueprint.input_port_ids;
     output_port_ids_ = blueprint.output_port_ids;
-    std::cerr << "   Diagram::Initialize: Number of input ports: " <<
-        this->get_num_input_ports() << " \n";
-    std::cerr << "   Diagram::Initialize: Number of output ports: " <<
-        this->get_num_output_ports() << " \n";
+    //std::cerr << "   Diagram::Initialize: Number of input ports: " <<
+    //    this->get_num_input_ports() << " \n";
+    //std::cerr << "   Diagram::Initialize: Number of output ports: " <<
+    //    this->get_num_output_ports() << " \n";
 
     // Generate a map from the System pointer to its index in the sort order.
     for (int i = 0; i < num_subsystems(); ++i) {
@@ -596,10 +612,10 @@ class Diagram : public System<T>,
     for (const PortIdentifier& id : output_port_ids_) {
       ExportOutput(id);
     }
-    std::cerr << "   Diagram::Initialize: Number of input ports: " <<
-        this->get_num_input_ports() << " \n";
-    std::cerr << "   Diagram::Initialize: Number of output ports: " <<
-        this->get_num_output_ports() << " \n";
+    //std::cerr << "   Diagram::Initialize: Number of input ports: " <<
+    //    this->get_num_input_ports() << " \n";
+    //std::cerr << "   Diagram::Initialize: Number of output ports: " <<
+    //    this->get_num_output_ports() << " \n";
 
   }
 
@@ -678,13 +694,18 @@ class Diagram : public System<T>,
   void EvaluateOutputPort(const DiagramContext<T>& context,
                           const PortIdentifier& id) const {
     const System<T>* const system = id.first;
+    //std::cerr << "EvaluateOutputPort...\n";
     const int i = GetSystemIndexOrAbort(system);
+    //std::cerr << "  system: " << i << "\n";
     SPDLOG_TRACE(log(), "Evaluating output for subsystem {}, port {}",
                  system->GetPath(), id.second);
+    //std::cerr << "EvaluateOutputPort 1...\n";
     const Context<T>* subsystem_context = context.GetSubsystemContext(i);
+    //std::cerr << "EvaluateOutputPort 2...\n";
     SystemOutput<T>* subsystem_output = context.GetSubsystemOutput(i);
     // TODO(david-german-tri): Once #2890 is resolved, only evaluate the
     // particular port specified in id.second.
+    //std::cerr << "EvaluateOutputPort 3...\n";
     system->EvalOutput(*subsystem_context, subsystem_output);
   }
 
@@ -819,9 +840,11 @@ class Diagram : public System<T>,
       const std::vector<std::pair<int, UpdateActions<T>>>& sub_actions) const {
     auto diagram_context = dynamic_cast<const DiagramContext<T>*>(&context);
     DRAKE_DEMAND(diagram_context != nullptr);
+    //std::cerr << "Diagram::HandlePublish.\n";
 
     for (const auto& action : sub_actions) {
       const int index = action.first;
+      //std::cerr << "  index: " << index << ".\n";
       const UpdateActions<T>& action_details = action.second;
       DRAKE_DEMAND(index >= 0 && index < num_subsystems());
 

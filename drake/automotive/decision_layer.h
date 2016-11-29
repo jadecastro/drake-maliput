@@ -85,13 +85,13 @@ class DecisionLayer : public systems::LeafSystem<T> {
   };
 
   void DoEvalOutput(
-    const EndlessRoadCarState<T>* self_car_input,
-    const std::vector<const EndlessRoadCarState<T>*>& world_car_inputs,
+    const systems::BasicVector<T>* self_car_input,
+    const std::vector<const systems::BasicVector<T>*>& world_car_inputs,
     std::vector<EndlessRoadOracleOutput<T>*>& target_outputs) const;
 
   void UnwrapEndlessRoadCarState(
-    const EndlessRoadCarState<double>* self_car_input,
-    const std::vector<const EndlessRoadCarState<double>*>& world_car_inputs,
+    const systems::BasicVector<double>* self_car_input,
+    const std::vector<const systems::BasicVector<double>*>& world_car_inputs,
     const maliput::utility::InfiniteCircuitRoad* road,
     const double horizon_seconds,
     SourceState* self_source_state,

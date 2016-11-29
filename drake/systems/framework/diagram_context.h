@@ -88,8 +88,8 @@ class DiagramContext : public Context<T> {
     PortIndex dest_port_index = dest.second;
     Context<T>* dest_context = GetMutableSubsystemContext(dest_system_index);
     DRAKE_DEMAND(dest_port_index >= 0);
-    std::cerr << "DiagramContext: port_index:" << dest_port_index <<
-      " , num_input_ports: " << dest_context->get_num_input_ports() << ".\n";
+    //std::cerr << "DiagramContext: port_index:" << dest_port_index <<
+    //  " , num_input_ports: " << dest_context->get_num_input_ports() << ".\n";
     DRAKE_DEMAND(dest_port_index < dest_context->get_num_input_ports());
 
     // Construct and install the destination port.
