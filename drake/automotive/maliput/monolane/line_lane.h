@@ -6,7 +6,7 @@ namespace drake {
 namespace maliput {
 namespace monolane {
 
-class DRAKE_EXPORT LineLane : public Lane {
+class LineLane : public Lane {
  public:
   LineLane(const api::LaneId& id, Segment* segment,
            const V2& xy0, const V2& dxy,

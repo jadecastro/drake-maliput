@@ -16,7 +16,7 @@ class Lane;
 class RoadGeometry;
 
 
-class DRAKE_EXPORT LaneEndSet : public api::LaneEndSet {
+class LaneEndSet : public api::LaneEndSet {
  public:
   virtual ~LaneEndSet() {}
 
@@ -31,7 +31,7 @@ class DRAKE_EXPORT LaneEndSet : public api::LaneEndSet {
 };
 
 
-class DRAKE_EXPORT BranchPoint : public api::BranchPoint {
+class BranchPoint : public api::BranchPoint {
  public:
   BranchPoint(const api::BranchPointId& id, RoadGeometry* rg);
 

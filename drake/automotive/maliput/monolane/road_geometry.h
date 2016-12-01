@@ -16,7 +16,7 @@ namespace monolane {
 
 /// A simple RoadGeometry implementation that only supports a
 /// single lane per segment.
-class DRAKE_EXPORT RoadGeometry : public api::RoadGeometry {
+class RoadGeometry : public api::RoadGeometry {
  public:
   RoadGeometry(const api::RoadGeometryId& id,
                const double linear_tolerance,

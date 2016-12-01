@@ -9,7 +9,7 @@ namespace drake {
 namespace maliput {
 namespace monolane {
 
-class DRAKE_EXPORT ArcLane : public Lane {
+class ArcLane : public Lane {
  public:
   ArcLane(const api::LaneId& id, Segment* segment,
           const V2& center, const double radius,

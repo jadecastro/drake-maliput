@@ -86,19 +86,51 @@ class AutomotiveSimulator {
                               const Curve2<double>& curve, double speed,
                               double start_time);
 
+  //int AddEndlessRoadCarCoordTransform(const std::string& sdf_filename,
+  //                                    systems::System<T>* car);
+
+  /*
+  template <template <class S> typename T>
+  int AutomotiveSimulator<T>::AddEndlessRoadCarCoordTransform(
+        const std::string& sdf_filename,
+        S* car) {
+    auto coord_transform =
+      builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
+        endless_road_.get());
+
+    const int vehicle_number = allocate_vehicle_number();
+    static const DrivingCommandTranslator driving_command_translator;
+    auto command_subscriber =
+      builder_->template AddSystem<systems::lcm::LcmSubscriberSystem>(
+        "DRIVING_COMMAND", driving_command_translator, lcm_.get());
+    builder_->Connect(*command_subscriber, car);
+    builder_->Connect(car->get_output_port(0),
+                      *coord_transform->get_input_port(0));
+    AddPublisher(car, vehicle_number);
+    AddPublisher(*coord_transform, vehicle_number);
+    return AddSdfModel(sdf_filename, coord_transform);
+  }
+  */
+
   /// Adds an EndlessRoadCar system to this simulation, including its
   /// EulerFloatingJoint output.
   /// @pre Start() has NOT been called.
   /// @pre SetRoadGeometry() HAS been called.
-  // TODO(jadecastro): Remove.
-  int AddEndlessRoadEgoCar(
+  int AddEndlessRoadUserCar(
       const std::string& id,
       const std::string& sdf_filename,
       double longitudinal_start, double lateral_offset, double speed,
       typename EndlessRoadCar<T>::ControlType control_type);
 
-  /// Adds an EndlessRoadTrafficCar system to this simulation.
+  /// Adds an EndlessRoadEgoCar system to this simulation.
   int AddEndlessRoadTrafficCar(
+      const std::string& id,
+      const std::string& sdf_filename,
+      const double s_init, const double r_init, const double v_init,
+      const int num_cars);
+
+  /// Adds an EndlessRoadTrafficCar system to this simulation.
+  int AddEndlessRoadEgoCar(
       const std::string& id,
       const std::string& sdf_filename,
       const double s_init, const double r_init, const double v_init,
@@ -212,9 +244,11 @@ class AutomotiveSimulator {
   std::unique_ptr<lcm::DrakeLcmInterface> lcm_{};
   std::unique_ptr<const maliput::api::RoadGeometry> road_{};
   std::unique_ptr<const maliput::utility::InfiniteCircuitRoad> endless_road_{};
-  std::map<EndlessRoadCar<T>*, EndlessRoadCarState<T>>
-    endless_road_ego_cars_;
   // TODO(jadecastro): We no longer need to store a std::map of the cars/i.c.'s.
+  std::map<EndlessRoadCar<T>*, EndlessRoadCarState<T>>
+    endless_road_user_cars_;
+  std::map<EndlessRoadTrafficCar<T>*, EndlessRoadCarState<T>>
+    endless_road_ego_cars_;
   std::map<EndlessRoadTrafficCar<T>*, EndlessRoadCarState<T>>
     endless_road_traffic_cars_;
 

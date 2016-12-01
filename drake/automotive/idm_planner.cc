@@ -110,9 +110,9 @@ std::unique_ptr<systems::Parameters<T>> IdmPlanner<T>::AllocateParameters()
     const {
   // Default values from https://en.wikipedia.org/wiki/Intelligent_driver_model.
   auto params = std::make_unique<IdmPlannerParameters<T>>();
-  // TODO(jadecastro): Workaround ince input arguments aren't working
-  // in the simulator.
-  params->set_v_ref(T(10.));         // desired velocity in free traffic. (30)
+  // TODO(jadecastro): Workaround to ignore all input arguments since
+  // they don't seem to be working in the simulator.
+  params->set_v_ref(T(30.));         // desired velocity in free traffic. (30)
   //params->set_v_ref(v_ref_);         // desired velocity in free traffic. (30)
   params->set_a(T(4.0));             // max acceleration.
   params->set_b(T(12.0));            // comfortable braking deceleration.

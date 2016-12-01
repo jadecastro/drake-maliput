@@ -6,8 +6,8 @@ namespace drake {
 namespace automotive {
 
 // These instantiations must match the API documentation in endless_road_car.h.
-template class DRAKE_EXPORT EndlessRoadCar<double>;
-//LATER? template class DRAKE_EXPORT EndlessRoadCar<drake::TaylorVarXd>;
+template class EndlessRoadCar<double>;
+//LATER? template class EndlessRoadCar<drake::TaylorVarXd>;
 
 }  // namespace automotive
 }  // namespace drake

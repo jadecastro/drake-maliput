@@ -8,14 +8,13 @@
 
 #include <Eigen/Core>
 
-#include "drake/common/drake_export.h"
 #include "drake/systems/framework/basic_vector.h"
 
 namespace drake {
 namespace automotive {
 
 /// Describes the row indices of a EndlessRoadOracleOutput.
-struct DRAKE_EXPORT EndlessRoadOracleOutputIndices {
+struct EndlessRoadOracleOutputIndices {
   /// The total number of rows (coordinates).
   static const int kNumCoordinates = 2;
 

@@ -9,7 +9,7 @@ class Segment;
 
 
 /// Persistent identifier for a Junction element.
-struct DRAKE_EXPORT JunctionId {
+struct JunctionId {
   std::string id;
 };
 
@@ -21,7 +21,7 @@ struct DRAKE_EXPORT JunctionId {
 /// connected to one another in the network topology.
 ///
 /// Junctions are grouped by RoadGeometry.
-class DRAKE_EXPORT Junction {
+class Junction {
  public:
   virtual ~Junction() {}
 

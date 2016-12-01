@@ -25,7 +25,7 @@ namespace utility {
 /// Caveats:
 ///  * Only works with a RoadGeometry that has one-lane-per-segment.
 ///  * Source RoadGeometry must have no dead-ends.
-class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
+class InfiniteCircuitRoad : public api::RoadGeometry {
  private:
   class Lane;
 
@@ -83,7 +83,7 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   class Junction;
   class Segment;
 
-  class DRAKE_EXPORT Lane : public api::Lane {
+  class Lane : public api::Lane {
    public:
     Lane(const api::LaneId& id, const Segment* segment,
          const api::RoadGeometry* source,
@@ -176,7 +176,7 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   };
 
 
-  class DRAKE_EXPORT Segment : public api::Segment {
+  class Segment : public api::Segment {
    public:
     Segment(const api::SegmentId& id,
             const Junction* junction, const Lane* lane)
@@ -199,7 +199,7 @@ class DRAKE_EXPORT InfiniteCircuitRoad : public api::RoadGeometry {
   };
 
 
-  class DRAKE_EXPORT Junction : public api::Junction {
+  class Junction : public api::Junction {
    public:
     Junction(const api::JunctionId& id,
              const RoadGeometry* rg, const Segment* segment)

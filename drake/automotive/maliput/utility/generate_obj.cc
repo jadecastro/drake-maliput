@@ -24,7 +24,7 @@ namespace {
 template <class T> struct LocalHash;
 
 template <class T>
-class DRAKE_EXPORT IndexMap {
+class IndexMap {
  public:
   IndexMap() {}
 
@@ -50,7 +50,7 @@ class DRAKE_EXPORT IndexMap {
   std::vector<T> vec_;
 };
 
-struct DRAKE_EXPORT GeoVertex {
+struct GeoVertex {
   GeoVertex() {}
 
   explicit GeoVertex(const api::GeoPosition& _v) : v(_v) {}
@@ -281,7 +281,7 @@ void cover_lane_with_quads(ObjData* obj, const api::Lane* lane,
 }  // namespace
 
 
-void DRAKE_EXPORT generate_obj(const api::RoadGeometry* rg,
+void generate_obj(const api::RoadGeometry* rg,
                                const std::string& filename,
                                const double grid_unit) {
   ObjData obj;

@@ -15,7 +15,7 @@ namespace automotive {
  * Translates between LCM message objects and VectorBase objects for the
  * EndlessRoadOracleOutput type.
  */
-class DRAKE_EXPORT EndlessRoadOracleOutputTranslator
+class EndlessRoadOracleOutputTranslator
     : public systems::lcm::LcmAndVectorBaseTranslator {
  public:
   EndlessRoadOracleOutputTranslator()

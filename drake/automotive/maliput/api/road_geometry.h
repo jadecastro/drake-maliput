@@ -13,14 +13,14 @@ class Junction;
 
 
 /// Persistent identifier for a RoadGeometry element.
-struct DRAKE_EXPORT RoadGeometryId {
+struct RoadGeometryId {
   std::string id;
 };
 
 
 /// Abstract API for the geometry of a road network, including both
 /// the network topology and the geometry of its embedding in 3-space.
-class DRAKE_EXPORT RoadGeometry {
+class RoadGeometry {
  public:
   virtual ~RoadGeometry() {}
 

@@ -11,13 +11,13 @@ namespace api {
 class RoadGeometry;
 
 // Persistent identifier for a BranchPoint element.
-struct DRAKE_EXPORT BranchPointId {
+struct BranchPointId {
   std::string id;
 };
 
 
 /// A set of LaneEnds.
-class DRAKE_EXPORT LaneEndSet {
+class LaneEndSet {
  public:
   virtual ~LaneEndSet() {}
 
@@ -51,7 +51,7 @@ class DRAKE_EXPORT LaneEndSet {
 /// arbitrarily named "A-side" and "B-side".  LaneEnds on the same "side"
 /// have coincident into-the-lane tangent vectors, which are anti-parallel
 /// to those of LaneEnds on the other side.
-class DRAKE_EXPORT BranchPoint {
+class BranchPoint {
  public:
   virtual ~BranchPoint() {}
 

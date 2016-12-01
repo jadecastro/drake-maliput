@@ -9,7 +9,7 @@ class Lane;
 
 
 /// Persistent identifier for a Segment element.
-struct DRAKE_EXPORT SegmentId {
+struct SegmentId {
   std::string id;
 };
 
@@ -21,7 +21,7 @@ struct DRAKE_EXPORT SegmentId {
 /// map to the same GeoPoint in 3-space.
 ///
 /// Segments are grouped by Junctions.
-class DRAKE_EXPORT Segment {
+class Segment {
  public:
   virtual ~Segment() {}
 

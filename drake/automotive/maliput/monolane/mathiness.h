@@ -7,7 +7,7 @@ namespace maliput {
 namespace monolane {
 
 
-struct DRAKE_EXPORT V3 {
+struct V3 {
   V3(double xx, double yy, double zz) : x(xx), y(yy), z(zz) {}
 
   static V3 sum(const V3& a, const V3& b) {
@@ -36,7 +36,7 @@ V3 operator+(const V3& a, const V3& b) {
             a.z + b.z);
 }
 
-struct DRAKE_EXPORT V2 {
+struct V2 {
   V2(double xx, double yy) : x(xx), y(yy) {}
 
   static V2 midpoint(const V2& a, const V2& b) {
@@ -62,7 +62,7 @@ struct DRAKE_EXPORT V2 {
 };
 
 
-struct DRAKE_EXPORT Rot3 {
+struct Rot3 {
   Rot3(double yy, double pp, double rr) : yaw(yy), pitch(pp), roll(rr) {}
 
   V3 apply(const V3& in) const {
@@ -94,7 +94,7 @@ struct DRAKE_EXPORT Rot3 {
 
 
 // parameterized on domain p in [0, 1]
-class DRAKE_EXPORT CubicPolynomial {
+class CubicPolynomial {
  public:
   CubicPolynomial() : CubicPolynomial(0., 0., 0., 0.) {}
 

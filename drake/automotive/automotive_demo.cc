@@ -11,6 +11,7 @@
 #include "drake/automotive/maliput/monolane/loader.h"
 #include "drake/automotive/maliput/utility/generate_obj.h"
 #include "drake/common/drake_path.h"
+#include "drake/common/drake_throw.h"
 #include "drake/common/text_logging_gflags.h"
 
 DEFINE_string(road_file, "",
@@ -24,7 +25,8 @@ DEFINE_string(road_path, "",
               "be selected.");
 // "Ego car" in this instance means "controlled by something smarter than
 // this demo code".
-DEFINE_int32(num_ego_car, 1, "Number of user-controlled vehicles");
+DEFINE_int32(num_user_car, 1, "Number of user-controlled vehicles");
+DEFINE_int32(num_ego_car, 1, "Number of autonomous vehicles");
 DEFINE_int32(num_ado_car, 1,
              "Number of vehicles controlled by a "
              "(possibly trivial) traffic model");
@@ -57,6 +59,10 @@ int main(int argc, char* argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   logging::HandleSpdlogGflags();
 
+  const int num_cars =
+      FLAGS_num_user_car + FLAGS_num_ego_car + FLAGS_num_ado_car;
+  std::cerr << "  Number of cars: " << num_cars << std::endl;
+
   // TODO(jwnimmer-tri) Allow for multiple simple cars.
   if (FLAGS_num_ego_car > 1) {
     std::cerr << "ERROR: Only one user-controlled car is supported (for now)."
@@ -78,8 +84,18 @@ int main(int argc, char* argv[]) {
     // "free-for-all on the xy-plane" mode.
 
     // User-controlled vehicles are SimpleCars.
-    for (int i = 0; i < FLAGS_num_ego_car; ++i) {
+    for (int i = 0; i < FLAGS_num_user_car; ++i) {
       simulator->AddSimpleCarFromSdf(kSdfFile);
+    }
+    // TODO(jadecastro): Seems like we should move to using splines
+    // and deprecate the use of these params.
+    //"Traffic model" is "drive in a figure-8".
+    for (int i = 0; i < FLAGS_num_ego_car; ++i) {
+      const auto& params = CreateTrajectoryParams(i);
+      simulator->AddTrajectoryCarFromSdf(kSdfFile,
+                                         std::get<0>(params),
+                                         std::get<1>(params),
+                                         std::get<2>(params));
     }
     // "Traffic model" is "drive in a figure-8".
     for (int i = 0; i < FLAGS_num_ado_car; ++i) {
@@ -125,55 +141,64 @@ int main(int argc, char* argv[]) {
     const maliput::utility::InfiniteCircuitRoad* const endless_road =
         simulator->SetRoadGeometry(&base_road, start, path);
 
-    // User-controlled vehicles are EndlessRoadCars with DrivingCommand input.
-    for (int i = 0; i < FLAGS_num_ego_car; ++i) {
-      const double kConstantSpeed = 10.0;
-      const double kLateralOffsetUnit = -2.0;
-
-      const double longitudinal_start =
-          endless_road->cycle_length() *
-          ((1.0 * (i / 2) / FLAGS_num_ego_car) + 0.5);
-      const double lateral_offset =
-          (((i % 2) * 2) - 1) * kLateralOffsetUnit;
-      simulator->AddEndlessRoadEgoCar(
-          "User-" + std::to_string(i),
-          kSdfFile,
-          longitudinal_start, lateral_offset, kConstantSpeed,
-          EndlessRoadCar<double>::kUser);
-    }
+    double longitudinal_offset = 0;
 
     // "Traffic model" is "drive at a constant LANE-space velocity".
     // TODO(maddog) Implement traffic models other than "just drive at
     // constant speed".
-    if (FLAGS_use_idm) {
-      const double kInitialSpeed = 30.0;
-      const double kLateralOffsetUnit = 0.0;
-      for (int i = 0; i < FLAGS_num_ado_car; ++i) {
-        const double longitudinal_start =
-            endless_road->cycle_length() * i / FLAGS_num_ado_car / 2.;
-        const double lateral_offset = kLateralOffsetUnit;
-        std::cerr << "**Attempting to add traffic car " << i << " ...\n";
-        simulator->AddEndlessRoadTrafficCar(
-            "IDM-" + std::to_string(i),
-            kSdfFile,
-            longitudinal_start, lateral_offset, kInitialSpeed,
-            FLAGS_num_ego_car + FLAGS_num_ado_car);
-      }
-    } else {
-      const double kConstantSpeed = 10.0;
-      const double kLateralOffsetUnit = -2.0;
-      for (int i = 0; i < FLAGS_num_ado_car; ++i) {
-        const double longitudinal_start =
-            endless_road->cycle_length() * (i / 2) / FLAGS_num_ado_car;
-        const double lateral_offset =
-            (((i % 2) * 2) - 1) * kLateralOffsetUnit;
-        simulator->AddEndlessRoadEgoCar(
-            "CV-" + std::to_string(i),
-            kSdfFile,
-            longitudinal_start, lateral_offset, kConstantSpeed,
-            EndlessRoadCar<double>::kNone);
-      }
+    const double kTrafficInitialSpeed = 30.0;
+    const double kTrafficLateralOffsetUnit = 0.0;
+    const double kTrafficLongitudinalSpacing = 30.0;
+    DRAKE_DEMAND(kTrafficInitialSpeed > 0);
+    DRAKE_DEMAND(kTrafficLongitudinalSpacing > 0);
+    for (int i = 0; i < FLAGS_num_ado_car; ++i) {
+      longitudinal_offset += kTrafficLongitudinalSpacing;
+      std::cerr << " Adding traffic car at position: " <<
+                longitudinal_offset << std::endl;
+      const double lateral_offset =
+          (((i % 2) * 2) - 1) * kTrafficLateralOffsetUnit;
+      simulator->AddEndlessRoadTrafficCar(
+          "IDM-" + std::to_string(i),
+          kSdfFile,
+          longitudinal_offset, lateral_offset, kTrafficInitialSpeed, num_cars);
     }
+
+    // User-controlled vehicles are EndlessRoadCars with
+    // DrivingCommand input sandwiched between the ego and any traffic.
+    const double kUserConstantSpeed = 10.0;
+    const double kUserLateralOffsetUnit = 0.0;
+    const double kUserLongitudinalSpacing = 30.0;
+    DRAKE_DEMAND(kUserConstantSpeed > 0);
+    DRAKE_DEMAND(kUserLongitudinalSpacing > 0);
+    for (int i = 0; i < FLAGS_num_user_car; ++i) {
+      longitudinal_offset += kUserLongitudinalSpacing;
+      const double lateral_offset =
+          (((i % 2) * 2) - 1) * kUserLateralOffsetUnit;
+      simulator->AddEndlessRoadUserCar(
+          "User-" + std::to_string(i),
+          kSdfFile,
+          longitudinal_offset, lateral_offset, kUserConstantSpeed,
+          EndlessRoadCar<double>::kUser);
+    }
+
+    // "Ego model" is "drive at a constant LANE-space velocity".
+    const double kEgoInitialSpeed = 30.0;
+    const double kEgoLateralOffsetUnit = 0.0;
+    const double kEgoLongitudinalSpacing = 30.0;
+    DRAKE_DEMAND(kEgoInitialSpeed > 0);
+    DRAKE_DEMAND(kEgoLongitudinalSpacing > 0);
+    for (int i = 0; i < FLAGS_num_ego_car; ++i) {
+      longitudinal_offset += kEgoLongitudinalSpacing;
+      std::cerr << " Adding ego car at position: " <<
+                longitudinal_offset << std::endl;
+      const double lateral_offset = kEgoLateralOffsetUnit;
+      simulator->AddEndlessRoadEgoCar(
+          "Ego-" + std::to_string(i),
+          kSdfFile,
+          longitudinal_offset, lateral_offset, kEgoInitialSpeed, num_cars);
+    }
+    // Throw if there is a possibility of overlapping.
+    DRAKE_DEMAND(longitudinal_offset < endless_road->cycle_length());
   }
 
   simulator->Start();

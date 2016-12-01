@@ -117,7 +117,7 @@ void DecisionLayer<T>::EvalOutput(const systems::Context<T>& context,
 
 const double kEnormousDistance = 1e12;
 const double kCarLength = 4.6;  // TODO(maddog) Get from somewhere else.
-const double kPerceptionDistance = 30000.0;  // Targets are imperceptible
+const double kPerceptionDistance = 60.0;  // Targets are imperceptible
                                           // outside this radius.
 // TODO(jadecastro): Store these as IdmParameters or CarParameters.
 
@@ -178,22 +178,20 @@ void DecisionLayer<T>::UnwrapEndlessRoadCarState(
   world_source_states->clear();
   //self_car_path->clear();
   for (size_t i = 0; i < world_car_inputs.size()+1; ++i) {
-    // NB(jadecastro): Not really meaningful to call it `self`
-    // anymore, but whatevs.
     //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState...\n";
     //std::cerr << "     i: " << i << "\n";
     //std::cerr << "     num world cars: " << world_car_inputs.size() << "\n";
-    const systems::BasicVector<double>* self =
+    const systems::BasicVector<double>* car_state =
       (i == 0) ? self_car_input : world_car_inputs[i-1];
-    std::cerr << "  position: " << self->GetAtIndex(0) << "\n";
+    std::cerr << "  position: " << car_state->GetAtIndex(0) << "\n";
     const maliput::api::RoadPosition rp = road->ProjectToSourceRoad(
-        {self->GetAtIndex(0), 0., 0.}).first;
+        {car_state->GetAtIndex(0), 0., 0.}).first;
     //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState 0...\n";
     // TODO(maddog)  Until we deal with cars going the wrong way.
-    DRAKE_DEMAND(std::cos(self->GetAtIndex(2)) >= 0.);
-    DRAKE_DEMAND(self->GetAtIndex(3) >= 0.);
+    DRAKE_DEMAND(std::cos(car_state->GetAtIndex(2)) >= 0.);
+    DRAKE_DEMAND(car_state->GetAtIndex(3) >= 0.);
     const double longitudinal_speed =
-        self->GetAtIndex(3) * std::cos(self->GetAtIndex(2));
+        car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
 
     //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState 1...\n";
     if (i == 0) {
@@ -206,9 +204,9 @@ void DecisionLayer<T>::UnwrapEndlessRoadCarState(
 
     const double horizon_meters = longitudinal_speed * horizon_seconds;
     // TODO(maddog)  Is this < constraint relevant anymore???
-    DRAKE_DEMAND(horizon_meters < (0.5 * road->cycle_length()));
+    //DRAKE_DEMAND(horizon_meters < (0.5 * road->cycle_length()));
     DRAKE_DEMAND(horizon_meters >= 0.);
-    const double circuit_s0 = road->lane()->circuit_s(self->GetAtIndex(0));
+    const double circuit_s0 = road->lane()->circuit_s(car_state->GetAtIndex(0));
 
     int path_index = road->GetPathIndex(circuit_s0);
     maliput::utility::InfiniteCircuitRoad::Record path_record =

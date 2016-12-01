@@ -15,7 +15,7 @@ class LaneEndSet;
 
 
 /// Persistent identifier for a Lane element.
-struct DRAKE_EXPORT LaneId {
+struct LaneId {
   std::string id;
 };
 
@@ -29,7 +29,7 @@ struct DRAKE_EXPORT LaneId {
 /// Lanes are grouped by Segments.  All Lanes belonging to a Segment
 /// represent the same road surface, but with different coordinate
 /// parameterizations (e.g., each Lane has its own reference curve).
-class DRAKE_EXPORT Lane {
+class Lane {
  public:
   virtual ~Lane() {}
 

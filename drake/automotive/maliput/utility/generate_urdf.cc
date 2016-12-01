@@ -12,7 +12,7 @@ namespace drake {
 namespace maliput {
 namespace utility {
 
-void DRAKE_EXPORT generate_urdf(const std::string& dirname,
+void generate_urdf(const std::string& dirname,
                                 const std::string& fileroot,
                                 const api::RoadGeometry* rg,
                                 const double grid_unit) {

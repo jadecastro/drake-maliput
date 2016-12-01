@@ -6,7 +6,6 @@
 #include "drake/automotive/gen/endless_road_car_state.h"
 #include "drake/automotive/gen/endless_road_oracle_output.h"
 #include "drake/automotive/gen/simple_car_config.h"
-#include "drake/common/drake_export.h"
 #include "drake/systems/framework/leaf_system.h"
 
 namespace drake {

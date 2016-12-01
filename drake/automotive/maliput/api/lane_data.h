@@ -3,8 +3,6 @@
 #include <functional>
 #include <string>
 
-#include "drake/common/drake_export.h"
-
 namespace drake {
 namespace maliput {
 namespace api {
@@ -43,7 +41,7 @@ struct LaneEnd {
 
 /// A 3-dimensional rotation, expressed as a roll around X, followed
 /// by pitch around Y, followed by yaw around Z.
-struct DRAKE_EXPORT Rotation {
+struct Rotation {
   /// Default constructor.
   Rotation() {}
 
@@ -58,7 +56,7 @@ struct DRAKE_EXPORT Rotation {
 
 
 /// A position in 3-dimensional geographical Cartesian space.
-struct DRAKE_EXPORT GeoPosition {
+struct GeoPosition {
   /// Default constructor.
   GeoPosition() {}
 
@@ -75,7 +73,7 @@ struct DRAKE_EXPORT GeoPosition {
 ///  * s is longitudinal position, as arc-length along a Lane's reference line.
 ///  * r is lateral position, perpendicular to the reference line at s.
 ///  * h is height above the road surface.
-struct DRAKE_EXPORT LanePosition {
+struct LanePosition {
   /// Default constructor.
   LanePosition() {}
 
@@ -89,7 +87,7 @@ struct DRAKE_EXPORT LanePosition {
 
 
 /// Isometric velocity vector in LANE-space.
-struct DRAKE_EXPORT IsoLaneVelocity {
+struct IsoLaneVelocity {
   /// Default constructor.
   IsoLaneVelocity() {}
 
@@ -105,7 +103,7 @@ struct DRAKE_EXPORT IsoLaneVelocity {
 
 /// A position in the road network, consisting of a pointer to a specific
 /// Lane and a LANE-space position on that Lane.
-struct DRAKE_EXPORT RoadPosition {
+struct RoadPosition {
   /// Default constructor.
   RoadPosition() {}
 
@@ -120,7 +118,7 @@ struct DRAKE_EXPORT RoadPosition {
 
 /// Bounds in the lateral dimension (r component) of LANE-space, consisting
 /// of a pair of minimum and maximum r value.
-struct DRAKE_EXPORT RBounds {
+struct RBounds {
   /// Default constructor.
   RBounds() {}
 

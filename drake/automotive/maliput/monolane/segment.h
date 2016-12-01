@@ -18,7 +18,7 @@ class Junction;
 class ArcLane;
 class LineLane;
 
-class DRAKE_EXPORT Segment : public api::Segment {
+class Segment : public api::Segment {
  public:
   Segment(const api::SegmentId& id, Junction* j)
       : id_(id), junction_(j) {}

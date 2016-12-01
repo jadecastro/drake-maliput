@@ -94,7 +94,7 @@ struct ArcOffset {
 
 
 // TODO(maddog)  Make non-copyable.
-class DRAKE_EXPORT Connection {
+class Connection {
  public:
   enum Type { kLine, kArc };
 
@@ -141,7 +141,7 @@ class DRAKE_EXPORT Connection {
 
 
 // TODO(maddog) make noncopyable
-class DRAKE_EXPORT Group {
+class Group {
  public:
   explicit Group(const std::string& id) : id_(id) {}
 
@@ -167,7 +167,7 @@ class DRAKE_EXPORT Group {
 
 
 // TODO(maddog) make noncopyable
-class DRAKE_EXPORT Builder {
+class Builder {
  public:
   Builder(const api::RBounds& lane_bounds,
           const api::RBounds& driveable_bounds,

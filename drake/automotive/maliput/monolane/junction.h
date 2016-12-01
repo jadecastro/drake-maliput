@@ -15,7 +15,7 @@ namespace monolane {
 
 class RoadGeometry;
 
-class DRAKE_EXPORT Junction : public api::Junction {
+class Junction : public api::Junction {
  public:
   Junction(const api::JunctionId& id, RoadGeometry* rg)
       : id_(id), road_geometry_(rg) {}
