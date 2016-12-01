@@ -85,7 +85,7 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   // inputs.
   DRAKE_DEMAND(a > 0.0);
   DRAKE_DEMAND(b > 0.0);
-  DRAKE_DEMAND(s_rel > (l_a + s_ego));
+  DRAKE_DEMAND(s_rel > l_a);
 
   const T s_star = s_0 + v_ego * time_headway
       + v_ego * v_rel / (2 * sqrt(a * b));
