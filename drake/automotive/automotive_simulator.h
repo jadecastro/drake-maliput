@@ -7,6 +7,7 @@
 #include "drake/automotive/curve2.h"
 #include "drake/automotive/endless_road_car.h"
 #include "drake/automotive/endless_road_car_to_euler_floating_joint.h"
+#include "drake/automotive/endless_road_ego_car.h"
 #include "drake/automotive/endless_road_traffic_car.h"
 #include "drake/automotive/maliput/api/road_geometry.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
@@ -129,7 +130,7 @@ class AutomotiveSimulator {
       const double s_init, const double r_init, const double v_init,
       const int num_cars);
 
-  /// Adds an EndlessRoadTrafficCar system to this simulation.
+  /// Adds an EndlessRoadEgoCar system to this simulation.
   int AddEndlessRoadEgoCar(
       const std::string& id,
       const std::string& sdf_filename,
@@ -165,6 +166,10 @@ class AutomotiveSimulator {
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
   void AddPublisher(const EndlessRoadTrafficCar<T>& system, int vehicle_number);
+
+  /// Adds an LCM publisher for the given @p system.
+  /// @pre Start() has NOT been called.
+  void AddPublisher(const EndlessRoadEgoCar<T>& system, int vehicle_number);
 
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
@@ -247,7 +252,7 @@ class AutomotiveSimulator {
   // TODO(jadecastro): We no longer need to store a std::map of the cars/i.c.'s.
   std::map<EndlessRoadCar<T>*, EndlessRoadCarState<T>>
     endless_road_user_cars_;
-  std::map<EndlessRoadTrafficCar<T>*, EndlessRoadCarState<T>>
+  std::map<EndlessRoadEgoCar<T>*, EndlessRoadCarState<T>>
     endless_road_ego_cars_;
   std::map<EndlessRoadTrafficCar<T>*, EndlessRoadCarState<T>>
     endless_road_traffic_cars_;

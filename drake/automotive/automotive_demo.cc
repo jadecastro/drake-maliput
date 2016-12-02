@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
     }
 
     // "Ego model" is "drive at a constant LANE-space velocity".
-    const double kEgoInitialSpeed = 30.0;
+    const double kEgoInitialSpeed = 10.0;
     const double kEgoLateralOffsetUnit = 0.0;
     const double kEgoLongitudinalSpacing = 30.0;
     DRAKE_DEMAND(kEgoInitialSpeed > 0);

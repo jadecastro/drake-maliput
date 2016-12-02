@@ -6,6 +6,7 @@
 
 #include "drake/automotive/endless_road_car.h"
 #include "drake/automotive/endless_road_car_to_euler_floating_joint.h"
+#include "drake/automotive/endless_road_ego_car.h"
 #include "drake/automotive/endless_road_oracle.h"
 #include "drake/automotive/endless_road_traffic_car.h"
 #include "drake/automotive/gen/driving_command_translator.h"
@@ -244,7 +245,7 @@ int AutomotiveSimulator<T>::AddEndlessRoadEgoCar(
   // TODO(jadecastro): Initialize heading also?
   // TODO(jadecastro): Do something smarter to set v_ref.
   auto endless_road_ego_car =
-    builder_->template AddSystem<EndlessRoadTrafficCar<T>>(
+    builder_->template AddSystem<EndlessRoadEgoCar<T>>(
       id, num_cars, endless_road_.get(),
       s_init, r_init, v_init, 0., 30.);
 
@@ -370,7 +371,18 @@ void AutomotiveSimulator<T>::AddPublisher(
           std::to_string(vehicle_number) + "_ENDLESS_ROAD_CAR_STATE",
           translator, lcm_.get());
   builder_->Connect(system.get_output_port(0), publisher->get_input_port(0));
-  std::cerr << "Connected EndlessRoadTrafficCar to Publisher.\n";
+}
+
+template <typename T>
+void AutomotiveSimulator<T>::AddPublisher(
+              const EndlessRoadEgoCar<T>& system, int vehicle_number) {
+  DRAKE_DEMAND(!started_);
+  static const EndlessRoadCarStateTranslator translator;
+  auto publisher =
+      builder_->template AddSystem<systems::lcm::LcmPublisherSystem>(
+          std::to_string(vehicle_number) + "_ENDLESS_ROAD_CAR_STATE",
+          translator, lcm_.get());
+  builder_->Connect(system.get_output_port(0), publisher->get_input_port(0));
 }
 
 template <typename T>
@@ -589,15 +601,15 @@ void AutomotiveSimulator<T>::Start() {
   std::cerr << "Attempting to connect each each world car to ego cars...\n";
   int i = 0;
   for (const auto& item: endless_road_ego_cars_) {
-    EndlessRoadTrafficCar<T>* ego_car = item.first;
+    EndlessRoadEgoCar<T>* ego_car = item.first;
 
     // TODO(jadecastro): Rule of 3.
     int k = 0;
     std::cerr << "Number of car input ports to connect: " <<
       ego_car->get_num_input_ports() << ".\n";
     for (const auto& sensed_item: endless_road_ego_cars_) {
-      EndlessRoadTrafficCar<T>* sensed_ego_car = sensed_item.first;
-      // Traffic cars can sense all cars but themselves.
+      EndlessRoadEgoCar<T>* sensed_ego_car = sensed_item.first;
+      // Ego cars can sense all cars but themselves.
       if (sensed_ego_car->get_id().compare(ego_car->get_id())
           != 0) {
         std::cerr << "Attempting to connect ego car " <<
@@ -673,8 +685,7 @@ void AutomotiveSimulator<T>::Start() {
     std::cerr << "Number of car input ports to connect: " <<
       traffic_car->get_num_input_ports() << ".\n";
     for (const auto& sensed_item: endless_road_ego_cars_) {
-      EndlessRoadTrafficCar<T>* sensed_ego_car = sensed_item.first;
-      // Traffic cars can sense all cars but themselves.
+      EndlessRoadEgoCar<T>* sensed_ego_car = sensed_item.first;
       std::cerr << "Attempting to connect traffic car " <<
           traffic_car->get_id() << " to a sensed ego car " <<
           sensed_ego_car->get_id() << ".\n";
@@ -740,9 +751,9 @@ void AutomotiveSimulator<T>::Start() {
   std::cerr << "Initializing the Ego car states...\n";
   //auto traffic_cars = diagram_->GetSystems();
   for (auto& item : endless_road_ego_cars_) {
-    //const EndlessRoadTrafficCar<T>* this_car =
-    //  dynamic_cast<EndlessRoadTrafficCar<T>*>(car);
-    EndlessRoadTrafficCar<T>* this_car = item.first;
+    //const EndlessRoadEgoCar<T>* this_car =
+    //  dynamic_cast<EndlessRoadEgoCar<T>*>(car);
+    EndlessRoadEgoCar<T>* this_car = item.first;
     systems::Context<T>* context =
       diagram_->GetMutableSubsystemContext(simulator_->get_mutable_context(),
                                            this_car);
@@ -776,7 +787,6 @@ void AutomotiveSimulator<T>::Start() {
     state->SetAtIndex(2, item.second.GetAtIndex(2));
     state->SetAtIndex(3, item.second.GetAtIndex(3));
   }
-  //DRAKE_DEMAND(false);
 
   lcm_->StartReceiveThread();
 
@@ -791,22 +801,15 @@ void AutomotiveSimulator<T>::Start() {
 template <typename T>
 void AutomotiveSimulator<T>::StepBy(const T& time_step) {
   const T time = simulator_->get_context().get_time();
-  std::cerr << "  ****** StepBy()..." << std::endl;
   SPDLOG_TRACE(drake::log(), "Time is now {}", time);
-  std::cerr << "  ****** StepBy() 2..." << std::endl;
   simulator_->StepTo(time + time_step);
-  std::cerr << "  ****** StepBy() 3..." << std::endl;
 
   const int state_length = simulator_->
       get_context().get_continuous_state_vector().size();
-  std::cerr << "  ****** StepBy() 4..." << std::endl;
-  std::cerr << "      state vector length: " << state_length << std::endl;
   for (int i = 0; i < state_length; ++i) {
-    std::cerr << "  StepBy : state at index 0 (should be s for cars): " <<
-        simulator_->get_context().get_continuous_state_vector().GetAtIndex(i) <<
-        std::endl;
   }
 
+  /*
   int i = 0;
   for (auto sys : diagram_->GetSystems()) {
     //auto css =
@@ -820,6 +823,7 @@ void AutomotiveSimulator<T>::StepBy(const T& time_step) {
     }
     ++i;
   }
+  */
 }
 
 template <typename T>

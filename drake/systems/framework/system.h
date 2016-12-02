@@ -200,12 +200,12 @@ class System {
   void Publish(const Context<T>& context, const DiscreteEvent<T>& event) const {
     DRAKE_ASSERT_VOID(CheckValidContext(context));
     DRAKE_DEMAND(event.action == DiscreteEvent<T>::kPublishAction);
-    std::cerr << "  System::Publish.\n";
+    //std::cerr << "  System::Publish.\n";
     if (event.do_publish == nullptr) {
-      std::cerr << "   event.do_publish == nullptr.\n";
+      //std::cerr << "   event.do_publish == nullptr.\n";
       DoPublish(context);
     } else {
-      std::cerr << "   event.do_publish().\n";
+      //std::cerr << "   event.do_publish().\n";
       event.do_publish(context);
     }
   }
@@ -335,7 +335,7 @@ class System {
   /// Aborts if the port does not exist.
   const BasicVector<T>* EvalVectorInput(const Context<T>& context,
                                         int port_index) const {
-    std::cerr << "System::EvalVectorInput...\n";
+    //std::cerr << "System::EvalVectorInput...\n";
     DRAKE_ASSERT(0 <= port_index && port_index < get_num_input_ports());
     return context.EvalVectorInput(parent_, get_input_port(port_index));
   }
@@ -345,7 +345,7 @@ class System {
   /// the port's value as an Eigen expression.
   Eigen::VectorBlock<const VectorX<T>> EvalEigenVectorInput(
       const Context<T>& context, int port_index) const {
-    std::cerr << "System::EvalVectorInput (Eigen)...\n";
+    //std::cerr << "System::EvalVectorInput (Eigen)...\n";
     const BasicVector<T>* input_vector = EvalVectorInput(context, port_index);
     DRAKE_ASSERT(input_vector != nullptr);
     DRAKE_ASSERT(input_vector->size() == get_input_port(port_index).get_size());
@@ -658,7 +658,7 @@ class System {
   /// This is a framework implementation detail. User code should never call it.
   void EvalInputPort(const Context<T>& context, int port_index) const {
     DRAKE_ASSERT(0 <= port_index && port_index < get_num_input_ports());
-    std::cerr << "System::EvalInputPort...\n";
+    //std::cerr << "System::EvalInputPort...\n";
     context.EvalInputPort(parent_, get_input_port(port_index));
   }
 
