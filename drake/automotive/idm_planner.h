@@ -20,8 +20,8 @@ namespace automotive {
 /// @ingroup automotive_systems
 ///
 /// Inputs:
-///   0: @p x_ego ego car position (scalar) [m]
-///   1: @p v_ego ego car velocity (scalar) [m/s]
+///   0: @p x_self self car position (scalar) [m]
+///   1: @p v_self self car velocity (scalar) [m/s]
 ///   2: @p x_target relative position wrt target (scalar) [m]
 ///   3: @p v_target relative closing velocity wrt target (scalar) [m/s]
 /// Outputs:
@@ -34,7 +34,7 @@ class IdmPlanner : public systems::LeafSystem<T> {
   ~IdmPlanner() override;
 
   /// Returns the port to the input subvector collecting ego car states.
-  const systems::SystemPortDescriptor<T>& get_ego_port() const;
+  const systems::SystemPortDescriptor<T>& get_self_port() const;
 
   /// Returns the port to the input subvector collecting relative target states.
   const systems::SystemPortDescriptor<T>& get_target_port() const;

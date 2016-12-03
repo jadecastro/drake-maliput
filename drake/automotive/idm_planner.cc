@@ -18,9 +18,9 @@ IdmPlanner<T>::IdmPlanner(const T& v_ref) : v_ref_(v_ref) {
   // The reference velocity must be strictly positive.
   DRAKE_ASSERT(v_ref > 0);
 
-  // Declare the ego car input port.
+  // Declare the self car input port.
   this->DeclareInputPort(systems::kVectorValued,
-                         2,  // Size of the ego car output vector.
+                         2,  // Size of the self car output vector.
                          systems::kContinuousSampling);
   // Declare the agent car input port.
   this->DeclareInputPort(systems::kVectorValued,
@@ -36,7 +36,7 @@ template <typename T>
 IdmPlanner<T>::~IdmPlanner() {}
 
 template <typename T>
-const systems::SystemPortDescriptor<T>& IdmPlanner<T>::get_ego_port() const {
+const systems::SystemPortDescriptor<T>& IdmPlanner<T>::get_self_port() const {
   return systems::System<T>::get_input_port(0);
 }
 
@@ -54,8 +54,8 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   std::cerr << "  $$$$$$$$ IdmPlanner::EvalOutput ..." << std::endl;
 
   // Obtain the input/output structures we need to read from and write into.
-  const systems::BasicVector<T>* input_ego =
-      this->EvalVectorInput(context, this->get_ego_port().get_index());
+  const systems::BasicVector<T>* input_self =
+      this->EvalVectorInput(context, this->get_self_port().get_index());
   const systems::BasicVector<T>* input_target =
       this->EvalVectorInput(context, this->get_target_port().get_index());
   systems::BasicVector<T>* const output_vector =
@@ -76,8 +76,8 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   const T& delta = params.delta();
   const T& l_a = params.l_a();
 
-  const T& s_ego = input_ego->GetAtIndex(0);
-  const T& v_ego = input_ego->GetAtIndex(1);
+  const T& s_self = input_self->GetAtIndex(0);
+  const T& v_self = input_self->GetAtIndex(1);
   const T& s_rel = input_target->GetAtIndex(0);
   const T& v_rel = input_target->GetAtIndex(1);
 
@@ -87,17 +87,17 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_DEMAND(b > 0.0);
   DRAKE_DEMAND(s_rel > l_a);
 
-  const T s_star = s_0 + v_ego * time_headway
-      + v_ego * v_rel / (2 * sqrt(a * b));
+  const T s_star = s_0 + v_self * time_headway
+      + v_self * v_rel / (2 * sqrt(a * b));
 
   std::cerr << "  IdmPlanner v_ref: " << v_ref << std::endl;
-  std::cerr << "  IdmPlanner s_ego: " << s_ego << std::endl;
-  std::cerr << "  IdmPlanner v_ego: " << v_ego << std::endl;
+  std::cerr << "  IdmPlanner s_self: " << s_self << std::endl;
+  std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
   std::cerr << "  IdmPlanner s_rel: " << s_rel << std::endl;
   std::cerr << "  IdmPlanner v_rel: " << v_rel << std::endl;
 
   output_vector->SetAtIndex(
-      0, a * (1.0 - pow(v_ego / v_ref, delta) -
+      0, a * (1.0 - pow(v_self / v_ref, delta) -
               pow( s_star / s_rel, 2.0)));  // Longitudinal acceleration.
   output_vector->SetAtIndex(1, 0.0);  // Lateral acceleration.
 

@@ -68,7 +68,7 @@ EndlessRoadEgoCar<T>::EndlessRoadEgoCar(
   std::cerr << "DecisionLayer connected to Planner.\n";
   builder.Connect(*planner_, *car_);
   std::cerr << "Planner connected to Car.\n";
-  builder.Connect(car_->get_s_axis_output_port(), planner_->get_ego_port());
+  builder.Connect(car_->get_s_axis_output_port(), planner_->get_self_port());
   std::cerr << "Car connected to Planner.\n";
   builder.Connect(car_->get_state_output_port(),
                   decision_layer->get_self_input_port());

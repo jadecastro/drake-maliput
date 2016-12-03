@@ -33,7 +33,7 @@ SingleLaneEgoAndAgent<T>::SingleLaneEgoAndAgent(
 
   builder.Connect(*planner_, *ego_car_);
   builder.Connect(*value, *agent_car_);
-  builder.Connect(ego_car_->get_output_port(), planner_->get_ego_port());
+  builder.Connect(ego_car_->get_output_port(), planner_->get_self_port());
   builder.Connect(agent_car_->get_output_port(), planner_->get_target_port());
 
   builder.ExportOutput(ego_car_->get_output_port());    // Exports to port 0.
