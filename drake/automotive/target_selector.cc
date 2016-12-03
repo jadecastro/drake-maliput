@@ -1,4 +1,4 @@
-#include "decision_layer.h"
+#include "target_selector.h"
 
 #include <algorithm>
 #include <cmath>
@@ -15,7 +15,7 @@ namespace drake {
 namespace automotive {
 
 template <typename T>
-DecisionLayer<T>::DecisionLayer(
+TargetSelector<T>::TargetSelector(
     const maliput::utility::InfiniteCircuitRoad* road,
     const int num_cars, const int num_targets_per_car)
     : road_(road), num_cars_(num_cars),
@@ -41,28 +41,28 @@ DecisionLayer<T>::DecisionLayer(
 }
 
 template <typename T>
-DecisionLayer<T>::~DecisionLayer() {}
+TargetSelector<T>::~TargetSelector() {}
 
 template <typename T>
 const systems::SystemPortDescriptor<T>&
-DecisionLayer<T>::get_self_input_port() const {
+TargetSelector<T>::get_self_input_port() const {
   return systems::System<T>::get_input_port(0);
 }
 
 template <typename T>
 const systems::SystemPortDescriptor<T>&
-DecisionLayer<T>::get_world_input_port(const int i) const {
+TargetSelector<T>::get_world_input_port(const int i) const {
   return systems::System<T>::get_input_port(i+1);
 }
 
 template <typename T>
 const systems::SystemPortDescriptor<T>&
-DecisionLayer<T>::get_output_port() const {
+TargetSelector<T>::get_output_port() const {
   return systems::System<T>::get_output_port(0);
 }
 
 template <typename T>
-void DecisionLayer<T>::EvalOutput(const systems::Context<T>& context,
+void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
                                       systems::SystemOutput<T>* output) const {
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
@@ -72,7 +72,7 @@ void DecisionLayer<T>::EvalOutput(const systems::Context<T>& context,
   // Obtain the self-car input.
   const systems::BasicVector<T>* basic_input_self =
       this->EvalVectorInput(context, this->get_self_input_port().get_index());
-  //std::cerr << "DecisionLayer EvalVectorInput...\n";
+  //std::cerr << "TargetSelector EvalVectorInput...\n";
   DRAKE_ASSERT(basic_input_self);
   //const EndlessRoadCarState<T>* const input_self_car =
   //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_self);
@@ -83,11 +83,11 @@ void DecisionLayer<T>::EvalOutput(const systems::Context<T>& context,
   //std::vector<const EndlessRoadCarState<T>*> inputs_world;
   std::vector<const systems::BasicVector<T>*> inputs_world;
   for (int i = 0; i < num_cars_-1; ++i) {
-    //std::cerr << "DecisionLayer EvalVectorInput 1...\n";
+    //std::cerr << "TargetSelector EvalVectorInput 1...\n";
     const systems::BasicVector<T>* basic_input_world =
       this->EvalVectorInput(context,
                             this->get_world_input_port(i).get_index());
-    //std::cerr << "DecisionLayer EvalVectorInput 2...\n";
+    //std::cerr << "TargetSelector EvalVectorInput 2...\n";
     DRAKE_ASSERT(basic_input_world);
     //const EndlessRoadCarState<T>* const input_world =
     //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_world);
@@ -109,10 +109,10 @@ void DecisionLayer<T>::EvalOutput(const systems::Context<T>& context,
     target_outputs.push_back(output_vector);
   }
 
-  //std::cerr << "DecisionLayer EvalVectorInput 3...\n";
+  //std::cerr << "TargetSelector EvalVectorInput 3...\n";
   //DoEvalOutput(input_self_car, inputs_world, target_outputs);
   DoEvalOutput(basic_input_self, inputs_world, target_outputs);
-  //std::cerr << "DecisionLayer EvalVectorInput 4...\n";
+  //std::cerr << "TargetSelector EvalVectorInput 4...\n";
 }
 
 const double kEnormousDistance = 1e12;
@@ -122,7 +122,7 @@ const double kPerceptionDistance = 60.0;  // Targets are imperceptible
 // TODO(jadecastro): Store these as IdmParameters or CarParameters.
 
 template <typename T>
-void DecisionLayer<T>::DoEvalOutput(
+void TargetSelector<T>::DoEvalOutput(
     const systems::BasicVector<T>* self_car_input,
     const std::vector<const systems::BasicVector<T>*>& world_car_inputs,
     std::vector<EndlessRoadOracleOutput<T>*>& target_outputs) const {
@@ -165,7 +165,7 @@ void DecisionLayer<T>::DoEvalOutput(
 }
 
 template <typename T>
-void DecisionLayer<T>::UnwrapEndlessRoadCarState(
+void TargetSelector<T>::UnwrapEndlessRoadCarState(
     const systems::BasicVector<double>* self_car_input,
     const std::vector<const systems::BasicVector<double>*>& world_car_inputs,
     const maliput::utility::InfiniteCircuitRoad* road,
@@ -174,11 +174,9 @@ void DecisionLayer<T>::UnwrapEndlessRoadCarState(
     std::vector<SourceState>* world_source_states,
     std::vector<PathRecord>* self_car_path) const {
 
-  //self_source_state->clear();
   world_source_states->clear();
-  //self_car_path->clear();
   for (size_t i = 0; i < world_car_inputs.size()+1; ++i) {
-    //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState...\n";
+    //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState...\n";
     //std::cerr << "     i: " << i << "\n";
     //std::cerr << "     num world cars: " << world_car_inputs.size() << "\n";
     const systems::BasicVector<double>* car_state =
@@ -186,21 +184,21 @@ void DecisionLayer<T>::UnwrapEndlessRoadCarState(
     std::cerr << "  position: " << car_state->GetAtIndex(0) << "\n";
     const maliput::api::RoadPosition rp = road->ProjectToSourceRoad(
         {car_state->GetAtIndex(0), 0., 0.}).first;
-    //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState 0...\n";
+    //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState 0...\n";
     // TODO(maddog)  Until we deal with cars going the wrong way.
     DRAKE_DEMAND(std::cos(car_state->GetAtIndex(2)) >= 0.);
     DRAKE_DEMAND(car_state->GetAtIndex(3) >= 0.);
     const double longitudinal_speed =
         car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
 
-    //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState 1...\n";
+    //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState 1...\n";
     if (i == 0) {
       self_source_state->rp = rp;
       self_source_state->longitudinal_speed = longitudinal_speed;
     } else {
       world_source_states->emplace_back(rp, longitudinal_speed);
     }
-    //std::cerr << "DecisionLayer::UnwrapEndlessRoadCarState 2...\n";
+    //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState 2...\n";
 
     const double horizon_meters = longitudinal_speed * horizon_seconds;
     // TODO(maddog)  Is this < constraint relevant anymore???
@@ -229,7 +227,7 @@ void DecisionLayer<T>::UnwrapEndlessRoadCarState(
 }
 
 template <typename T>
-void DecisionLayer<T>::AssessLongitudinal(
+void TargetSelector<T>::AssessLongitudinal(
             const SourceState& self_source_states,
             const std::vector<SourceState>& world_source_states,
             std::vector<PathRecord>& self_car_path,
@@ -294,7 +292,7 @@ void DecisionLayer<T>::AssessLongitudinal(
   auto path_it = self_car_path.begin();  // Predefined path traversed
                                          // by the self-car.
   for (int i = 0; i < (int) target_outputs.size(); ++i) {
-    std::cerr << "  @@@@@ DecisionLayer  output #: " << i << std::endl;
+    std::cerr << "  @@@@@ TargetSelector  output #: " << i << std::endl;
     // NB(jadecastro): Starting at the current self car lane, crawl
     // through the segments and return the data for the next car in
     // the train.
@@ -312,14 +310,6 @@ void DecisionLayer<T>::AssessLongitudinal(
           const SourceState& next = world_source_states[next_it->second];
           next_rp = next.rp;
           delta_position = sum + (next_rp.pos.s - s0);
-          if (delta_position < 0.) {
-            std::cerr << "FOR dp " << delta_position
-                      << "   sum " << sum
-                      << "   next-s " << next_rp.pos.s
-                      << "   s0 " << s0
-                      << "   first " << is_first
-                      << std::endl;
-          }
           // TODO(maddog)  Oy, this needs to account for travel direction
           //               of next in its source lane, not inf-circuit lane.
           delta_velocity = self.longitudinal_speed - next.longitudinal_speed;
@@ -340,14 +330,6 @@ void DecisionLayer<T>::AssessLongitudinal(
           const SourceState& next = world_source_states[next_it->second];
           next_rp = next.rp;
           delta_position = sum + (s0 - next_rp.pos.s);
-          if (delta_position < 0.) {
-            std::cerr << "REV dp " << delta_position
-                      << "   sum " << sum
-                      << "   next-s " << next_rp.pos.s
-                      << "   s0 " << s0
-                      << "   first " << is_first
-                      << std::endl;
-          }
           // TODO(maddog)  Oy, this needs to account for travel direction
           //               of next in its source lane, not inf-circuit lane.
           delta_velocity = self.longitudinal_speed - next.longitudinal_speed;
@@ -385,9 +367,9 @@ void DecisionLayer<T>::AssessLongitudinal(
     // TODO(maddog)  Or, they were passing, with lateral distance > width....
     DRAKE_DEMAND(net_delta_sigma > 0.);
 
-    std::cerr << "  @@@@@ DecisionLayer  net_delta_sigma: " <<
+    std::cerr << "  @@@@@ TargetSelector  net_delta_sigma: " <<
         net_delta_sigma << std::endl;
-    std::cerr << "  @@@@@ DecisionLayer  delta_velocity: " <<
+    std::cerr << "  @@@@@ TargetSelector  delta_velocity: " <<
         delta_velocity << std::endl;
     // Populate the relative target quantities.
     target_outputs[i]->set_net_delta_sigma(net_delta_sigma);
@@ -396,15 +378,16 @@ void DecisionLayer<T>::AssessLongitudinal(
 }
 
 template <typename T>
-std::unique_ptr<systems::BasicVector<T>> DecisionLayer<T>::AllocateOutputVector(
+std::unique_ptr<systems::BasicVector<T>>
+TargetSelector<T>::AllocateOutputVector(
     const systems::SystemPortDescriptor<T>& descriptor) const {
   return std::make_unique<EndlessRoadOracleOutput<T>>();
 }
 
 // These instantiations must match the API documentation in
-// decision_layer.h.
+// target_selector.h.
 // TODO(jadecastro): AutoDiff, symbolic_expression
-template class DecisionLayer<double>;
+template class TargetSelector<double>;
 
 }  // namespace automotive
 }  // namespace drake

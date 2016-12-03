@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "drake/automotive/decision_layer.h"
+#include "drake/automotive/target_selector.h"
 #include "drake/automotive/endless_road_simple_car.h"
 #include "drake/automotive/gen/endless_road_car_state.h"
 #include "drake/automotive/gen/endless_road_oracle_output.h"
@@ -20,7 +20,7 @@ namespace automotive {
 
 /// System consisting of a car and planner.
 ///
-/// TODO(jadecastro): Add in a description of the DecisionLayer.
+/// TODO(jadecastro): Add in a description of the TargetSelector.
 ///
 ///  sigma_target,
 ///  sigma_dot_target

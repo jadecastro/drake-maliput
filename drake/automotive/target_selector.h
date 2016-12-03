@@ -23,7 +23,7 @@ namespace automotive {
 
 /// A decision module that acts like a fake perception layer.  Its
 /// sole purpose is to decide which cars are perceived by a certain
-/// ego car.  Given @p N-1 cars in the world, DecisionLayer outputs a
+/// ego car.  Given @p N-1 cars in the world, TargetSelector outputs a
 /// signal to a planner ensuring collision avoiance with @p M cars of
 /// immediate interest to the ego.
 ///
@@ -39,12 +39,12 @@ namespace automotive {
 ///
 /// output vector: same as state vector
 template <typename T>
-class DecisionLayer : public systems::LeafSystem<T> {
+class TargetSelector : public systems::LeafSystem<T> {
  public:
-  explicit DecisionLayer(const maliput::utility::InfiniteCircuitRoad* road,
+  explicit TargetSelector(const maliput::utility::InfiniteCircuitRoad* road,
                 const int num_cars,
                 const int num_targets_per_car);
-  ~DecisionLayer() override;
+  ~TargetSelector() override;
 
   /// Returns the port to the input collecting states for the 'self' car.
   const systems::SystemPortDescriptor<T>& get_self_input_port() const;
@@ -57,7 +57,7 @@ class DecisionLayer : public systems::LeafSystem<T> {
   const systems::SystemPortDescriptor<T>& get_output_port() const;
 
   // System<T> overrides.
-  // The output of DecisionLayer is an algebraic relation of its inputs.
+  // The output of TargetSelector is an algebraic relation of its inputs.
   bool has_any_direct_feedthrough() const override { return true; }
 
   void EvalOutput(const systems::Context<T>& context,

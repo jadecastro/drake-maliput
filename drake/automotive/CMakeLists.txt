@@ -7,7 +7,6 @@ endif()
 add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   create_trajectory_params.cc
   curve2.cc
-  decision_layer.cc
   endless_road_car.cc
   endless_road_ego_car.cc
   endless_road_oracle.cc
@@ -36,6 +35,7 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   maliput/utility/infinite_circuit_road.cc
   simple_car.cc
   single_lane_ego_and_agent.cc
+  target_selector.cc
   trajectory_car.cc
   )
 target_link_libraries(drakeAutomotive
@@ -48,7 +48,6 @@ pods_install_libraries(drakeAutomotive)
 drake_install_headers(
   create_trajectory_params.h
   curve2.h
-  decision_layer.h
   endless_road_car.h
   endless_road_car-inl.h
   endless_road_ego_car.h
@@ -61,6 +60,7 @@ drake_install_headers(
   simple_car.h
   simple_car_to_euler_floating_joint.h
   single_lane_ego_and_agent.h
+  target_selector.h
   trajectory_car.h
   # N.B. The gen/*.h headers are installed by gen/CMakeLists.txt.
   )
