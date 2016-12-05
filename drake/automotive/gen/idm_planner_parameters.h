@@ -25,7 +25,7 @@ struct IdmPlannerParametersIndices {
   static const int kS0 = 3;
   static const int kTimeHeadway = 4;
   static const int kDelta = 5;
-  static const int kLA = 6;
+  static const int kCarLength = 6;
 };
 
 /// Specializes BasicVector with specific getters and setters.
@@ -63,8 +63,9 @@ class IdmPlannerParameters : public systems::BasicVector<T> {
   const T delta() const { return this->GetAtIndex(K::kDelta); }
   void set_delta(const T& delta) { this->SetAtIndex(K::kDelta, delta); }
   // length of leading car
-  const T l_a() const { return this->GetAtIndex(K::kLA); }
-  void set_l_a(const T& l_a) { this->SetAtIndex(K::kLA, l_a); }
+  const T car_length() const { return this->GetAtIndex(K::kCarLength); }
+  void set_car_length(const T& car_length) {
+    this->SetAtIndex(K::kCarLength, car_length); }
   //@}
 };
 

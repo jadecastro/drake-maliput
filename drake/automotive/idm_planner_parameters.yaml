@@ -1,5 +1,5 @@
 ---
-
+-
      name: v_ref
      doc: desired velocity in free traffic
 -
@@ -18,5 +18,5 @@
      name: delta
      doc: free-road exponent
 -
-     name: l_a
+     name: car_length
      doc: length of leading car

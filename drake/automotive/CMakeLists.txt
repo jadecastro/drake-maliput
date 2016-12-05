@@ -34,7 +34,7 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   maliput/utility/generate_urdf.cc
   maliput/utility/infinite_circuit_road.cc
   simple_car.cc
-  single_lane_ego_and_agent.cc
+  #single_lane_ego_and_agent.cc
   target_selector.cc
   trajectory_car.cc
   )
@@ -59,7 +59,7 @@ drake_install_headers(
   linear_car.h
   simple_car.h
   simple_car_to_euler_floating_joint.h
-  single_lane_ego_and_agent.h
+  #single_lane_ego_and_agent.h
   target_selector.h
   trajectory_car.h
   # N.B. The gen/*.h headers are installed by gen/CMakeLists.txt.

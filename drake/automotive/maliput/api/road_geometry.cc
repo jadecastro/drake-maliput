@@ -74,13 +74,6 @@ Rotation OrientationOutFromLane(const LaneEnd& lane_end) {
 }
 
 
-// Return the Cartesian distance between two GeoPositions.
-double Distance(const GeoPosition& a, const GeoPosition& b) {
-  const GeoPosition d {a.x - b.x, a.y - b.y, a.z - b.z};
-  return std::sqrt((d.x * d.x) + (d.y * d.y) + (d.z * d.z));
-}
-
-
 // Apply a Rotation to a 3-vector (generically represented by a GeoPosition).
 // TODO(maddog)  This should probably be a method of Rotation, and or
 //               consolidated with something else somehow.
@@ -106,10 +99,16 @@ GeoPosition Rotate(const Rotation& rot, const GeoPosition& in) {
       ((ca*cb) * in.z));
 }
 
+} // namespace
 
-// Return a distance measure (in radians) for two rotations that reflects
-// the difference in frame orientations represented by the rotations.
-double Distance(const Rotation& a, const Rotation& b) {
+
+double RoadGeometry::Distance(const GeoPosition& a, const GeoPosition& b) const {
+  const GeoPosition d {a.x - b.x, a.y - b.y, a.z - b.z};
+  return std::sqrt((d.x * d.x) + (d.y * d.y) + (d.z * d.z));
+}
+
+
+double RoadGeometry::Distance(const Rotation& a, const Rotation& b) const {
   // Compute transformed unit vectors of a frame.
   GeoPosition as = Rotate(a, {1., 0., 0.});
   GeoPosition ar = Rotate(a, {0., 1., 0.});
@@ -125,9 +124,6 @@ double Distance(const Rotation& a, const Rotation& b) {
 
   return std::sqrt((ds * ds) + (dr * dr) + (dh * dh));
 }
-
-} // namespace
-
 
 std::vector<std::string> RoadGeometry::CheckInvariants() const {
   std::vector<std::string> failures;

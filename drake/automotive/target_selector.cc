@@ -3,13 +3,24 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <numeric>
 
 #include <Eigen/Geometry>
 
 //#include "drake/automotive/maliput/api/lane_data.h"
-#include "drake/automotive/maliput/utility/infinite_circuit_road.h"
+#include "drake/automotive/maliput/api/road_geometry.h"
+//#include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/common/drake_assert.h"
 #include "drake/systems/framework/vector_base.h"
+
+// Debugging... go through these!!!!
+#include "drake/automotive/maliput/monolane/arc_lane.h"
+#include "drake/automotive/maliput/monolane/junction.h"
+#include "drake/automotive/maliput/monolane/lane.h"
+#include "drake/automotive/maliput/monolane/line_lane.h"
+#include "drake/automotive/maliput/monolane/road_geometry.h"
+#include "drake/automotive/maliput/monolane/segment.h"
+#include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 
 namespace drake {
 namespace automotive {
@@ -17,26 +28,25 @@ namespace automotive {
 template <typename T>
 TargetSelector<T>::TargetSelector(
     const maliput::utility::InfiniteCircuitRoad* road,
-    const int num_cars, const int num_targets_per_car)
+    const int num_cars, const int num_targets_per_car,
+    const bool do_restrict_to_lane, const bool do_sort)
     : road_(road), num_cars_(num_cars),
-      num_targets_per_car_(num_targets_per_car) {
+      num_targets_per_car_(num_targets_per_car),
+      do_restrict_to_lane_(do_restrict_to_lane), do_sort_(do_sort) {
+  // Fail fast if we are asking the impossible.
+  DRAKE_DEMAND(num_targets_per_car <= num_cars-1);
   // Declare an input for N-1 remaining cars in the world.
   this->DeclareInputPort(systems::kVectorValued,
-                         EndlessRoadCarStateIndices::kNumCoordinates,
+                         4,
                          systems::kContinuousSampling);
-
-  for (int i = 0; i < num_cars; ++i) {
-    target_inports_.push_back(
-        this->DeclareInputPort(systems::kVectorValued,
-                               EndlessRoadCarStateIndices::kNumCoordinates,
-                               systems::kContinuousSampling));
+  for (int i = 0; i < num_cars-1; ++i) {
+    this->DeclareInputPort(systems::kVectorValued,
+                           4,
+                           systems::kContinuousSampling);
   }
   // Declare an output for the M target traffic cars of interest.
   for (int i = 0; i < num_targets_per_car; ++i) {
-    outports_.push_back(
-        this->DeclareOutputPort(systems::kVectorValued,
-                                EndlessRoadOracleOutputIndices::kNumCoordinates,
-                                systems::kContinuousSampling));
+        this->DeclareAbstractOutputPort(systems::kContinuousSampling);
   }
 }
 
@@ -45,20 +55,22 @@ TargetSelector<T>::~TargetSelector() {}
 
 template <typename T>
 const systems::SystemPortDescriptor<T>&
-TargetSelector<T>::get_self_input_port() const {
+TargetSelector<T>::get_self_inport() const {
   return systems::System<T>::get_input_port(0);
 }
 
 template <typename T>
 const systems::SystemPortDescriptor<T>&
-TargetSelector<T>::get_world_input_port(const int i) const {
+TargetSelector<T>::get_world_inport(const int i) const {
+  DRAKE_DEMAND(i < num_cars_);
   return systems::System<T>::get_input_port(i+1);
 }
 
 template <typename T>
 const systems::SystemPortDescriptor<T>&
-TargetSelector<T>::get_output_port() const {
-  return systems::System<T>::get_output_port(0);
+TargetSelector<T>::get_outport(const int i) const {
+  DRAKE_DEMAND(i < num_targets_per_car_);
+  return systems::System<T>::get_output_port(i);
 }
 
 template <typename T>
@@ -67,11 +79,9 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
-//DBG  std::cerr << "EvalOutput()  ORACLE " << std::endl;
-
   // Obtain the self-car input.
   const systems::BasicVector<T>* basic_input_self =
-      this->EvalVectorInput(context, this->get_self_input_port().get_index());
+      this->EvalVectorInput(context, this->get_self_inport().get_index());
   //std::cerr << "TargetSelector EvalVectorInput...\n";
   DRAKE_ASSERT(basic_input_self);
   //const EndlessRoadCarState<T>* const input_self_car =
@@ -85,8 +95,7 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   for (int i = 0; i < num_cars_-1; ++i) {
     //std::cerr << "TargetSelector EvalVectorInput 1...\n";
     const systems::BasicVector<T>* basic_input_world =
-      this->EvalVectorInput(context,
-                            this->get_world_input_port(i).get_index());
+      this->EvalVectorInput(context, this->get_world_inport(i).get_index());
     //std::cerr << "TargetSelector EvalVectorInput 2...\n";
     DRAKE_ASSERT(basic_input_world);
     //const EndlessRoadCarState<T>* const input_world =
@@ -100,288 +109,103 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   }
 
   // Obtain the output pointers.
-  std::vector<EndlessRoadOracleOutput<T>*> target_outputs;
+  std::vector<CarData*> target_outputs;
   for (int i = 0; i < num_targets_per_car_; ++i) {
-    EndlessRoadOracleOutput<T>* const output_vector =
-        dynamic_cast<EndlessRoadOracleOutput<T>*>(
-            output->GetMutableVectorData(i));
-    DRAKE_ASSERT(output_vector);
-    target_outputs.push_back(output_vector);
+    systems::AbstractValue* const output_data =
+            output->GetMutableData(i);
+    CarData& output_value = output_data->GetMutableValue<CarData>();
+    target_outputs.emplace_back(&output_value);
   }
 
   //std::cerr << "TargetSelector EvalVectorInput 3...\n";
-  //DoEvalOutput(input_self_car, inputs_world, target_outputs);
-  DoEvalOutput(basic_input_self, inputs_world, target_outputs);
+  SelectCarStateAndEvalOutput(basic_input_self, inputs_world, target_outputs);
   //std::cerr << "TargetSelector EvalVectorInput 4...\n";
 }
 
 const double kEnormousDistance = 1e12;
-const double kCarLength = 4.6;  // TODO(maddog) Get from somewhere else.
 const double kPerceptionDistance = 60.0;  // Targets are imperceptible
                                           // outside this radius.
 // TODO(jadecastro): Store these as IdmParameters or CarParameters.
 
 template <typename T>
-void TargetSelector<T>::DoEvalOutput(
-    const systems::BasicVector<T>* self_car_input,
-    const std::vector<const systems::BasicVector<T>*>& world_car_inputs,
-    std::vector<EndlessRoadOracleOutput<T>*>& target_outputs) const {
-  // The goal here is, for each car, to calculate the distance and
-  // differential velocity to the nearest other car/obstacle ahead.
-  // We consider a couple of different varieties of "car/obstacle ahead":
-  //  a) cars ahead on the InfiniteCircuitRoad circuit, which covers
-  //      normal car-following behavior;
-  //  b) cars approaching from the right, on intersecting lanes in
-  //      the base RoadGeometry --- this hopefully produces some non-crashing
-  //      behavior at intersections;
-  // TODO(maddog)  Actually do part (c).
-  //  c) cars in a merging lane to the left --- this hopefully produces
-  //      so non-crashing merging behaviors.
+void TargetSelector<T>::SelectCarStateAndEvalOutput(
+    const systems::BasicVector<T>* input_self_car,
+    const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
+    std::vector<CarData*>& target_outputs) const {
 
-  // Time to look-ahead for intersections.
-  // TODO(maddog) Should be a multiple of IDM headway h.
-  // TODO(maddog) Should have a distance component, too, as a multiple of
-  //              car lengths.
-  //////////  const T kEventHorizon{2.0};  // seconds
-  const T kEventHorizon{10.0};  // seconds
-
-  //
-  // We really only want the InfiniteCircuitRoad to serve two functions:
-  //  1)  until proper hybrid system support is available, emulate a
-  //      uni-modal continuous system for the vehicle control;
-  //  2)  represent the path of the cars through the road network.
-  // Here we extract the RoadPositions of each car in the underlying
-  // source RoadGeometry, and we extract their paths.
-  SourceState self_source_state;
-  std::vector<SourceState> world_source_states;
-  std::vector<PathRecord> self_car_path;
-  UnwrapEndlessRoadCarState(self_car_input, world_car_inputs, road_,
-                            kEventHorizon, &self_source_state,
-                            &world_source_states, &self_car_path);
-
-  AssessLongitudinal(self_source_state, world_source_states,
-                     self_car_path, target_outputs);
-  // AssessIntersections(source_states, paths, target_outputs);
-}
-
-template <typename T>
-void TargetSelector<T>::UnwrapEndlessRoadCarState(
-    const systems::BasicVector<double>* self_car_input,
-    const std::vector<const systems::BasicVector<double>*>& world_car_inputs,
-    const maliput::utility::InfiniteCircuitRoad* road,
-    const double horizon_seconds,
-    SourceState* self_source_state,
-    std::vector<SourceState>* world_source_states,
-    std::vector<PathRecord>* self_car_path) const {
-
-  world_source_states->clear();
-  for (size_t i = 0; i < world_car_inputs.size()+1; ++i) {
+  maliput::api::GeoPosition geo_pos_self;
+  std::vector<double> distances;
+  std::vector<CarData> car_data;
+  DRAKE_DEMAND(num_cars_ == (int) inputs_world_car.size()+1);
+  for (int i = 0; i < num_cars_; ++i) {
     //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState...\n";
     //std::cerr << "     i: " << i << "\n";
-    //std::cerr << "     num world cars: " << world_car_inputs.size() << "\n";
+    //std::cerr << "     num world cars: " << inputs_world_car.size() << "\n";
     const systems::BasicVector<double>* car_state =
-      (i == 0) ? self_car_input : world_car_inputs[i-1];
+      (i == 0) ? input_self_car : inputs_world_car[i-1];
     std::cerr << "  position: " << car_state->GetAtIndex(0) << "\n";
-    const maliput::api::RoadPosition rp = road->ProjectToSourceRoad(
+    const maliput::api::RoadPosition rp = road_->ProjectToSourceRoad(
         {car_state->GetAtIndex(0), 0., 0.}).first;
+
     //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState 0...\n";
     // TODO(maddog)  Until we deal with cars going the wrong way.
     DRAKE_DEMAND(std::cos(car_state->GetAtIndex(2)) >= 0.);
     DRAKE_DEMAND(car_state->GetAtIndex(3) >= 0.);
-    const double longitudinal_speed =
-        car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
 
-    //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState 1...\n";
-    if (i == 0) {
-      self_source_state->rp = rp;
-      self_source_state->longitudinal_speed = longitudinal_speed;
+    // Ignore any cars outside the perception distance.
+    if (!do_restrict_to_lane_) {
+      maliput::api::GeoPosition geo_pos = rp.lane->ToGeoPosition(rp.pos);
+      if (i == 0) {
+        geo_pos_self = geo_pos;
+        // Seed the output with "infinite" obstacles.  TODO
+        // (jadecastro): Is the lane currently occupied by the
+        // self-car the best proxy to use here?
+        std::pair<T,T> pair = std::make_pair(T{kEnormousDistance}, T{0.});
+        CarData car_data_infinite = std::make_pair(&pair, rp.lane);
+        for (int i = 0; i < (int) target_outputs.size(); ++i) {
+          target_outputs[i] = &car_data_infinite;
+        }
+      } else {
+        distances.emplace_back(road_->
+               RoadGeometry::Distance(geo_pos_self, geo_pos));
+      }
     } else {
-      world_source_states->emplace_back(rp, longitudinal_speed);
+      DRAKE_ABORT();
+      // TODO(jadecastro): Fill me in......
     }
-    //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState 2...\n";
 
-    const double horizon_meters = longitudinal_speed * horizon_seconds;
-    // TODO(maddog)  Is this < constraint relevant anymore???
-    //DRAKE_DEMAND(horizon_meters < (0.5 * road->cycle_length()));
-    DRAKE_DEMAND(horizon_meters >= 0.);
-    const double circuit_s0 = road->lane()->circuit_s(car_state->GetAtIndex(0));
-
-    int path_index = road->GetPathIndex(circuit_s0);
-    maliput::utility::InfiniteCircuitRoad::Record path_record =
-        road->path_record(path_index);
-    double circuit_s_in = circuit_s0;
-    while (circuit_s_in <= (circuit_s0 + horizon_meters)) {
-      self_car_path->push_back({path_record.lane, path_record.is_reversed});
-
-      // TODO(maddog) Index should decrement for s_dot < 0.
-      if (++path_index >= road->num_path_records()) {
-        path_index = 0;
-      }
-      path_record = road->path_record(path_index);
-      circuit_s_in = path_record.start_circuit_s;
-      // Handle wrap-around of "circuit s" values.
-      if (circuit_s_in < circuit_s0) { circuit_s_in += road->cycle_length(); }
+   if (i > 0 && distances[i] < kPerceptionDistance) {
+     const double longitudinal_speed =  // Along-lane speed.
+         car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
+     std::pair<T,T> pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
+     car_data.emplace_back(std::make_pair(&pair, rp.lane));
     }
-    DRAKE_DEMAND(!self_car_path->empty());
+  }
+
+  // Populate the output ports with data for each of the registered targets.
+  std::vector<int>
+      index_set(distances.size());  // TODO(jadecastro): Must be a better way.
+  for (int i = 0; i < (int) distances.size(); ++i) { index_set[i] = i; }
+  const std::vector<int> possibly_sorted_distances = (do_sort_) ?
+      SortDistances(distances) :
+      index_set;
+  for (auto i : possibly_sorted_distances) {
+    if (i >= num_targets_per_car_) { break; }
+    target_outputs[i] = &car_data[i];
   }
 }
 
+// Lambda-expression approach to sort indices (adapted from
+// http://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes)
 template <typename T>
-void TargetSelector<T>::AssessLongitudinal(
-            const SourceState& self_source_states,
-            const std::vector<SourceState>& world_source_states,
-            std::vector<PathRecord>& self_car_path,
-            std::vector<EndlessRoadOracleOutput<double>*>& target_outputs)
-  const {
-
-  // Seed the output with infinite obstacles.
-  for (int i = 0; i < (int) target_outputs.size(); ++i) {
-    target_outputs[i]->set_net_delta_sigma(kEnormousDistance);
-    target_outputs[i]->set_delta_sigma_dot(0.);
-  }
-
-  // Calculate longitudinal position of each car in the circuit.
-  // Sort cars by longitudinal position:  use an ordered multimap that
-  // maps s-position --> car-index.
-
-  // Map{Lane* --> MultiMap{s --> car_index}}
-  std::map<const maliput::api::Lane*,
-           std::multimap<double, int>> cars_by_lane_and_s;
-
-  for (int i = 0; i < (int) world_source_states.size(); ++i) {
-    const SourceState& target = world_source_states[i];
-    cars_by_lane_and_s[target.rp.lane].emplace(target.rp.pos.s, i);
-  }
-
-  // For each car:
-  //  - find nearest other car that is:
-  //     a) ahead of self, and
-  //     b) has a lateral position within XXXXXX bounds of self.
-  //  - compute/record:
-  //     * net true longitudinal distance to other car (delta sigma)
-  //     * true longitudinal velocity difference (delta sigma-dot)
-  // TODO(maddog)  Do something reasonable if num_cars_ < 2.
-  //
-  // TODO(jadecastro): I think `delta-sigma` is a misuse of the notation
-  // - it should be `delta-s` or similar.
-
-  const SourceState& self = self_source_states;
-  const maliput::api::RoadPosition self_rp = self.rp;
-
-  // NB(jadecastro): Defaults the targets as static obstacles at infinity.
-  double delta_position = kEnormousDistance;
-  double delta_velocity = 0.;
-
-  // Only consider cars in front of `self`, along the prescribed path.
-  // TODO(maddog)  Review this; the notion is to skip self, and might as
-  //               well skip any cars sooo close to self.
-  double bound_nudge = 0.1 * kCarLength;
-
-  // Find the next car which is ahead of self, by at least a car-length.
-  // Search along the sequence of lanes to be taken by self, starting with
-  // the current lane.
-  DRAKE_DEMAND(self_rp.lane == self_car_path[0].lane);
-
-  // TODO(jadecastro): generalize this to encompass the semicircle
-  // ahead of the self-car.  Will this allow us to generalize IDM to 2D?
-  double s_prev;  // The linear position of the last car found in
-                  // the train, starting with the self car.
-  maliput::api::RoadPosition next_rp;
-  double sum = 0.;  // Sum of the segment lengths crawled through so far.
-  bool is_first = true;
-  auto path_it = self_car_path.begin();  // Predefined path traversed
-                                         // by the self-car.
-  for (int i = 0; i < (int) target_outputs.size(); ++i) {
-    std::cerr << "  @@@@@ TargetSelector  output #: " << i << std::endl;
-    // NB(jadecastro): Starting at the current self car lane, crawl
-    // through the segments and return the data for the next car in
-    // the train.
-    while (path_it != self_car_path.end() && sum <= kPerceptionDistance) {
-      if (!path_it->is_reversed) {
-        const double s0 = (is_first) ? self_rp.pos.s : 0.;
-        s_prev = (is_first) ? s0 : next_rp.pos.s;
-        const double lane_length = path_it->lane->length() - s0;
-        DRAKE_DEMAND(lane_length > 0.);
-        // NB(jadecastro): `next_it` contains states and index of the
-        // next car in the train.
-        auto next_it = cars_by_lane_and_s[path_it->lane].upper_bound(
-            s_prev + bound_nudge);
-        if (next_it != cars_by_lane_and_s[path_it->lane].end()) {
-          const SourceState& next = world_source_states[next_it->second];
-          next_rp = next.rp;
-          delta_position = sum + (next_rp.pos.s - s0);
-          // TODO(maddog)  Oy, this needs to account for travel direction
-          //               of next in its source lane, not inf-circuit lane.
-          delta_velocity = self.longitudinal_speed - next.longitudinal_speed;
-          break;
-        }
-        sum += lane_length;
-        bound_nudge = std::max(0., bound_nudge - lane_length);
-      } else { /* Self is travelling this lane backwards. */
-        const double s0 = (is_first) ? self_rp.pos.s : path_it->lane->length();
-        s_prev = (is_first) ? s0 : next_rp.pos.s;
-        const double lane_length = s0;
-        DRAKE_DEMAND(lane_length > 0.);
-
-        auto next_it = std::make_reverse_iterator(
-            cars_by_lane_and_s[path_it->lane].lower_bound(
-                s_prev - bound_nudge));
-        if (next_it != cars_by_lane_and_s[path_it->lane].rend()) {
-          const SourceState& next = world_source_states[next_it->second];
-          next_rp = next.rp;
-          delta_position = sum + (s0 - next_rp.pos.s);
-          // TODO(maddog)  Oy, this needs to account for travel direction
-          //               of next in its source lane, not inf-circuit lane.
-          delta_velocity = self.longitudinal_speed - next.longitudinal_speed;
-          break;
-        }
-        sum += lane_length;
-        bound_nudge = std::max(0., bound_nudge - lane_length);
-      }
-
-      ++path_it;
-      is_first = false;
-
-      // While within horizon...
-      //   Traipse ahead to next branchpoint.
-      //   Loop over all other-lanes on same side of BP as this-lane.
-      //     Loop over all cars on lane
-      //       If car is not heading toward BP, skip it.
-      //       If car is closer to BP (farther from self, in parallel)
-      //         than last best other, skip it.
-      //       Mark down car as "best other" at X distance from BP.
-      //     ...Recurse back into lanes leading to this lane, too.
-
-    }  // while (path_it != self_car_path.end())
-
-    // TODO(maddog) Do a correct distance measurement (not just delta-s).
-    // TODO(jadecastro): kCarLength should be a Parameter of type T.
-    const double net_delta_sigma = delta_position - kCarLength;
-    if (net_delta_sigma <= 0.) {
-      std::cerr << "TOO CLOSE!      delta_pos " << delta_position
-                << "   car len " << kCarLength
-                << "   nds " << net_delta_sigma
-                << std::endl;
-    }
-    // If delta_position < kCarLength, the cars crashed!
-    // TODO(maddog)  Or, they were passing, with lateral distance > width....
-    DRAKE_DEMAND(net_delta_sigma > 0.);
-
-    std::cerr << "  @@@@@ TargetSelector  net_delta_sigma: " <<
-        net_delta_sigma << std::endl;
-    std::cerr << "  @@@@@ TargetSelector  delta_velocity: " <<
-        delta_velocity << std::endl;
-    // Populate the relative target quantities.
-    target_outputs[i]->set_net_delta_sigma(net_delta_sigma);
-    target_outputs[i]->set_delta_sigma_dot(delta_velocity);
-  }  // for (int i = 0; i < (int) target_outputs.size(); ++i)
-}
-
-template <typename T>
-std::unique_ptr<systems::BasicVector<T>>
-TargetSelector<T>::AllocateOutputVector(
-    const systems::SystemPortDescriptor<T>& descriptor) const {
-  return std::make_unique<EndlessRoadOracleOutput<T>>();
+std::vector<int> TargetSelector<T>::SortDistances(const std::vector<T>& v)
+    const {
+  // initialize original index locations
+  std::vector<int> indices(v.size());
+  std::iota(indices.begin(), indices.end(), 0);
+  sort(indices.begin(), indices.end(),
+       [&v](int i1, int i2) {return v[i1] < v[i2];});
+  return indices;
 }
 
 // These instantiations must match the API documentation in

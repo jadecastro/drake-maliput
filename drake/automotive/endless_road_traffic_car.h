@@ -20,7 +20,7 @@ namespace automotive {
 
 /// System consisting of a car and planner.
 ///
-/// TODO(jadecastro): Add in a description of the TargetSelector.
+/// TODO(jadecastro): Revise this illustration.
 ///
 ///  sigma_target,
 ///  sigma_dot_target

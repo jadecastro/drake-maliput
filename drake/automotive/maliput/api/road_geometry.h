@@ -80,6 +80,13 @@ class RoadGeometry {
     return do_angular_tolerance();
   }
 
+  // Return the Cartesian distance between two GeoPositions.
+  double Distance(const GeoPosition& a, const GeoPosition& b) const;
+
+  // Return a distance measure (in radians) for two rotations that reflects
+  // the difference in frame orientations represented by the rotations.
+  double Distance(const Rotation& a, const Rotation& b) const;
+
   /// Verify certain invariants guaranteed by the API.
   ///
   /// @returns a vector of strings describing violations of invariants.

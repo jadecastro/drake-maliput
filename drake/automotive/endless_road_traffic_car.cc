@@ -39,13 +39,15 @@ EndlessRoadTrafficCar<T>::EndlessRoadTrafficCar(
 
   // The reference velocity must be strictly positive.
   DRAKE_DEMAND(v_ref > 0);
+  const int num_targets_per_car = num_cars-1;
 
   systems::DiagramBuilder<T> builder;
 
   const TargetSelector<T>* target_selector = builder.AddSystem(
       std::make_unique<TargetSelector<T>>(road,
-                                         num_cars_,
-                                         1 /* IDM expects one target */));
+                                          num_cars_,
+                                          num_targets_per_car));
+  // TODO (jadecastro): Default num_targets_per_car as num_cars if no argument.
 
   std::cerr << "   EndlessRoadTrafficCar s_init: " << s_init << " \n";
   // Instantiate EndlessRoadSimpleCar systems at some initial state.
@@ -58,25 +60,30 @@ EndlessRoadTrafficCar<T>::EndlessRoadTrafficCar(
 
   // Instantiate an IdmPlanner to feed the car its input.
   planner_ = builder.AddSystem(std::make_unique<IdmPlanner<T>>(
-      v_ref /* desired velocity */));
+      road,
+      v_ref, /* desired velocity */
+      num_targets_per_car));
 
   std::cerr << "... Attempting to connect EndlessRoadTrafficCar.\n";
-  DRAKE_DEMAND(target_selector->get_num_output_ports() == 1);
-  builder.Connect(target_selector->get_output_port(),
-                  planner_->get_target_port());
+  DRAKE_DEMAND(target_selector->get_num_output_ports() == num_targets_per_car);
+  DRAKE_DEMAND(planner_->get_num_input_ports() == num_targets_per_car+1);
+  for (int i = 0; i < num_targets_per_car; ++i) {
+    builder.Connect(target_selector->get_outport(i),
+                    planner_->get_target_inport(i));
+  }
   std::cerr << "TargetSelector connected to Planner.\n";
   builder.Connect(*planner_, *car_);
   std::cerr << "Planner connected to Car.\n";
-  builder.Connect(car_->get_s_axis_output_port(), planner_->get_self_port());
+  builder.Connect(car_->get_s_axis_output_port(), planner_->get_self_inport());
   std::cerr << "Car connected to Planner.\n";
   builder.Connect(car_->get_state_output_port(),
-                  target_selector->get_self_input_port());
+                  target_selector->get_self_inport());
   std::cerr << "Car connected to TargetSelector.\n";
 
   // Require N-1 unsorted input ports of the world cars to TargetSelector.
   std::cerr << "Exporting " << num_cars_-1 << " input ports.\n";
   for (int i = 0; i < num_cars_-1; ++i) {
-    builder.ExportInput(target_selector->get_world_input_port(i));
+    builder.ExportInput(target_selector->get_world_inport(i));
   }
   std::cerr << "Exporting the output port.\n";
   builder.ExportOutput(car_->get_state_output_port());  // Exports the

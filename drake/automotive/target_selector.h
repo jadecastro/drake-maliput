@@ -4,13 +4,12 @@
 
 #include <boost/optional.hpp>
 
-#include "drake/automotive/gen/endless_road_car_state.h"
-#include "drake/automotive/gen/endless_road_oracle_output.h"
 #include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/systems/framework/leaf_system.h"
 
 namespace drake {
 
+  // TODO(jadecastro): Need?
 namespace maliput {
 namespace utility {
 class InfiniteCircuitRoad;
@@ -18,9 +17,6 @@ class InfiniteCircuitRoad;
 }  // namespace maliput
 
 namespace automotive {
-
-/// TODO(jadecastro): Rename this to SimulatedPerceptionLayer or similar.
-
 /// A decision module that acts like a fake perception layer.  Its
 /// sole purpose is to decide which cars are perceived by a certain
 /// ego car.  Given @p N-1 cars in the world, TargetSelector outputs a
@@ -38,23 +34,25 @@ namespace automotive {
 /// * Later:  planar isometric LANE-space acceleration: (sigma, rho)-ddot
 ///
 /// output vector: same as state vector
+  // TODO (jadecastro): Revise this description!
 template <typename T>
 class TargetSelector : public systems::LeafSystem<T> {
  public:
   explicit TargetSelector(const maliput::utility::InfiniteCircuitRoad* road,
-                const int num_cars,
-                const int num_targets_per_car);
+                          const int num_cars,
+                          const int num_targets_per_car,
+                          const bool do_restrict_to_lane = false,
+                          const bool do_sort = true);
   ~TargetSelector() override;
 
   /// Returns the port to the input collecting states for the 'self' car.
-  const systems::SystemPortDescriptor<T>& get_self_input_port() const;
+  const systems::SystemPortDescriptor<T>& get_self_inport() const;
 
   /// Returns the port to the input collecting states for world car i.
-  const systems::SystemPortDescriptor<T>&
-      get_world_input_port(const int i) const;
+  const systems::SystemPortDescriptor<T>& get_world_inport(const int i) const;
 
   /// Returns the output port.
-  const systems::SystemPortDescriptor<T>& get_output_port() const;
+  const systems::SystemPortDescriptor<T>& get_outport(const int i) const;
 
   // System<T> overrides.
   // The output of TargetSelector is an algebraic relation of its inputs.
@@ -65,10 +63,13 @@ class TargetSelector : public systems::LeafSystem<T> {
 
  protected:
   // LeafSystem<T> overrides
-  std::unique_ptr<systems::BasicVector<T>> AllocateOutputVector(
-      const systems::SystemPortDescriptor<T>& descriptor) const override;
+  //std::unique_ptr<systems::SystemOutput<T>> AllocateOutput(
+  //    const systems::Context<T>& context) const override;
 
  private:
+  typedef std::pair<std::pair<T,T>*,
+      const maliput::api::Lane*> CarData;
+
   struct SourceState {
     SourceState() {}
 
@@ -84,34 +85,25 @@ class TargetSelector : public systems::LeafSystem<T> {
     bool is_reversed{};
   };
 
-  void DoEvalOutput(
-    const systems::BasicVector<T>* self_car_input,
-    const std::vector<const systems::BasicVector<T>*>& world_car_inputs,
-    std::vector<EndlessRoadOracleOutput<T>*>& target_outputs) const;
+  void SelectCarStateAndEvalOutput(
+    const systems::BasicVector<T>* input_self_car,
+    const std::vector<
+      const systems::BasicVector<T>*>& inputs_world_car,
+    std::vector<CarData*>& target_outputs) const;
 
-  void UnwrapEndlessRoadCarState(
-    const systems::BasicVector<double>* self_car_input,
-    const std::vector<const systems::BasicVector<double>*>& world_car_inputs,
-    const maliput::utility::InfiniteCircuitRoad* road,
-    const double horizon_seconds,
-    SourceState* self_source_state,
-    std::vector<SourceState>* world_source_states,
-    std::vector<PathRecord>* self_car_path) const;
-
-  void AssessLongitudinal(
-    const SourceState& self_source_states,
-    const std::vector<SourceState>& world_source_states,
-    std::vector<PathRecord>& self_car_path,
-    std::vector<EndlessRoadOracleOutput<double>*>& target_outputs) const;
+  // TODO(jadecastro): const?
+  std::vector<int> SortDistances(const std::vector<T>& v) const;
 
   const maliput::utility::InfiniteCircuitRoad* road_;
   const int num_cars_;
   const int num_targets_per_car_;
+  const bool do_restrict_to_lane_;
+  const bool do_sort_;
   // TODO(maddog)  Do we need to keep track of these here?
   //systems::SystemPortDescriptor<T> self_inport_;
   // TODO(jadecastro): Remove these.
-  std::vector<systems::SystemPortDescriptor<T>> target_inports_;
-  std::vector<systems::SystemPortDescriptor<T>> outports_;
+  //std::vector<systems::SystemPortDescriptor<T>> target_inports_;
+  //std::vector<systems::SystemPortDescriptor<T>> outports_;
 
 };
 
