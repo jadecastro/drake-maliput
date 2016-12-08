@@ -219,8 +219,10 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   std::cerr << "  $$$$$$$$ IdmPlanner::EvalOutput ..." << std::endl;
 
   // Obtain the input/output structures we need to read from and write into.
+  std::cerr << "  IdmPlanner EvalAbsrtactInput ..." << std::endl;
   const systems::AbstractValue* input_self =
     this->EvalAbstractInput(context, this->get_self_inport().get_index());
+  std::cerr << "  IdmPlanner EvalAbsrtactInput." << std::endl;
   std::vector<const systems::AbstractValue*> inputs_target;
   for (int i = 0; i < num_targets_per_car_; ++i) {
     inputs_target.emplace_back(

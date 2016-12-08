@@ -103,10 +103,10 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   //std::vector<const EndlessRoadCarState<T>*> inputs_world;
   std::vector<const systems::BasicVector<T>*> inputs_world;
   for (int i = 0; i < num_cars_-1; ++i) {
-    //std::cerr << "TargetSelector EvalVectorInput 1...\n";
+    std::cerr << "TargetSelector EvalVectorInput..." << std::endl;
     const systems::BasicVector<T>* basic_input_world =
       this->EvalVectorInput(context, this->get_world_inport(i).get_index());
-    //std::cerr << "TargetSelector EvalVectorInput 2...\n";
+    std::cerr << "TargetSelector EvalVectorInput." << std::endl;
     DRAKE_ASSERT(basic_input_world);
     //const EndlessRoadCarState<T>* const input_world =
     //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_world);
@@ -119,17 +119,24 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   }
 
   // Obtain the output pointers.
+  std::cerr << "TargetSelector GetMutableData (self)..." << std::endl;
   systems::AbstractValue* const output_data_self =
     output->GetMutableData(0);
   CarData output_self = output_data_self->GetMutableValue<CarData>();
+  std::cerr << "TargetSelector GetMutableData (self)." << std::endl;
 
+  std::cerr << "TargetSelector num_targets_per_car_:" <<
+      num_targets_per_car_ << std::endl;
   std::vector<CarData*> outputs_target;
   for (int i = 0; i < num_targets_per_car_; ++i) {
+    std::cerr << "TargetSelector GetMutableValue (target)..." << std::endl;
     systems::AbstractValue* const output_data_target =
-      output->GetMutableData(i+1);
+        output->GetMutableData(i+1);
+    std::cerr << "TargetSelector GetMutableValue 2..." << std::endl;
     CarData& output_value_target =
-      output_data_target->GetMutableValue<CarData>();
+        output_data_target->GetMutableValue<CarData>();
     outputs_target.emplace_back(&output_value_target);
+    std::cerr << "TargetSelector GetMutableValue (target)." << std::endl;
   }
 
   //std::cerr << "TargetSelector EvalVectorInput 3...\n";
