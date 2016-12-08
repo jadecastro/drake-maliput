@@ -88,6 +88,7 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
+  std::cerr << " ^^^^^^^^ TargetSelector::EvalOutput ..." << std::endl;
   // Obtain the self-car input.
   const systems::BasicVector<T>* basic_input_self =
       this->EvalVectorInput(context, this->get_self_inport().get_index());
@@ -134,7 +135,7 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   //std::cerr << "TargetSelector EvalVectorInput 3...\n";
   SelectCarStateAndEvalOutput(basic_input_self, inputs_world,
                               output_self, outputs_target);
-  //std::cerr << "TargetSelector EvalVectorInput 4...\n";
+  std::cerr << " ^^^^^^^^ TargetSelector::EvalOutput." << std::endl;
 }
 
 const double kEnormousDistance = 1e12;

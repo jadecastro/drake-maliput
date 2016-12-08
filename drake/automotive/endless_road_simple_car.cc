@@ -65,8 +65,7 @@ void EndlessRoadSimpleCar<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
-  std::cerr << " %%%%%%%%%% EndlessRoadSimpleCar::EvalOutput ..." <<
-      std::endl;
+  std::cerr << " %%%%%%%%%% EndlessRoadSimpleCar::EvalOutput ..." << std::endl;
 
   std::cerr << "EndlessRoadSimpleCar::EvalOutput...\n";
   // Obtain the state.
@@ -104,7 +103,7 @@ void EndlessRoadSimpleCar<T>::EvalOutput(const systems::Context<T>& context,
   output_vector_s_axis->SetAtIndex(0, context_state.GetAtIndex(0));
   output_vector_s_axis->SetAtIndex(1, context_state.GetAtIndex(3));
 
-  std::cerr << "EndlessRoadSimpleCar::EvalOutput.\n";
+  std::cerr << " %%%%%%%%%% EndlessRoadSimpleCar::EvalOutput." << std::endl;
 }
 
 template <typename T>
@@ -113,7 +112,7 @@ void EndlessRoadSimpleCar<T>::EvalTimeDerivatives(
     systems::ContinuousState<T>* derivatives) const {
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
 
-  std::cerr << " ****** EndlessRoadSimpleCar::EvalTimeDerivatives ..." <<
+  std::cerr << " ******EndlessRoadSimpleCar::EvalTimeDerivatives..." <<
       std::endl;
 
   // Obtain the state.
@@ -142,6 +141,8 @@ void EndlessRoadSimpleCar<T>::EvalTimeDerivatives(
   //DRAKE_ASSERT(rates);
 
   DoEvalTimeDerivatives(context_state, accelerations, vector_derivatives);
+  std::cerr << " ******EndlessRoadSimpleCar::EvalTimeDerivatives." <<
+      std::endl;
 }
 
 template <typename T>

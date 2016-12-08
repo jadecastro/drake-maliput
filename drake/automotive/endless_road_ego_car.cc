@@ -51,7 +51,7 @@ EndlessRoadEgoCar<T>::EndlessRoadEgoCar(
   // TODO (jadecastro): Default num_targets_per_car as num_cars-1 if
   // no argument.
 
-  std::cerr << "   EndlessRoadTrafficCar s_init: " << s_init << " \n";
+  std::cerr << "   EndlessRoadEgoCar s_init: " << s_init << " \n";
   // Instantiate EndlessRoadSimpleCar systems at some initial state.
   car_ = builder.AddSystem(
            std::make_unique<EndlessRoadSimpleCar<T>>(road,

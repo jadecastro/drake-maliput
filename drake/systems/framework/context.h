@@ -206,13 +206,13 @@ class Context {
   const BasicVector<T>* EvalVectorInput(
       const detail::InputPortEvaluatorInterface<T>* evaluator,
       const SystemPortDescriptor<T>& descriptor) const {
-    //std::cerr << "Context::EvalVectorInput...\n";
+    std::cerr << "Context::EvalVectorInput...\n";
     const InputPort* port = EvalInputPort(evaluator, descriptor);
     if (port == nullptr) { std::cerr << "   nullptr!!"; }
-    //std::cerr << "Context::EvalVectorInput 2...\n";
+    std::cerr << "Context::EvalVectorInput 2...\n";
     if (port == nullptr) return nullptr;
     auto thing = port->template get_vector_data<T>();
-    //std::cerr << "Context::EvalVectorInput.\n";
+    std::cerr << "Context::EvalVectorInput.\n";
     return thing;
   }
 

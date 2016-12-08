@@ -296,6 +296,7 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
 
   std::cerr << "  IdmPlanner accel cmd: " <<
       output_vector->GetAtIndex(0) << std::endl;
+  std::cerr << "  $$$$$$$$ IdmPlanner::EvalOutput." << std::endl;
 }
 
 template <typename T>

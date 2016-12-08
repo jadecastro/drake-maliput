@@ -65,7 +65,7 @@ EndlessRoadTrafficCar<T>::EndlessRoadTrafficCar(
       v_ref, /* desired velocity */
       num_targets_per_car));
 
-  std::cerr << "... Attempting to connect EndlessRoadEgoCar.\n";
+  std::cerr << "... Attempting to connect EndlessRoadTrafficCar.\n";
   std::cerr << "       target_selector->get_num_output_ports:" <<
     target_selector->get_num_output_ports() << std::endl;
   std::cerr << "       num_targets_per_car:" <<
