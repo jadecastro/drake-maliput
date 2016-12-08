@@ -51,8 +51,11 @@ class TargetSelector : public systems::LeafSystem<T> {
   /// Returns the port to the input collecting states for world car i.
   const systems::SystemPortDescriptor<T>& get_world_inport(const int i) const;
 
-  /// Returns the output port.
-  const systems::SystemPortDescriptor<T>& get_outport(const int i) const;
+  /// Returns the output port for the self car.
+  const systems::SystemPortDescriptor<T>& get_self_outport() const;
+
+  /// Returns the output port for target car i.
+  const systems::SystemPortDescriptor<T>& get_target_outport(const int i) const;
 
   // System<T> overrides.
   // The output of TargetSelector is an algebraic relation of its inputs.
@@ -89,7 +92,8 @@ class TargetSelector : public systems::LeafSystem<T> {
     const systems::BasicVector<T>* input_self_car,
     const std::vector<
       const systems::BasicVector<T>*>& inputs_world_car,
-    std::vector<CarData*>& target_outputs) const;
+    CarData output_self,
+    std::vector<CarData*>& outputs_target) const;
 
   // TODO(jadecastro): const?
   std::vector<int> SortDistances(const std::vector<T>& v) const;

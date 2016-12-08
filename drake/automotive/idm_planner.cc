@@ -273,6 +273,7 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   const double s_rel = relative_sv.first;
   const double v_rel = relative_sv.second;
 
+  // TODO (jadecastro): Wrap the IDM computation into its own function.
   // Check that we're supplying the planner with sane parameters and
   // inputs.
   DRAKE_DEMAND(a > 0.0);

@@ -39,7 +39,7 @@ EndlessRoadTrafficCar<T>::EndlessRoadTrafficCar(
 
   // The reference velocity must be strictly positive.
   DRAKE_DEMAND(v_ref > 0);
-  const int num_targets_per_car = num_cars-1;
+  const int num_targets_per_car = num_cars - 1;
 
   systems::DiagramBuilder<T> builder;
 
@@ -47,7 +47,8 @@ EndlessRoadTrafficCar<T>::EndlessRoadTrafficCar(
       std::make_unique<TargetSelector<T>>(road,
                                           num_cars_,
                                           num_targets_per_car));
-  // TODO (jadecastro): Default num_targets_per_car as num_cars if no argument.
+  // TODO (jadecastro): Default num_targets_per_car as num_cars-1 if
+  // no argument.
 
   std::cerr << "   EndlessRoadTrafficCar s_init: " << s_init << " \n";
   // Instantiate EndlessRoadSimpleCar systems at some initial state.
@@ -64,18 +65,24 @@ EndlessRoadTrafficCar<T>::EndlessRoadTrafficCar(
       v_ref, /* desired velocity */
       num_targets_per_car));
 
-  std::cerr << "... Attempting to connect EndlessRoadTrafficCar.\n";
-  DRAKE_DEMAND(target_selector->get_num_output_ports() == num_targets_per_car);
+  std::cerr << "... Attempting to connect EndlessRoadEgoCar.\n";
+  std::cerr << "       target_selector->get_num_output_ports:" <<
+    target_selector->get_num_output_ports() << std::endl;
+  std::cerr << "       num_targets_per_car:" <<
+    num_targets_per_car << std::endl;
+  DRAKE_DEMAND(target_selector->get_num_output_ports() ==
+               num_targets_per_car+1);
   DRAKE_DEMAND(planner_->get_num_input_ports() == num_targets_per_car+1);
+  builder.Connect(target_selector->get_self_outport(),
+                  planner_->get_self_inport());
+  std::cerr << "TargetSelector connected to Planner (self port).\n";
   for (int i = 0; i < num_targets_per_car; ++i) {
-    builder.Connect(target_selector->get_outport(i),
+    builder.Connect(target_selector->get_target_outport(i),
                     planner_->get_target_inport(i));
   }
-  std::cerr << "TargetSelector connected to Planner.\n";
+  std::cerr << "TargetSelector connected to Planner (target ports).\n";
   builder.Connect(*planner_, *car_);
   std::cerr << "Planner connected to Car.\n";
-  builder.Connect(car_->get_s_axis_output_port(), planner_->get_self_inport());
-  std::cerr << "Car connected to Planner.\n";
   builder.Connect(car_->get_state_output_port(),
                   target_selector->get_self_inport());
   std::cerr << "Car connected to TargetSelector.\n";

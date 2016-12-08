@@ -35,16 +35,19 @@ TargetSelector<T>::TargetSelector(
       do_restrict_to_lane_(do_restrict_to_lane), do_sort_(do_sort) {
   // Fail fast if we are asking the impossible.
   DRAKE_DEMAND(num_targets_per_car <= num_cars-1);
-  // Declare an input for N-1 remaining cars in the world.
+  // Declare an input for the self car.
   this->DeclareInputPort(systems::kVectorValued,
                          4,
                          systems::kContinuousSampling);
+  // Declare an input for N-1 remaining cars in the world.
   for (int i = 0; i < num_cars-1; ++i) {
     this->DeclareInputPort(systems::kVectorValued,
                            4,
                            systems::kContinuousSampling);
   }
-  // Declare an output for the M target traffic cars of interest.
+  // Declare an output port for the self car.
+  this->DeclareAbstractOutputPort(systems::kContinuousSampling);
+  // Declare an output port for each of the M target traffic cars of interest.
   for (int i = 0; i < num_targets_per_car; ++i) {
         this->DeclareAbstractOutputPort(systems::kContinuousSampling);
   }
@@ -68,9 +71,15 @@ TargetSelector<T>::get_world_inport(const int i) const {
 
 template <typename T>
 const systems::SystemPortDescriptor<T>&
-TargetSelector<T>::get_outport(const int i) const {
+TargetSelector<T>::get_self_outport() const {
+  return systems::System<T>::get_output_port(0);
+}
+
+template <typename T>
+const systems::SystemPortDescriptor<T>&
+TargetSelector<T>::get_target_outport(const int i) const {
   DRAKE_DEMAND(i < num_targets_per_car_);
-  return systems::System<T>::get_output_port(i);
+  return systems::System<T>::get_output_port(i+1);
 }
 
 template <typename T>
@@ -109,16 +118,22 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   }
 
   // Obtain the output pointers.
-  std::vector<CarData*> target_outputs;
+  systems::AbstractValue* const output_data_self =
+    output->GetMutableData(0);
+  CarData output_self = output_data_self->GetMutableValue<CarData>();
+
+  std::vector<CarData*> outputs_target;
   for (int i = 0; i < num_targets_per_car_; ++i) {
-    systems::AbstractValue* const output_data =
-            output->GetMutableData(i);
-    CarData& output_value = output_data->GetMutableValue<CarData>();
-    target_outputs.emplace_back(&output_value);
+    systems::AbstractValue* const output_data_target =
+      output->GetMutableData(i+1);
+    CarData& output_value_target =
+      output_data_target->GetMutableValue<CarData>();
+    outputs_target.emplace_back(&output_value_target);
   }
 
   //std::cerr << "TargetSelector EvalVectorInput 3...\n";
-  SelectCarStateAndEvalOutput(basic_input_self, inputs_world, target_outputs);
+  SelectCarStateAndEvalOutput(basic_input_self, inputs_world,
+                              output_self, outputs_target);
   //std::cerr << "TargetSelector EvalVectorInput 4...\n";
 }
 
@@ -131,11 +146,13 @@ template <typename T>
 void TargetSelector<T>::SelectCarStateAndEvalOutput(
     const systems::BasicVector<T>* input_self_car,
     const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
-    std::vector<CarData*>& target_outputs) const {
+    CarData output_self,
+    std::vector<CarData*>& outputs_target) const {
 
   maliput::api::GeoPosition geo_pos_self;
   std::vector<double> distances;
   std::vector<CarData> car_data;
+  std::pair<T,T> pair;
   DRAKE_DEMAND(num_cars_ == (int) inputs_world_car.size()+1);
   for (int i = 0; i < num_cars_; ++i) {
     //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState...\n";
@@ -148,7 +165,6 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
         {car_state->GetAtIndex(0), 0., 0.}).first;
 
     //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState 0...\n";
-    // TODO(maddog)  Until we deal with cars going the wrong way.
     DRAKE_DEMAND(std::cos(car_state->GetAtIndex(2)) >= 0.);
     DRAKE_DEMAND(car_state->GetAtIndex(3) >= 0.);
 
@@ -162,9 +178,17 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
         // self-car the best proxy to use here?
         std::pair<T,T> pair = std::make_pair(T{kEnormousDistance}, T{0.});
         CarData car_data_infinite = std::make_pair(&pair, rp.lane);
-        for (int i = 0; i < (int) target_outputs.size(); ++i) {
-          target_outputs[i] = &car_data_infinite;
+        for (int i = 0; i < (int) outputs_target.size(); ++i) {
+          outputs_target[i] = &car_data_infinite;
         }
+
+        // Populate the output for the self car.
+        const double longitudinal_speed =  // Along-lane speed.
+          car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
+        pair = std::make_pair(T{rp.pos.s},
+                                             T{longitudinal_speed});
+        CarData car_data_self = std::make_pair(&pair, rp.lane);
+        output_self = car_data_self;
       } else {
         distances.emplace_back(road_->
                RoadGeometry::Distance(geo_pos_self, geo_pos));
@@ -177,7 +201,7 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
    if (i > 0 && distances[i] < kPerceptionDistance) {
      const double longitudinal_speed =  // Along-lane speed.
          car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
-     std::pair<T,T> pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
+     pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
      car_data.emplace_back(std::make_pair(&pair, rp.lane));
     }
   }
@@ -191,7 +215,7 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
       index_set;
   for (auto i : possibly_sorted_distances) {
     if (i >= num_targets_per_car_) { break; }
-    target_outputs[i] = &car_data[i];
+    outputs_target[i] = &car_data[i];
   }
 }
 

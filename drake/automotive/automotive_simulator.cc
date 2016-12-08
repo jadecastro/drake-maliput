@@ -723,7 +723,9 @@ void AutomotiveSimulator<T>::Start() {
     ++i;
   }
 
+  std::cerr << "Building diagram...\n";
   diagram_ = builder_->Build();
+  std::cerr << " finished.\n";
   simulator_ = std::make_unique<systems::Simulator<T>>(*diagram_);
 
   // Initialize the state of the EndlessRoadCars.

@@ -68,7 +68,7 @@ class LeafSystem : public System<T> {
     for (const auto& descriptor : this->get_output_ports()) {
       // TODO(liang.fok) Generalize this method to support ports of type
       // kAbstractValued.
-      DRAKE_DEMAND(descriptor.get_data_type() == kVectorValued);
+      //DRAKE_DEMAND(descriptor.get_data_type() == kVectorValued);
       output->get_mutable_ports()->emplace_back(
           new OutputPort(AllocateOutputVector(descriptor)));
     }
