@@ -129,6 +129,7 @@ struct RBounds {
   double r_max{};
 };
 
+
 }  // namespace api
 }  // namespace maliput
 }  // namespace drake

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "drake/automotive/gen/idm_planner_parameters.h"
+#include "drake/automotive/maliput/api/car_data.h"
 #include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/systems/framework/leaf_system.h"
@@ -76,8 +77,8 @@ class IdmPlanner : public systems::LeafSystem<T> {
   };
 
 private:
-  typedef std::pair<std::pair<T,T>*,
-      const maliput::api::Lane*> CarData;
+  //typedef std::pair<std::pair<T,T>*,
+  //    const maliput::api::Lane*> CarData;
 
   void UnwrapEndlessRoadCarState(
       const SourceState& source_state_self,

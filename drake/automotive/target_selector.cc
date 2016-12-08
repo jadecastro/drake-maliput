@@ -14,6 +14,7 @@
 #include "drake/systems/framework/vector_base.h"
 
 // Debugging... go through these!!!!
+#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/monolane/arc_lane.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 #include "drake/automotive/maliput/monolane/lane.h"
@@ -24,6 +25,8 @@
 
 namespace drake {
 namespace automotive {
+
+using maliput::api::CarData;
 
 template <typename T>
 TargetSelector<T>::TargetSelector(
@@ -184,8 +187,8 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
         // Seed the output with "infinite" obstacles.  TODO
         // (jadecastro): Is the lane currently occupied by the
         // self-car the best proxy to use here?
-        std::pair<T,T> pair = std::make_pair(T{kEnormousDistance}, T{0.});
-        CarData car_data_infinite = std::make_pair(&pair, rp.lane);
+        //std::pair<T,T> pair = std::make_pair(T{kEnormousDistance}, T{0.});
+        CarData car_data_infinite(kEnormousDistance, 0., rp.lane);
         for (int i = 0; i < (int) outputs_target.size(); ++i) {
           outputs_target[i] = &car_data_infinite;
         }
@@ -193,9 +196,8 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
         // Populate the output for the self car.
         const double longitudinal_speed =  // Along-lane speed.
           car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
-        pair = std::make_pair(T{rp.pos.s},
-                                             T{longitudinal_speed});
-        CarData car_data_self = std::make_pair(&pair, rp.lane);
+        //pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
+        CarData car_data_self(rp.pos.s, longitudinal_speed, rp.lane);
         output_self = car_data_self;
       } else {
         distances.emplace_back(road_->
@@ -209,8 +211,10 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
    if (i > 0 && distances[i] < kPerceptionDistance) {
      const double longitudinal_speed =  // Along-lane speed.
          car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
-     pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
-     car_data.emplace_back(std::make_pair(&pair, rp.lane));
+     //pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
+     //car_data.emplace_back(std::make_pair(&pair, rp.lane));
+     CarData car_data_value(rp.pos.s, longitudinal_speed, rp.lane);
+     car_data.emplace_back(car_data_value);
     }
   }
 
@@ -238,6 +242,46 @@ std::vector<int> TargetSelector<T>::SortDistances(const std::vector<T>& v)
   sort(indices.begin(), indices.end(),
        [&v](int i1, int i2) {return v[i1] < v[i2];});
   return indices;
+}
+  /*
+template <typename T>
+std::unique_ptr<systems::SystemOutput<T>> TargetSelector<T>::AllocateOutput(
+    const systems::Context<T>& context) const {
+  std::unique_ptr<systems::LeafSystemOutput<T>> output(
+    new systems::LeafSystemOutput<T>);
+
+  // Add a port for the self car.
+  CarData results_self;
+  output->add_port(std::unique_ptr<systems::AbstractValue>(
+      new systems::Value<CarData>(results_self)));
+
+  // Add a port for each of the targets.
+  for (int i = 0; i < num_targets_per_car_; ++i) {
+    CarData results_target;
+    output->add_port(std::unique_ptr<systems::AbstractValue>(
+        new systems::Value<CarData>(results_target)));
+  }
+  return std::move(output);
+}
+*/
+template <typename T>
+std::unique_ptr<systems::SystemOutput<T>> TargetSelector<T>::AllocateOutput(
+    const systems::Context<T>& context) const {
+  std::unique_ptr<systems::LeafSystemOutput<T>> output =
+    std::make_unique<systems::LeafSystemOutput<T>>();
+
+  // Add a port for the self car.
+  auto results_self = std::make_unique<systems::Value<CarData>>(
+      CarData());
+  output->add_port(std::move(results_self));
+
+  // Add a port for each of the targets.
+  for (int i = 0; i < num_targets_per_car_; ++i) {
+    auto results_target = std::make_unique<systems::Value<CarData>>(
+        CarData());
+    output->add_port(std::move(results_target));
+  }
+  return std::move(output);
 }
 
 // These instantiations must match the API documentation in

@@ -4,6 +4,7 @@
 
 #include <boost/optional.hpp>
 
+#include "drake/automotive/maliput/api/car_data.h"
 #include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/systems/framework/leaf_system.h"
 
@@ -64,14 +65,17 @@ class TargetSelector : public systems::LeafSystem<T> {
   void EvalOutput(const systems::Context<T>& context,
                   systems::SystemOutput<T>* output) const override;
 
+  std::unique_ptr<systems::SystemOutput<T>> AllocateOutput(
+    const systems::Context<T>& context) const override;
+
  protected:
   // LeafSystem<T> overrides
   //std::unique_ptr<systems::SystemOutput<T>> AllocateOutput(
   //    const systems::Context<T>& context) const override;
 
  private:
-  typedef std::pair<std::pair<T,T>*,
-      const maliput::api::Lane*> CarData;
+  //typedef std::pair<std::pair<T,T>*,
+  //    const maliput::api::Lane*> CarData;
 
   struct SourceState {
     SourceState() {}
@@ -92,8 +96,8 @@ class TargetSelector : public systems::LeafSystem<T> {
     const systems::BasicVector<T>* input_self_car,
     const std::vector<
       const systems::BasicVector<T>*>& inputs_world_car,
-    CarData output_self,
-    std::vector<CarData*>& outputs_target) const;
+    maliput::api::CarData output_self,
+    std::vector<maliput::api::CarData*>& outputs_target) const;
 
   // TODO(jadecastro): const?
   std::vector<int> SortDistances(const std::vector<T>& v) const;

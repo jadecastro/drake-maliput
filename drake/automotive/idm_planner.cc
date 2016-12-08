@@ -10,6 +10,7 @@
 #include "drake/common/symbolic_formula.h"
 
 // Debugging... go through these!!!!
+#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/monolane/arc_lane.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 #include "drake/automotive/maliput/monolane/lane.h"
@@ -23,6 +24,7 @@ namespace automotive {
 
 using maliput::api::RoadPosition;
 using maliput::api::LanePosition;
+using maliput::api::CarData;
 
 template <typename T>
 IdmPlanner<T>::IdmPlanner(
@@ -246,24 +248,24 @@ void IdmPlanner<T>::EvalOutput(const systems::Context<T>& context,
   const T& car_length = params.car_length();
 
   const CarData& car_data_self = input_self->GetValue<CarData>();
-  const T& s_self = car_data_self.first->first;  // Road position
-  const T& v_self = car_data_self.first->second;  // Along-lane velocity
-  const maliput::api::Lane* lane_self = car_data_self.second;
-
-  std::vector<SourceState> source_states_target;
-  for (auto input_target : inputs_target) {
-    const CarData& car_data_target = input_target->GetValue<CarData>();
-    const T& s_target = car_data_target.first->first;
-    const T& v_target = car_data_target.first->second;
-    const maliput::api::Lane* lane_target = car_data_target.second;
-    LanePosition lp_target(s_target, 0., 0.);
-    RoadPosition rp_target(lane_target, lp_target);
-    source_states_target.emplace_back(rp_target, v_target);
-  }
+  const T& s_self = car_data_self.s();  // Road position
+  const T& v_self = car_data_self.v();  // Along-lane velocity
+  const maliput::api::Lane* lane_self = &car_data_self.lane();
   // Compose the inputs into the required containers.
   LanePosition lp_self(s_self, 0., 0.);
   RoadPosition rp_self(lane_self, lp_self);
   SourceState source_state_self(rp_self, v_self);
+
+  std::vector<SourceState> source_states_target;
+  for (auto input_target : inputs_target) {
+    const CarData& car_data_target = input_target->GetValue<CarData>();
+    const T& s_target = car_data_target.s();
+    const T& v_target = car_data_target.v();
+    const maliput::api::Lane* lane_target = &car_data_target.lane();
+    LanePosition lp_target(s_target, 0., 0.);
+    RoadPosition rp_target(lane_target, lp_target);
+    source_states_target.emplace_back(rp_target, v_target);
+  }
 
   // Instantiate a container capturing the local path of the self-car.
   std::vector<PathRecord> path_self_car;

@@ -1,4 +1,5 @@
 drake_install_headers(
+  car_data.h
   branch_point.h
   junction.h
   lane.h
