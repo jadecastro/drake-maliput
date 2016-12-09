@@ -2,7 +2,7 @@
 
 #include "drake/automotive/gen/idm_planner_parameters.h"
 #include "drake/automotive/maliput/api/car_data.h"
-#include "drake/automotive/maliput/api/lane_data.h"
+//#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/utility/infinite_circuit_road.h"
 #include "drake/systems/framework/leaf_system.h"
 

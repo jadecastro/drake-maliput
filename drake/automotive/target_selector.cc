@@ -14,7 +14,8 @@
 #include "drake/systems/framework/vector_base.h"
 
 // Debugging... go through these!!!!
-#include "drake/automotive/maliput/api/lane_data.h"
+#include "drake/automotive/maliput/api/car_data.h"
+//#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/monolane/arc_lane.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 #include "drake/automotive/maliput/monolane/lane.h"
@@ -39,20 +40,25 @@ TargetSelector<T>::TargetSelector(
   // Fail fast if we are asking the impossible.
   DRAKE_DEMAND(num_targets_per_car <= num_cars-1);
   // Declare an input for the self car.
-  this->DeclareInputPort(systems::kVectorValued,
-                         4,
+  this->DeclareInputPort(systems::kVectorValued, 4,
                          systems::kContinuousSampling);
   // Declare an input for N-1 remaining cars in the world.
   for (int i = 0; i < num_cars-1; ++i) {
-    this->DeclareInputPort(systems::kVectorValued,
-                           4,
+    this->DeclareInputPort(systems::kVectorValued, 4,
                            systems::kContinuousSampling);
   }
-  // Declare an output port for the self car.
+  // Declare two output ports per car:
+  //  - A vector-valued output containing the longitudinal state component.
+  //  - An abstract output containing the Lane data.
+  // First, declare two ports for the self car.
+  //this->DeclareInputPort(systems::kVectorValued, 2,
+  //                       systems::kContinuousSampling);
   this->DeclareAbstractOutputPort(systems::kContinuousSampling);
-  // Declare an output port for each of the M target traffic cars of interest.
+  // Next, declare two ports for each of the M target traffic cars of interest.
   for (int i = 0; i < num_targets_per_car; ++i) {
-        this->DeclareAbstractOutputPort(systems::kContinuousSampling);
+    //this->DeclareInputPort(systems::kVectorValued, 2,
+    //                     systems::kContinuousSampling);
+    this->DeclareAbstractOutputPort(systems::kContinuousSampling);
   }
 }
 
@@ -87,7 +93,7 @@ TargetSelector<T>::get_target_outport(const int i) const {
 
 template <typename T>
 void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
-                                      systems::SystemOutput<T>* output) const {
+                                   systems::SystemOutput<T>* output) const {
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
@@ -125,7 +131,7 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
   std::cerr << "TargetSelector GetMutableData (self)..." << std::endl;
   systems::AbstractValue* const output_data_self =
     output->GetMutableData(0);
-  CarData output_self = output_data_self->GetMutableValue<CarData>();
+  CarData& output_self = output_data_self->GetMutableValue<CarData>();
   std::cerr << "TargetSelector GetMutableData (self)." << std::endl;
 
   std::cerr << "TargetSelector num_targets_per_car_:" <<
@@ -138,13 +144,13 @@ void TargetSelector<T>::EvalOutput(const systems::Context<T>& context,
     std::cerr << "TargetSelector GetMutableValue 2..." << std::endl;
     CarData& output_value_target =
         output_data_target->GetMutableValue<CarData>();
-    outputs_target.emplace_back(&output_value_target);
+    outputs_target.emplace_back(output_value_target);
     std::cerr << "TargetSelector GetMutableValue (target)." << std::endl;
   }
 
   //std::cerr << "TargetSelector EvalVectorInput 3...\n";
   SelectCarStateAndEvalOutput(basic_input_self, inputs_world,
-                              output_self, outputs_target);
+                              &output_self, outputs_target);
   std::cerr << " ^^^^^^^^ TargetSelector::EvalOutput." << std::endl;
 }
 
@@ -157,8 +163,8 @@ template <typename T>
 void TargetSelector<T>::SelectCarStateAndEvalOutput(
     const systems::BasicVector<T>* input_self_car,
     const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
-    CarData output_self,
-    std::vector<CarData*>& outputs_target) const {
+    CarData* output_self,
+    std::vector<CarData*> outputs_target) const {
 
   maliput::api::GeoPosition geo_pos_self;
   std::vector<double> distances;
@@ -174,6 +180,8 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
     std::cerr << "  position: " << car_state->GetAtIndex(0) << "\n";
     const maliput::api::RoadPosition rp = road_->ProjectToSourceRoad(
         {car_state->GetAtIndex(0), 0., 0.}).first;
+    maliput::api::Lane rp_lane = rp.lane;
+    double rp_pos = rp.pos.s;
 
     //std::cerr << "TargetSelector::UnwrapEndlessRoadCarState 0...\n";
     DRAKE_DEMAND(std::cos(car_state->GetAtIndex(2)) >= 0.);
@@ -184,24 +192,25 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
       maliput::api::GeoPosition geo_pos = rp.lane->ToGeoPosition(rp.pos);
       if (i == 0) {
         geo_pos_self = geo_pos;
+        double position_enormous = kEnormousDistance;
         // Seed the output with "infinite" obstacles.  TODO
         // (jadecastro): Is the lane currently occupied by the
         // self-car the best proxy to use here?
         //std::pair<T,T> pair = std::make_pair(T{kEnormousDistance}, T{0.});
-        CarData car_data_infinite(kEnormousDistance, 0., rp.lane);
+        CarData car_data_infinite(position_enormous, 0., rp_lane);
         for (int i = 0; i < (int) outputs_target.size(); ++i) {
           outputs_target[i] = &car_data_infinite;
         }
 
         // Populate the output for the self car.
         const double longitudinal_speed =  // Along-lane speed.
-          car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
+            car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
         //pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
-        CarData car_data_self(rp.pos.s, longitudinal_speed, rp.lane);
-        output_self = car_data_self;
+        output_self->set(rp_pos, longitudinal_speed, rp_lane);
+        //output_self = car_data_self;
       } else {
         distances.emplace_back(road_->
-               RoadGeometry::Distance(geo_pos_self, geo_pos));
+                               RoadGeometry::Distance(geo_pos_self, geo_pos));
       }
     } else {
       DRAKE_ABORT();
@@ -213,7 +222,7 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
          car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
      //pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
      //car_data.emplace_back(std::make_pair(&pair, rp.lane));
-     CarData car_data_value(rp.pos.s, longitudinal_speed, rp.lane);
+     CarData car_data_value(rp_pos, longitudinal_speed, rp_lane);
      car_data.emplace_back(car_data_value);
     }
   }
@@ -232,7 +241,8 @@ void TargetSelector<T>::SelectCarStateAndEvalOutput(
 }
 
 // Lambda-expression approach to sort indices (adapted from
-// http://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes)
+// http://stackoverflow.com/questions/1577475/ ...
+//   c-sorting-and-keeping-track-of-indexes)
 template <typename T>
 std::vector<int> TargetSelector<T>::SortDistances(const std::vector<T>& v)
     const {
@@ -264,6 +274,7 @@ std::unique_ptr<systems::SystemOutput<T>> TargetSelector<T>::AllocateOutput(
   return std::move(output);
 }
 */
+/*
 template <typename T>
 std::unique_ptr<systems::SystemOutput<T>> TargetSelector<T>::AllocateOutput(
     const systems::Context<T>& context) const {
@@ -283,6 +294,7 @@ std::unique_ptr<systems::SystemOutput<T>> TargetSelector<T>::AllocateOutput(
   }
   return std::move(output);
 }
+*/
 
 // These instantiations must match the API documentation in
 // target_selector.h.

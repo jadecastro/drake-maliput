@@ -10,7 +10,8 @@
 #include "drake/common/symbolic_formula.h"
 
 // Debugging... go through these!!!!
-#include "drake/automotive/maliput/api/lane_data.h"
+#include "drake/automotive/maliput/api/car_data.h"
+//#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/monolane/arc_lane.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 #include "drake/automotive/maliput/monolane/lane.h"

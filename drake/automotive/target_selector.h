@@ -5,7 +5,7 @@
 #include <boost/optional.hpp>
 
 #include "drake/automotive/maliput/api/car_data.h"
-#include "drake/automotive/maliput/api/lane_data.h"
+//#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/systems/framework/leaf_system.h"
 
 namespace drake {
@@ -96,8 +96,8 @@ class TargetSelector : public systems::LeafSystem<T> {
     const systems::BasicVector<T>* input_self_car,
     const std::vector<
       const systems::BasicVector<T>*>& inputs_world_car,
-    maliput::api::CarData output_self,
-    std::vector<maliput::api::CarData*>& outputs_target) const;
+    maliput::api::CarData* output_self,
+    std::vector<maliput::api::CarData*> outputs_target) const;
 
   // TODO(jadecastro): const?
   std::vector<int> SortDistances(const std::vector<T>& v) const;

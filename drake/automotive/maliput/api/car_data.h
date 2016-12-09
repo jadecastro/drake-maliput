@@ -1,6 +1,6 @@
 #pragma once
 
-#include "drake/automotive/maliput/api/lane_data.h"
+#include "drake/automotive/maliput/api/lane.h"
 
 namespace drake {
 namespace maliput {
@@ -26,6 +26,12 @@ class CarData {
   inline double& mutable_s() { return s_; }
   inline double& mutable_v() { return v_; }
   inline Lane& mutable_lane() { return lane_; }
+
+  void set(double& s, double& v, Lane& lane) {
+    s_ = s;
+    v_ = v;
+    lane_ = lane;
+  }
 
  private:
   double& s_;
