@@ -67,7 +67,7 @@ class AbstractValue {
   /// should not be able to mutate the value it contains.
   template <typename T>
   T& GetMutableValue() {
-    std::cerr << "                 GetMutableValue()" << std::endl;
+    //std::cerr << "                 GetMutableValue()" << std::endl;
     return DownCastMutableOrMaybeThrow<T>()->get_mutable_value();
   }
 
@@ -108,7 +108,7 @@ class AbstractValue {
   // cast fails.
   template <typename T>
   Value<T>* DownCastMutableOrMaybeThrow() {
-    std::cerr << "                 DownCastMutableOrMaybeThrow()" << std::endl;
+    //std::cerr << "                 DownCastMutableOrMaybeThrow()" << std::endl;
     // We cast away const in this private non-const method so that we can reuse
     // DownCastOrMaybeThrow. This is equivalent to duplicating the logic of
     // DownCastOrMaybeThrow with a non-const target type.
@@ -118,7 +118,7 @@ class AbstractValue {
   // Casts this to a const Value<T>*. Throws std::bad_cast if the cast fails.
   template <typename T>
   const Value<T>* DownCastOrThrow() const {
-    std::cerr << "                 DownCastOrThrow()" << std::endl;
+    //std::cerr << "                 DownCastOrThrow()" << std::endl;
     const Value<T>* value = dynamic_cast<const Value<T>*>(this);
     if (value == nullptr) {
       // This exception is commonly thrown when the AbstractValue does not
@@ -132,7 +132,7 @@ class AbstractValue {
   // the cast fails.
   template <typename T>
   const Value<T>* DownCastOrMaybeThrow() const {
-    std::cerr << "                 DownCastOrMaybeThrow()" << std::endl;
+    //std::cerr << "                 DownCastOrMaybeThrow()" << std::endl;
     // TODO(david-german-tri): Use static_cast in Release builds for speed.
     return DownCastOrThrow<T>();
   }

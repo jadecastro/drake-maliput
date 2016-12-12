@@ -286,11 +286,11 @@ class Diagram : public System<T>,
       ContinuousState<T>* subderivatives =
           diagram_derivatives->get_mutable_substate(i);
       sorted_systems_[i]->EvalTimeDerivatives(*subcontext, subderivatives);
-      if (subderivatives->get_vector().size() > 0) {
-        std::cerr << "  Diagram : subsystem " << i <<
-            " sub derivative at 0: " <<
-            subderivatives->get_vector().GetAtIndex(0) << std::endl;
-      }
+      //if (subderivatives->get_vector().size() > 0) {
+        //std::cerr << "  Diagram : subsystem " << i <<
+        //    " sub derivative at 0: " <<
+        //    subderivatives->get_vector().GetAtIndex(0) << std::endl;
+      //}
     }
   }
 

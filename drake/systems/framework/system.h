@@ -335,7 +335,7 @@ class System {
   /// Aborts if the port does not exist.
   const BasicVector<T>* EvalVectorInput(const Context<T>& context,
                                         int port_index) const {
-    std::cerr << "System::EvalVectorInput...\n";
+    //std::cerr << "System::EvalVectorInput...\n";
     DRAKE_ASSERT(0 <= port_index && port_index < get_num_input_ports());
     return context.EvalVectorInput(parent_, get_input_port(port_index));
   }

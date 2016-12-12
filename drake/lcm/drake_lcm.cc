@@ -48,7 +48,6 @@ void DrakeLcm::StopReceiveThread() {
 
 void DrakeLcm::Publish(const std::string& channel, const void* data,
                        int data_size) {
-  std::cerr << "DrakeLcm::Publish...\n";
   lcm_.publish(channel, data, data_size);
 }
 

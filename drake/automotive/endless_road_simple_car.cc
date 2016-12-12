@@ -65,16 +65,12 @@ void EndlessRoadSimpleCar<T>::EvalOutput(const systems::Context<T>& context,
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidOutput(output));
 
-  std::cerr << " %%%%%%%%%% EndlessRoadSimpleCar::EvalOutput ..." << std::endl;
-
-  std::cerr << "EndlessRoadSimpleCar::EvalOutput...\n";
   // Obtain the state.
   const systems::VectorBase<T>& context_state =
       context.get_continuous_state_vector();
   //const EndlessRoadCarState<T>* const state =
   //    dynamic_cast<const EndlessRoadCarState<T>*>(&context_state);
   //DRAKE_ASSERT(state);
-  std::cerr << "EndlessRoadSimpleCar::EvalOutput 1...\n";
 
   // Obtain the output pointer for the output port containing the state vector.
   //EndlessRoadCarState<T>* const output_vector_state =
@@ -82,12 +78,12 @@ void EndlessRoadSimpleCar<T>::EvalOutput(const systems::Context<T>& context,
   systems::BasicVector<T>*
     output_vector_state = output->GetMutableVectorData(0);
   DRAKE_ASSERT(output_vector_state);
-  std::cerr << "EndlessRoadSimpleCar::EvalOutput 2...\n";
 
-  std::cerr << "  s: " << context_state.GetAtIndex(0) << "\n";
-  std::cerr << "  r: " << context_state.GetAtIndex(1) << "\n";
-  std::cerr << "  heading: " << context_state.GetAtIndex(2) << "\n";
-  std::cerr << "  speed: " << context_state.GetAtIndex(3) << "\n";
+  //std::cerr << "  EndlessRoadSimpleCar::EvalOutput " << std::endl;
+  //std::cerr << "  s: " << context_state.GetAtIndex(0) << std::endl;
+  //std::cerr << "  r: " << context_state.GetAtIndex(1) << std::endl;
+  //std::cerr << "  heading: " << context_state.GetAtIndex(2) << std::endl;
+  //std::cerr << "  speed: " << context_state.GetAtIndex(3) << std::endl;
 
   output_vector_state->SetAtIndex(0, context_state.GetAtIndex(0));
   output_vector_state->SetAtIndex(1, context_state.GetAtIndex(1));
@@ -96,14 +92,11 @@ void EndlessRoadSimpleCar<T>::EvalOutput(const systems::Context<T>& context,
 
   //output_vector_state->set_value(state->get_value());
 
-  std::cerr << "EndlessRoadSimpleCar::EvalOutput 3...\n";
   // Set the output port collecting the s-axis quantities.
   systems::BasicVector<T>*
-    output_vector_s_axis = output->GetMutableVectorData(1);
+      output_vector_s_axis = output->GetMutableVectorData(1);
   output_vector_s_axis->SetAtIndex(0, context_state.GetAtIndex(0));
   output_vector_s_axis->SetAtIndex(1, context_state.GetAtIndex(3));
-
-  std::cerr << " %%%%%%%%%% EndlessRoadSimpleCar::EvalOutput." << std::endl;
 }
 
 template <typename T>
@@ -111,9 +104,6 @@ void EndlessRoadSimpleCar<T>::EvalTimeDerivatives(
     const systems::Context<T>& context,
     systems::ContinuousState<T>* derivatives) const {
   DRAKE_ASSERT_VOID(systems::System<T>::CheckValidContext(context));
-
-  std::cerr << " ******EndlessRoadSimpleCar::EvalTimeDerivatives..." <<
-      std::endl;
 
   // Obtain the state.
   const systems::VectorBase<T>& context_state =
@@ -141,8 +131,6 @@ void EndlessRoadSimpleCar<T>::EvalTimeDerivatives(
   //DRAKE_ASSERT(rates);
 
   DoEvalTimeDerivatives(context_state, accelerations, vector_derivatives);
-  std::cerr << " ******EndlessRoadSimpleCar::EvalTimeDerivatives." <<
-      std::endl;
 }
 
 template <typename T>

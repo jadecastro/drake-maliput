@@ -36,7 +36,6 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
 
     typedef systems::VectorBase<T> Base;
     const Base* const input_vector = this->EvalVectorInput(context, 0);
-    std::cerr << "EndlessRoadCarToEulerFloatingJoint...\n";
     DRAKE_ASSERT(input_vector != nullptr);
     //const EndlessRoadCarState<T>* const input_data =
     //    dynamic_cast<const EndlessRoadCarState<T>*>(input_vector);
@@ -48,18 +47,14 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
         dynamic_cast<EulerFloatingJointState<T>*>(output_vector);
     DRAKE_ASSERT(output_data != nullptr);
 
-    std::cerr << "EndlessRoadCarToEulerFloatingJoint 0...\n";
     maliput::api::LanePosition lp(input_vector->GetAtIndex(0),
                                   input_vector->GetAtIndex(1),
                                   0.);
-    std::cerr << "EndlessRoadCarToEulerFloatingJoint 1...\n";
     maliput::api::GeoPosition geo = road_->lane()->ToGeoPosition(lp);
-    std::cerr << "EndlessRoadCarToEulerFloatingJoint 2...\n";
     output_data->set_x(geo.x);
     output_data->set_y(geo.y);
     output_data->set_z(geo.z);
 
-    std::cerr << "EndlessRoadCarToEulerFloatingJoint 3...\n";
     // Simple treatment of orientation:  "car always points in the direction
     // of its velocity vector", e.g., no slip, oversteeer, etc.
     // Hence, we express forward-orientation of the car as a composition of
@@ -89,7 +84,6 @@ class EndlessRoadCarToEulerFloatingJoint : public systems::LeafSystem<T> {
     output_data->set_yaw(std::atan2(B, A));
     output_data->set_pitch(std::atan2(-C, std::sqrt(D*D + E*E)));
     output_data->set_roll(std::atan2(D, E));
-    std::cerr << "EndlessRoadCarToEulerFloatingJoint 4...\n";
   }
 
  protected:

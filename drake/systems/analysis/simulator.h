@@ -257,18 +257,18 @@ void Simulator<T>::Initialize() {
   // TODO(sherm1) Invoke System's initial conditions computation.
 
   // Initialize the integrator.
-  std::cerr << "integrator initialize...\n";
+  //std::cerr << "integrator initialize...\n";
   integrator_->Initialize();
 
   // Do a publish before the simulation starts.
-  std::cerr << "system_.Publish()...\n";
+  //std::cerr << "system_.Publish()...\n";
   system_.Publish(*context_);
 
   // Restore default values.
-  std::cerr << "ResetStatistics()...\n";
+  //std::cerr << "ResetStatistics()...\n";
   ResetStatistics();
 
-  std::cerr << "Done.\n";
+  //std::cerr << "Done.\n";
   // Initialize runtime variables.
   initialization_done_ = true;
 }
@@ -286,16 +286,16 @@ template <typename T>
 void Simulator<T>::StepTo(const T& boundary_time) {
   if (!initialization_done_) Initialize();
 
-  std::cerr << "  ****** Simulator::StepTo()..." << std::endl;
+  //std::cerr << "  ****** Simulator::StepTo()..." << std::endl;
   DRAKE_THROW_UNLESS(boundary_time >= context_->get_time());
 
-  std::cerr << "  ****** Simulator::StepTo() 1..." << std::endl;
+  //std::cerr << "  ****** Simulator::StepTo() 1..." << std::endl;
   // Updates/publishes can be triggered throughout the integration process,
   // but are not active at the start of the step.
   bool update_hit = false;
   bool publish_hit = false;
 
-  std::cerr << "  ****** Simulator::StepTo() 2..." << std::endl;
+  //std::cerr << "  ****** Simulator::StepTo() 2..." << std::endl;
   // Integrate until desired interval has completed.
   UpdateActions<T> update_actions;
   while (context_->get_time() <= boundary_time) {
@@ -337,36 +337,36 @@ void Simulator<T>::StepTo(const T& boundary_time) {
       ++num_updates_;
     }
 
-    std::cerr << "  ****** Simulator::StepTo() 4..." << std::endl;
+    //std::cerr << "  ****** Simulator::StepTo() 4..." << std::endl;
     // Allow System a chance to produce some output.
     if (publish_hit) system_.Publish(*context_);
 
-    std::cerr << "  ****** Simulator::StepTo() 5..." << std::endl;
+    //std::cerr << "  ****** Simulator::StepTo() 5..." << std::endl;
     // Remove old events
     update_actions.events.clear();
 
-    std::cerr << "  ****** Simulator::StepTo() 6..." << std::endl;
+    //std::cerr << "  ****** Simulator::StepTo() 6..." << std::endl;
     // How far can we go before we have to take a sampling break?
     const T next_update_time =
         system_.CalcNextUpdateTime(*context_, &update_actions);
     DRAKE_ASSERT(next_update_time >= step_start_time);
     const T next_update_dt = next_update_time - step_start_time;
 
-    std::cerr << "  ****** Simulator::StepTo() 7..." << std::endl;
+    //std::cerr << "  ****** Simulator::StepTo() 7..." << std::endl;
     // TODO(edrumwri): Get the next publish time when API available.
     T next_publish_dt = std::numeric_limits<double>::infinity();
     T next_publish_time = step_start_time + next_publish_dt;
 
-    std::cerr << "  ****** Simulator::StepTo() 8..." << std::endl;
+    //std::cerr << "  ****** Simulator::StepTo() 8..." << std::endl;
     // Attempt to integrate.
     typename IntegratorBase<T>::StepResult result =
         integrator_->Step(next_publish_dt, next_update_dt);
-    std::cerr << "  ****** Simulator::StepTo() 9..." << std::endl;
+    //std::cerr << "  ****** Simulator::StepTo() 9..." << std::endl;
     switch (result) {
       case IntegratorBase<T>::kReachedUpdateTime:
         update_hit = true;
 
-        std::cerr << "  ****** Simulator::StepTo() kReachedUpdateTime..." << std::endl;
+        //std::cerr << "  ****** Simulator::StepTo() kReachedUpdateTime..." << std::endl;
         // Check whether update time effectively identical to publish time.
         publish_hit = (context_->get_time() >= next_publish_time);
         break;
@@ -374,7 +374,7 @@ void Simulator<T>::StepTo(const T& boundary_time) {
       case IntegratorBase<T>::kReachedPublishTime:
         update_hit = false;
         publish_hit = true;
-        std::cerr << "  ****** Simulator::StepTo() kReachedPublishTime..." << std::endl;
+        //std::cerr << "  ****** Simulator::StepTo() kReachedPublishTime..." << std::endl;
         break;
 
       case IntegratorBase<T>::kTimeHasAdvanced:
@@ -382,7 +382,7 @@ void Simulator<T>::StepTo(const T& boundary_time) {
         // TODO(edrumwri): Check if not publishing after every step, then
         //                 turn this off if that is the case.
         publish_hit = true;
-        std::cerr << "  ****** Simulator::StepTo() kTimeHasAdvanced..." << std::endl;
+        //std::cerr << "  ****** Simulator::StepTo() kTimeHasAdvanced..." << std::endl;
         break;
 
       default:
@@ -393,10 +393,10 @@ void Simulator<T>::StepTo(const T& boundary_time) {
     // TODO(sherm1) Constraint projection goes here.
   }
 
-  std::cerr << "  ****** Simulator::StepTo() 10..." << std::endl;
+  //std::cerr << "  ****** Simulator::StepTo() 10..." << std::endl;
   // publish at the end of the step
   system_.Publish(*context_);
-  std::cerr << "  ****** Simulator::StepTo()." << std::endl;
+  //std::cerr << "  ****** Simulator::StepTo()." << std::endl;
 }
 
 // TODO(edrumwri): Prepare to remove
