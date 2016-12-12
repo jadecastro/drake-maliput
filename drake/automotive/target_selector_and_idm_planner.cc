@@ -14,8 +14,8 @@
 #include "drake/systems/framework/vector_base.h"
 
 // Debugging... go through these!!!!
-#include "drake/automotive/maliput/api/car_data.h"
-//#include "drake/automotive/maliput/api/lane_data.h"
+//#include "drake/automotive/maliput/api/car_data.h"
+#include "drake/automotive/maliput/api/lane_data.h"
 #include "drake/automotive/maliput/monolane/arc_lane.h"
 #include "drake/automotive/maliput/monolane/junction.h"
 #include "drake/automotive/maliput/monolane/lane.h"
@@ -29,7 +29,6 @@ namespace automotive {
 
 using maliput::api::RoadPosition;
 using maliput::api::LanePosition;
-using maliput::api::CarData;
 
 template <typename T>
 TargetSelectorAndIdmPlanner<T>::TargetSelectorAndIdmPlanner(
@@ -53,7 +52,7 @@ TargetSelectorAndIdmPlanner<T>::TargetSelectorAndIdmPlanner(
   }
   // Declare the output port.
   this->DeclareOutputPort(systems::kVectorValued,
-                          2,  // Longitudinal and lateral acceleration.
+                          2, /* Longitudinal and lateral acceleration. */
                           systems::kContinuousSampling);
 }
 
@@ -173,17 +172,19 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
     const SourceState& source_states_self,
     const std::vector<SourceState>& source_states_targets,
     const std::vector<PathRecord>& path_self_car) const {
+  std::cerr << "  $$$$$$$$ Selector/IdmPlanner::AssessLongitudinal ..."
+            << std::endl;
   // NB(jadecastro): Defaults the targets as static obstacles at infinity.
   double delta_position = kEnormousDistance;
   double delta_velocity = 0.;
 
   const SourceState& self_car = source_states_self;
-  const maliput::api::RoadPosition rp_self_car = self_car.rp;
+  //`const maliput::api::RoadPosition rp_self_car = self_car.rp;
 
   // Find the next car which is ahead of self, by at least a car-length.
   // Search along the sequence of lanes to be taken by self, starting with
   // the current lane.
-  DRAKE_DEMAND(rp_self_car.lane == path_self_car[0].lane);
+  //DRAKE_DEMAND(rp_self_car.lane == path_self_car[0].lane);
 
   // TODO(jadecastro): generalize this to encompass the semicircle
   // ahead of the self-car.  Will this allow us to generalize IDM to 2D?
@@ -248,6 +249,14 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
                        params.car_length();
       delta_velocity =
           self_car.longitudinal_speed - this_car.longitudinal_speed;
+      std::cerr << "  @@@@@ IdmPlanner  lane_length_sum: " <<
+        lane_length_sum << std::endl;
+      std::cerr << "         params.car_length(): " <<
+        params.car_length() << std::endl;
+      std::cerr << "         lane_datum: " <<
+        lane_datum << std::endl;
+      std::cerr << "         rp_this_car.pos.s: " <<
+        rp_this_car.pos.s << std::endl;
       break;
     }
 
@@ -258,6 +267,8 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
     is_first = false;
   }  // while (lane_this_car != path_self_car.end())
 
+  std::cerr << "  $$$$$$$$ Selector/IdmPlanner::AssessLongitudinal 2 ..."
+            << std::endl;
   // TODO(maddog) Do a correct distance measurement (not just delta-s).
   // TODO(jadecastro): kCarLength should be a Parameter of type T.
   if (delta_position <= 0.) {
@@ -265,8 +276,10 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
   }
   // If delta_position < kCarLength, the cars crashed!
   DRAKE_DEMAND(delta_position > 0.);
-  // std::cerr << "  @@@@@ IdmPlanner  net_delta_sigma: " <<
-  //    net_delta_sigma << std::endl;
+  std::cerr << "  $$$$$$$$ Selector/IdmPlanner::AssessLongitudinal 3 ..."
+            << std::endl;
+  std::cerr << "  @@@@@ IdmPlanner  delta_position: " <<
+     delta_position << std::endl;
   // std::cerr << "  @@@@@ IdmPlanner  delta_velocity: " <<
   //    delta_velocity << std::endl;
   // Populate the relative target quantities.
@@ -275,23 +288,43 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
 }
 
 template <typename T>
-std::vector<CarData*> TargetSelectorAndIdmPlanner<T>::SelectCarState(
+typename TargetSelectorAndIdmPlanner<T>::CarData
+TargetSelectorAndIdmPlanner<T>::SelectCarState(
     const systems::BasicVector<T>* input_self_car,
     const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
     std::vector<CarData*>* car_data_targets) const {
+  std::cerr << "  $$$$$$$$ Selector/Planner::SelectCarState." << std::endl;
   car_data_targets->clear();
-  maliput::api::GeoPosition geo_pos_self;
+
   std::vector<double> distances;
-  std::pair<T, T> pair;
+  //std::pair<T, T> pair;
+  std::vector<CarData*> car_data;
+
+  const systems::BasicVector<double>* car_state_self = input_self_car;
+  std::cerr << "  position: " << car_state_self->GetAtIndex(0) << "\n";
+  const maliput::api::RoadPosition rp_self =
+    road_->ProjectToSourceRoad({car_state_self->GetAtIndex(0), 0., 0.}).first;
+  DRAKE_DEMAND(std::cos(car_state_self->GetAtIndex(2)) >= 0.);
+  DRAKE_DEMAND(car_state_self->GetAtIndex(3) >= 0.);
+  maliput::api::GeoPosition geo_pos_self =
+    rp_self.lane->ToGeoPosition(rp_self.pos);
+  // Seed the output with "infinite" obstacles.  TODO
+  // (jadecastro): Is the lane currently occupied by the
+  // self-car the best proxy to use here?
+  const double longitudinal_speed =  // Along-lane speed.
+    car_state_self->GetAtIndex(3) * std::cos(car_state_self->GetAtIndex(2));
+  // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
+  const CarData car_data_self =
+    {rp_self.pos.s, longitudinal_speed, rp_self.lane};
+
   DRAKE_DEMAND(num_cars_ == (int)inputs_world_car.size() + 1);
-  for (int i = 0; i < num_cars_; ++i) {
+  for (int i = 0; i < num_cars_ - 1; ++i) {
     // std::cerr << "TargetSelectorAndIdmPlanner::UnwrapEndlessRoadCarState..."
     //          << std::endl;
     // std::cerr << "     i: " << i << "\n";
     // std::cerr << "     num world cars: " << inputs_world_car.size()
     //          << std::endl;
-    const systems::BasicVector<double>* car_state =
-        (i == 0) ? input_self_car : inputs_world_car[i - 1];
+    const systems::BasicVector<double>* car_state = inputs_world_car[i];
     std::cerr << "  position: " << car_state->GetAtIndex(0) << "\n";
     const maliput::api::RoadPosition rp =
         road_->ProjectToSourceRoad({car_state->GetAtIndex(0), 0., 0.}).first;
@@ -305,30 +338,19 @@ std::vector<CarData*> TargetSelectorAndIdmPlanner<T>::SelectCarState(
     // Ignore any cars outside the perception distance.
     if (!do_restrict_to_lane_) {
       maliput::api::GeoPosition geo_pos = rp.lane->ToGeoPosition(rp.pos);
-      if (i == 0) { /* Populate the data structure for the self car. */
-        geo_pos_self = geo_pos;
-        // Seed the output with "infinite" obstacles.  TODO
-        // (jadecastro): Is the lane currently occupied by the
-        // self-car the best proxy to use here?
+      distances.emplace_back(
+                       road_->RoadGeometry::Distance(geo_pos_self, geo_pos));
+      if (distances[i] < kPerceptionDistance) {
         const double longitudinal_speed =  // Along-lane speed.
-            car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
+          car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
         // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
-        car_data_self = {rp.pos.s, longitudinal_speed, rp.lane};
-      } else { /* Populate the data structure for the trajectory cars. */
-        distances.emplace_back(
-            road_->RoadGeometry::Distance(geo_pos_self, geo_pos));
-        if (distances[i] < kPerceptionDistance) {
-          const double longitudinal_speed =  // Along-lane speed.
-              car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
-          // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
-          // car_data.emplace_back(std::make_pair(&pair, rp.lane));
-          CarData car_data_value(rp.pos.s, longitudinal_speed, rp.lane);
-          car_data.emplace_back(car_data_value);
-        } else {
-          double position_infty = kEnormousDistance;
-          CarData car_data_infty(position_infty, 0., rp.lane);
-          car_data.emplace_back(car_data_infty);
-        }
+        // car_data.emplace_back(std::make_pair(&pair, rp.lane));
+        CarData car_data_value(rp.pos.s, longitudinal_speed, rp.lane);
+        car_data.emplace_back(&car_data_value);
+      } else {
+        double position_infty = kEnormousDistance;
+        CarData car_data_infty(position_infty, 0., rp.lane);
+        car_data.emplace_back(&car_data_infty);
       }
     } else {
       DRAKE_ABORT();
@@ -348,7 +370,7 @@ std::vector<CarData*> TargetSelectorAndIdmPlanner<T>::SelectCarState(
     if (i >= num_targets_per_car_) {
       break;
     }
-    car_data_targets[i] = car_data[i];
+    car_data_targets->emplace_back(car_data[i]);
   }
   return car_data_self;
 }
@@ -358,7 +380,8 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
     const CarData& car_data_self, const std::vector<CarData*>& car_data_targets,
     const systems::Context<T>& context,
     systems::BasicVector<T>* output_vector) const {
-  std::cerr << "  $$$$$$$$ IdmPlanner::EvalOutput ..." << std::endl;
+  std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations ..."
+            << std::endl;
 
   // Obtain the parameters.
   const int kParamsIndex = 0;
@@ -401,7 +424,6 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
   const double s_rel = relative_sv.first;
   const double v_rel = relative_sv.second;
 
-  // TODO (jadecastro): Wrap the IDM computation into its own function.
   // Check that we're supplying the planner with sane parameters and
   // inputs.
   DRAKE_DEMAND(a > 0.0);
@@ -424,7 +446,8 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
 
   std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
             << std::endl;
-  std::cerr << "  $$$$$$$$ IdmPlanner::EvalOutput." << std::endl;
+  std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations."
+            << std::endl;
 }
 
 // Lambda-expression approach to sort indices (adapted from
