@@ -30,7 +30,7 @@ namespace automotive {
 ///   3: @p v_target relative closing velocity wrt target (scalar) [m/s]
 /// Outputs:
 ///   0: @p vdot_ego linear acceleration of the ego car (scalar) [m/s^2].
-  // TODO (jadecastro): Revise this description!
+// TODO (jadecastro): Revise this description!
 template <typename T>
 class IdmPlanner : public systems::LeafSystem<T> {
  public:
@@ -64,8 +64,8 @@ class IdmPlanner : public systems::LeafSystem<T> {
   struct SourceState {
     SourceState() {}
 
-  SourceState(maliput::api::RoadPosition _rp, double _ls)
-  : rp(_rp), longitudinal_speed(_ls) {}
+    SourceState(maliput::api::RoadPosition _rp, double _ls)
+        : rp(_rp), longitudinal_speed(_ls) {}
 
     maliput::api::RoadPosition rp;
     double longitudinal_speed{};
@@ -76,8 +76,8 @@ class IdmPlanner : public systems::LeafSystem<T> {
     bool is_reversed{};
   };
 
-private:
-  //typedef std::pair<std::pair<T,T>*,
+ private:
+  // typedef std::pair<std::pair<T,T>*,
   //    const maliput::api::Lane*> CarData;
 
   void UnwrapEndlessRoadCarState(
@@ -86,10 +86,10 @@ private:
       std::vector<PathRecord>* path_self_car) const;
 
   std::pair<double, double> AssessLongitudinal(
-            const IdmPlannerParameters<T>& params,
-            const SourceState& source_states_self,
-            const std::vector<SourceState>& source_states_target,
-            const std::vector<PathRecord>& path_self_car) const;
+      const IdmPlannerParameters<T>& params,
+      const SourceState& source_states_self,
+      const std::vector<SourceState>& source_states_target,
+      const std::vector<PathRecord>& path_self_car) const;
 
   const maliput::utility::InfiniteCircuitRoad* road_;
   const T v_ref_;  // Desired velocity.

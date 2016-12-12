@@ -10,7 +10,7 @@
 
 namespace drake {
 
-  // TODO(jadecastro): Need?
+// TODO(jadecastro): Need?
 namespace maliput {
 namespace utility {
 class InfiniteCircuitRoad;
@@ -35,13 +35,12 @@ namespace automotive {
 /// * Later:  planar isometric LANE-space acceleration: (sigma, rho)-ddot
 ///
 /// output vector: same as state vector
-  // TODO (jadecastro): Revise this description!
+// TODO (jadecastro): Revise this description!
 template <typename T>
 class TargetSelector : public systems::LeafSystem<T> {
  public:
   explicit TargetSelector(const maliput::utility::InfiniteCircuitRoad* road,
-                          const int num_cars,
-                          const int num_targets_per_car,
+                          const int num_cars, const int num_targets_per_car,
                           const bool do_restrict_to_lane = false,
                           const bool do_sort = true);
   ~TargetSelector() override;
@@ -66,22 +65,22 @@ class TargetSelector : public systems::LeafSystem<T> {
                   systems::SystemOutput<T>* output) const override;
 
   std::unique_ptr<systems::SystemOutput<T>> AllocateOutput(
-    const systems::Context<T>& context) const override;
+      const systems::Context<T>& context) const override;
 
  protected:
   // LeafSystem<T> overrides
-  //std::unique_ptr<systems::SystemOutput<T>> AllocateOutput(
+  // std::unique_ptr<systems::SystemOutput<T>> AllocateOutput(
   //    const systems::Context<T>& context) const override;
 
  private:
-  //typedef std::pair<std::pair<T,T>*,
+  // typedef std::pair<std::pair<T,T>*,
   //    const maliput::api::Lane*> CarData;
 
   struct SourceState {
     SourceState() {}
 
-  SourceState(maliput::api::RoadPosition arp, double als)
-  : rp(arp), longitudinal_speed(als) {}
+    SourceState(maliput::api::RoadPosition arp, double als)
+        : rp(arp), longitudinal_speed(als) {}
 
     maliput::api::RoadPosition rp;
     double longitudinal_speed{};
@@ -93,11 +92,10 @@ class TargetSelector : public systems::LeafSystem<T> {
   };
 
   void SelectCarStateAndEvalOutput(
-    const systems::BasicVector<T>* input_self_car,
-    const std::vector<
-      const systems::BasicVector<T>*>& inputs_world_car,
-    maliput::api::CarData* output_self,
-    std::vector<maliput::api::CarData*> outputs_target) const;
+      const systems::BasicVector<T>* input_self_car,
+      const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
+      maliput::api::CarData* output_self,
+      std::vector<maliput::api::CarData*> outputs_target) const;
 
   // TODO(jadecastro): const?
   std::vector<int> SortDistances(const std::vector<T>& v) const;
@@ -108,11 +106,10 @@ class TargetSelector : public systems::LeafSystem<T> {
   const bool do_restrict_to_lane_;
   const bool do_sort_;
   // TODO(maddog)  Do we need to keep track of these here?
-  //systems::SystemPortDescriptor<T> self_inport_;
+  // systems::SystemPortDescriptor<T> self_inport_;
   // TODO(jadecastro): Remove these.
-  //std::vector<systems::SystemPortDescriptor<T>> target_inports_;
-  //std::vector<systems::SystemPortDescriptor<T>> outports_;
-
+  // std::vector<systems::SystemPortDescriptor<T>> target_inports_;
+  // std::vector<systems::SystemPortDescriptor<T>> outports_;
 };
 
 }  // namespace automotive

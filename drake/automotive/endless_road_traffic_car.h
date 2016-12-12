@@ -2,11 +2,11 @@
 
 #include <memory>
 
-#include "drake/automotive/target_selector.h"
 #include "drake/automotive/endless_road_simple_car.h"
 #include "drake/automotive/gen/endless_road_car_state.h"
 #include "drake/automotive/gen/endless_road_oracle_output.h"
 #include "drake/automotive/idm_planner.h"
+#include "drake/automotive/target_selector.h"
 #include "drake/systems/framework/context.h"
 #include "drake/systems/framework/diagram.h"
 
@@ -14,8 +14,8 @@ namespace drake {
 namespace maliput {
 namespace utility {
 class InfiniteCircuitRoad;
-}  //namespace utility
-}  //namespace maliput
+}  // namespace utility
+}  // namespace maliput
 namespace automotive {
 
 /// System consisting of a car and planner.
@@ -47,13 +47,11 @@ namespace automotive {
 template <typename T>
 class EndlessRoadTrafficCar : public systems::Diagram<T> {
  public:
-
   /// Constructs a two-car system.
   ///
   /// @p v_ref desired velocity of the ego (controlled) car.
   /// @p a_agent constant acceleration of the agent car.
-  EndlessRoadTrafficCar(const std::string& id,
-                        const int num_cars,
+  EndlessRoadTrafficCar(const std::string& id, const int num_cars,
                         const maliput::utility::InfiniteCircuitRoad* road,
                         const T& s_init, const T& r_init, const T& v_init,
                         const T& heading_init, const T& v_ref);
