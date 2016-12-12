@@ -18,7 +18,7 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   gen/euler_floating_joint_state.cc
   gen/simple_car_config.cc
   gen/simple_car_state.cc
-  idm_planner.cc
+  #idm_planner.cc
   linear_car.cc
   maliput/api/road_geometry.cc
   maliput/monolane/arc_lane.cc
@@ -35,7 +35,8 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   maliput/utility/infinite_circuit_road.cc
   simple_car.cc
   #single_lane_ego_and_agent.cc
-  target_selector.cc
+  #target_selector.cc
+  target_selector_and_idm_planner.cc
   trajectory_car.cc
   )
 target_link_libraries(drakeAutomotive
@@ -55,12 +56,13 @@ drake_install_headers(
   endless_road_oracle-inl.h
   endless_road_simple_car.h
   endless_road_traffic_car.h
-  idm_planner.h
+  #idm_planner.h
   linear_car.h
   simple_car.h
   simple_car_to_euler_floating_joint.h
   #single_lane_ego_and_agent.h
-  target_selector.h
+  #target_selector.h
+  target_selector_and_idm_planner.h
   trajectory_car.h
   # N.B. The gen/*.h headers are installed by gen/CMakeLists.txt.
   )
