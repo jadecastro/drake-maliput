@@ -204,6 +204,9 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
   for (int i = 0; i < num_targets_per_car_; ++i) {
     const SourceState& target = source_states_targets[i];
     cars_by_lane_and_s[target.rp.lane].emplace(target.rp.pos.s, i);
+    std::cerr << "        MultiMap: i: " << i << std::endl;
+    std::cerr << "        MultiMap: target.rp.pos.s: "
+              << target.rp.pos.s << std::endl;
   }
 
   std::cerr << "         self_car.rp.pos.s: " <<
@@ -222,6 +225,11 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
   double bound_nudge = 0.1 * params.car_length();
   // Loop over the partial path constructed over the perception horizon.
   while (lane_this_car != path_self_car.end()) {
+    std::cerr << "  @@@@@ IdmPlanner  is_first: " << is_first << std::endl;
+    std::cerr << "         !lane_this_car->is_reversed: " <<
+        !lane_this_car->is_reversed << std::endl;
+    std::cerr << "         lane_this_car->lane->length(): " <<
+        lane_this_car->lane->length() << std::endl;
     const double possible_lane_datum =
         (!lane_this_car->is_reversed) ? 0. : lane_this_car->lane->length();
     const double lane_datum =
@@ -229,6 +237,8 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
     const double lane_length = (!lane_this_car->is_reversed)
                                    ? lane_this_car->lane->length() - lane_datum
                                    : lane_datum;
+    std::cerr << "         lane_datum: " << lane_datum << std::endl;
+    std::cerr << "         lane_length: " << lane_length << std::endl;
     DRAKE_DEMAND(lane_length > 0.);
     // The linear position of the last car found in the train
     const double last_position = (is_first) ? lane_datum : rp_this_car.pos.s;
@@ -237,16 +247,22 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
     // next car in the train.
     bool is_car_past_limit;
     int index_this_car;
-    std::cerr << "  @@@@@ IdmPlanner  is_first: " << is_first << std::endl;
-      std::cerr << "         !lane_this_car->is_reversed: " <<
-          !lane_this_car->is_reversed << std::endl;
-      if (!lane_this_car->is_reversed) {
+    if (!lane_this_car->is_reversed) {
       auto states_this_car =
           cars_by_lane_and_s[lane_this_car->lane].upper_bound(last_position +
                                                               bound_nudge);
+      std::cerr << "        last_position + bound_nudge: "
+                << last_position + bound_nudge << std::endl;
       auto lane_limit = cars_by_lane_and_s[lane_this_car->lane].end();
+      std::cerr << "        states_this_car->first: "
+                << states_this_car->first << std::endl;
+      std::cerr << "        lane_limit->first: "
+                << lane_limit->first << std::endl;
       is_car_past_limit = states_this_car != lane_limit;
       index_this_car = states_this_car->second;
+      std::cerr << "        index_this_car: " << index_this_car << std::endl;
+      std::cerr << "        is_car_past_limit: "
+                << is_car_past_limit << std::endl;
     } else {
       auto states_this_car = std::make_reverse_iterator(
           cars_by_lane_and_s[lane_this_car->lane].lower_bound(last_position -
@@ -254,11 +270,16 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
       auto lane_limit = cars_by_lane_and_s[lane_this_car->lane].rend();
       is_car_past_limit = states_this_car != lane_limit;
       index_this_car = states_this_car->second;
+      std::cerr << "        index_this_car: " << index_this_car << std::endl;
     }
 
-    if (!is_car_past_limit) {
+    // TODO (jadecastro): This could cause false alarms and lead to
+    // the sim crashing inadvertantly.
+    if (is_car_past_limit) {
       const SourceState& this_car = source_states_targets[index_this_car];
       rp_this_car = this_car.rp;
+      std::cerr << "         rp_this_car.pos.s: " <<
+        rp_this_car.pos.s << std::endl;
       const double pos_relative_to_lane = (!lane_this_car->is_reversed) ?
           (rp_this_car.pos.s - lane_datum) :
           (lane_datum - rp_this_car.pos.s);
@@ -275,8 +296,8 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
         params.car_length() << std::endl;
       std::cerr << "         lane_datum: " <<
         lane_datum << std::endl;
-      std::cerr << "         rp_this_car.pos.s: " <<
-        rp_this_car.pos.s << std::endl;
+      std::cerr << "         delta_velocity: " <<
+        delta_velocity << std::endl;
       break;
     }
 
@@ -339,7 +360,7 @@ TargetSelectorAndIdmPlanner<T>::SelectCarState(
     vel_forward_self * std::cos(heading_road_self);
   // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
   const CarData car_data_self =
-    {long_pos_road_self, longitudinal_speed, rp_self.lane};
+    {rp_self.pos.s, longitudinal_speed, rp_self.lane};
 
   std::cerr << "  geo_pos_self: "
             << geo_pos_self.x << ",  "
@@ -385,7 +406,7 @@ TargetSelectorAndIdmPlanner<T>::SelectCarState(
           vel_forward * std::cos(heading_road);
         // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
         // car_data.emplace_back(std::make_pair(&pair, rp.lane));
-        CarData car_data_value(long_pos_road, longitudinal_speed, rp.lane);
+        CarData car_data_value(rp.pos.s, longitudinal_speed, rp.lane);
         car_data.emplace_back(car_data_value);
         std::cerr << "    long_pos_road: "
                   << long_pos_road << std::endl;
@@ -466,10 +487,12 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
     source_states_targets.emplace_back(rp_target, v_target);
   }
 
-  // Instantiate a container capturing the local path of the self-car.
+  // Get the local path of the self-car.
   std::vector<PathRecord> path_self_car;
   UnwrapEndlessRoadCarState(source_states_self, *road_, &path_self_car);
 
+  std::cerr << "  IdmPlanner source_states_targets[0]: "
+            << source_states_targets[0].rp.pos.s << std::endl;
   // Obtain the relative quantities for the nearest car ahead of the self-car.
   std::pair<double, double> relative_sv = AssessLongitudinal(
       params, source_states_self, source_states_targets, path_self_car);
