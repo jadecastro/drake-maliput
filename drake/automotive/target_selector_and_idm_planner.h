@@ -98,7 +98,7 @@ class TargetSelectorAndIdmPlanner : public systems::LeafSystem<T> {
   TargetSelectorAndIdmPlanner::CarData SelectCarState(
       const systems::BasicVector<T>* input_self_car,
       const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
-      std::vector<CarData*>* car_data_targets) const;
+      std::vector<CarData>* car_data_targets) const;
 
   void UnwrapEndlessRoadCarState(
       const SourceState& source_state_self,
@@ -112,7 +112,7 @@ class TargetSelectorAndIdmPlanner : public systems::LeafSystem<T> {
       const std::vector<PathRecord>& path_self_car) const;
 
   void ComputeIdmAccelerations(const CarData& car_data_self,
-                               const std::vector<CarData*>& car_data_target,
+                               const std::vector<CarData>& car_data_target,
                                const systems::Context<T>& context,
                                systems::BasicVector<T>* output_vector) const;
 

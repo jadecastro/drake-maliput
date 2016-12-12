@@ -115,12 +115,16 @@ void TargetSelectorAndIdmPlanner<T>::EvalOutput(
       output->GetMutableVectorData(0);
   DRAKE_ASSERT(output_vector != nullptr);
 
-  std::vector<CarData*> car_data_targets;
+  std::vector<CarData> car_data_targets;
   // std::cerr << "TargetSelectorAndIdmPlanner EvalVectorInput 3...\n";
   CarData car_data_self =
       SelectCarState(basic_input_self, inputs_world, &car_data_targets);
-  std::cerr << " ^^^^^^^^ TargetSelectorAndIdmPlanner::EvalOutput."
+  std::cerr << " ^^^^^^^^ TargetSelectorAndIdmPlanner::EvalOutput 2..."
             << std::endl;
+  for (auto stuff : car_data_targets) {
+    std::cerr << "    car_data_targets[i].pos: "
+              << stuff.pos << std::endl;
+  }
 
   // Compute the IDM accelerations.
   ComputeIdmAccelerations(car_data_self, car_data_targets, context,
@@ -202,6 +206,13 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
     cars_by_lane_and_s[target.rp.lane].emplace(target.rp.pos.s, i);
   }
 
+  std::cerr << "         self_car.rp.pos.s: " <<
+      self_car.rp.pos.s << std::endl;
+  for (int i = 0; i < num_targets_per_car_; ++i) {
+    const SourceState& target = source_states_targets[i];
+    std::cerr << "         target.rp.pos.s: " <<
+        target.rp.pos.s << std::endl;
+  }
   // NB(jadecastro): Starting at the current self car lane, crawl
   // through the segments and return the data for the next car in
   // the train.
@@ -209,6 +220,7 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
                                 // through so far.
   bool is_first = true;
   double bound_nudge = 0.1 * params.car_length();
+  // Loop over the partial path constructed over the perception horizon.
   while (lane_this_car != path_self_car.end()) {
     const double possible_lane_datum =
         (!lane_this_car->is_reversed) ? 0. : lane_this_car->lane->length();
@@ -218,15 +230,17 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
                                    ? lane_this_car->lane->length() - lane_datum
                                    : lane_datum;
     DRAKE_DEMAND(lane_length > 0.);
-
     // The linear position of the last car found in the train
-    const double last_position = rp_this_car.pos.s;
+    const double last_position = (is_first) ? lane_datum : rp_this_car.pos.s;
 
     // NB(jadecastro): `states_this_car` contains states and index of the
     // next car in the train.
     bool is_car_past_limit;
     int index_this_car;
-    if (!lane_this_car->is_reversed) {
+    std::cerr << "  @@@@@ IdmPlanner  is_first: " << is_first << std::endl;
+      std::cerr << "         !lane_this_car->is_reversed: " <<
+          !lane_this_car->is_reversed << std::endl;
+      if (!lane_this_car->is_reversed) {
       auto states_this_car =
           cars_by_lane_and_s[lane_this_car->lane].upper_bound(last_position +
                                                               bound_nudge);
@@ -245,11 +259,17 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
     if (!is_car_past_limit) {
       const SourceState& this_car = source_states_targets[index_this_car];
       rp_this_car = this_car.rp;
-      delta_position = lane_length_sum + (rp_this_car.pos.s - lane_datum) -
-                       params.car_length();
+      const double pos_relative_to_lane = (!lane_this_car->is_reversed) ?
+          (rp_this_car.pos.s - lane_datum) :
+          (lane_datum - rp_this_car.pos.s);
+      std::cerr << "         pos_relative_to_lane: " <<
+        pos_relative_to_lane << std::endl;
+      // Compute the relative position and velocity of the next car found.
+      delta_position = lane_length_sum + pos_relative_to_lane -
+          params.car_length();
       delta_velocity =
           self_car.longitudinal_speed - this_car.longitudinal_speed;
-      std::cerr << "  @@@@@ IdmPlanner  lane_length_sum: " <<
+      std::cerr << "         lane_length_sum: " <<
         lane_length_sum << std::endl;
       std::cerr << "         params.car_length(): " <<
         params.car_length() << std::endl;
@@ -290,67 +310,91 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
 template <typename T>
 typename TargetSelectorAndIdmPlanner<T>::CarData
 TargetSelectorAndIdmPlanner<T>::SelectCarState(
-    const systems::BasicVector<T>* input_self_car,
+    const systems::BasicVector<T>* input_self_car,  // TODO(jadecastro): Ref.
     const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
-    std::vector<CarData*>* car_data_targets) const {
+    std::vector<CarData>* car_data_targets) const {
   std::cerr << "  $$$$$$$$ Selector/Planner::SelectCarState." << std::endl;
   car_data_targets->clear();
 
   std::vector<double> distances;
   //std::pair<T, T> pair;
-  std::vector<CarData*> car_data;
+  std::vector<CarData> car_data;
 
   const systems::BasicVector<double>* car_state_self = input_self_car;
-  std::cerr << "  position: " << car_state_self->GetAtIndex(0) << "\n";
+  const double long_pos_road_self = car_state_self->GetAtIndex(0);
+  const double heading_road_self = car_state_self->GetAtIndex(2);
+  const double vel_forward_self = car_state_self->GetAtIndex(3);
+
+  std::cerr << "  Self position: " << long_pos_road_self << "\n";
   const maliput::api::RoadPosition rp_self =
-    road_->ProjectToSourceRoad({car_state_self->GetAtIndex(0), 0., 0.}).first;
-  DRAKE_DEMAND(std::cos(car_state_self->GetAtIndex(2)) >= 0.);
-  DRAKE_DEMAND(car_state_self->GetAtIndex(3) >= 0.);
+    road_->ProjectToSourceRoad({long_pos_road_self, 0., 0.}).first;
+  DRAKE_DEMAND(std::cos(heading_road_self) >= 0.);
+  DRAKE_DEMAND(vel_forward_self >= 0.);
   maliput::api::GeoPosition geo_pos_self =
     rp_self.lane->ToGeoPosition(rp_self.pos);
   // Seed the output with "infinite" obstacles.  TODO
   // (jadecastro): Is the lane currently occupied by the
   // self-car the best proxy to use here?
   const double longitudinal_speed =  // Along-lane speed.
-    car_state_self->GetAtIndex(3) * std::cos(car_state_self->GetAtIndex(2));
+    vel_forward_self * std::cos(heading_road_self);
   // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
   const CarData car_data_self =
-    {rp_self.pos.s, longitudinal_speed, rp_self.lane};
+    {long_pos_road_self, longitudinal_speed, rp_self.lane};
+
+  std::cerr << "  geo_pos_self: "
+            << geo_pos_self.x << ",  "
+            << geo_pos_self.y << ",  "
+            << geo_pos_self.z << std::endl;
 
   DRAKE_DEMAND(num_cars_ == (int)inputs_world_car.size() + 1);
   for (int i = 0; i < num_cars_ - 1; ++i) {
-    // std::cerr << "TargetSelectorAndIdmPlanner::UnwrapEndlessRoadCarState..."
+    // std::cerr << "     SelectCarState..."
     //          << std::endl;
     // std::cerr << "     i: " << i << "\n";
     // std::cerr << "     num world cars: " << inputs_world_car.size()
     //          << std::endl;
     const systems::BasicVector<double>* car_state = inputs_world_car[i];
-    std::cerr << "  position: " << car_state->GetAtIndex(0) << "\n";
-    const maliput::api::RoadPosition rp =
-        road_->ProjectToSourceRoad({car_state->GetAtIndex(0), 0., 0.}).first;
+    const double long_pos_road = car_state->GetAtIndex(0);
+    const double heading_road = car_state->GetAtIndex(2);
+    const double vel_forward = car_state->GetAtIndex(3);
 
-    // std::cerr << "TargetSelectorAndIdmPlanner::UnwrapEndlessRoadCarState
-    // 0..."
+    std::cerr << "  World position: " << long_pos_road << "\n";
+    const maliput::api::RoadPosition rp =
+        road_->ProjectToSourceRoad({long_pos_road, 0., 0.}).first;
+    std::cerr << "    World rp.pos.s: "
+              << rp.pos.s << std::endl;
+
+    // std::cerr << "     SelectCarState 0..."
     //          << std::endl;
-    DRAKE_DEMAND(std::cos(car_state->GetAtIndex(2)) >= 0.);
-    DRAKE_DEMAND(car_state->GetAtIndex(3) >= 0.);
+    DRAKE_DEMAND(std::cos(heading_road) >= 0.);
+    DRAKE_DEMAND(vel_forward >= 0.);
 
     // Ignore any cars outside the perception distance.
     if (!do_restrict_to_lane_) {
       maliput::api::GeoPosition geo_pos = rp.lane->ToGeoPosition(rp.pos);
       distances.emplace_back(
                        road_->RoadGeometry::Distance(geo_pos_self, geo_pos));
+      std::cerr << "  geo_pos: "
+                << geo_pos.x << ",  "
+                << geo_pos.y << ",  "
+                << geo_pos.z << std::endl;
+      std::cerr << "  distances[i]: " << distances[i] << std::endl;
+
       if (distances[i] < kPerceptionDistance) {
         const double longitudinal_speed =  // Along-lane speed.
-          car_state->GetAtIndex(3) * std::cos(car_state->GetAtIndex(2));
+          vel_forward * std::cos(heading_road);
         // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
         // car_data.emplace_back(std::make_pair(&pair, rp.lane));
-        CarData car_data_value(rp.pos.s, longitudinal_speed, rp.lane);
-        car_data.emplace_back(&car_data_value);
+        CarData car_data_value(long_pos_road, longitudinal_speed, rp.lane);
+        car_data.emplace_back(car_data_value);
+        std::cerr << "    long_pos_road: "
+                  << long_pos_road << std::endl;
+        std::cerr << "    car_data_value.pos: "
+                  << car_data_value.pos << std::endl;
       } else {
         double position_infty = kEnormousDistance;
         CarData car_data_infty(position_infty, 0., rp.lane);
-        car_data.emplace_back(&car_data_infty);
+        car_data.emplace_back(car_data_infty);
       }
     } else {
       DRAKE_ABORT();
@@ -364,20 +408,27 @@ TargetSelectorAndIdmPlanner<T>::SelectCarState(
   for (int i = 0; i < (int)distances.size(); ++i) {
     index_set[i] = i;
   }
-  const std::vector<int> possibly_sorted_distances =
+  const std::vector<int> possibly_sorted_indices =
       (do_sort_) ? SortDistances(distances) : index_set;
-  for (auto i : possibly_sorted_distances) {
+  for (auto i : possibly_sorted_indices) {
+    std::cerr << "  Unrolling sorted indices... " << std::endl;
+    std::cerr << "    i: " << i << std::endl;
+    std::cerr << "    car_data[i].pos: " << car_data[i].pos << std::endl;
     if (i >= num_targets_per_car_) {
       break;
     }
     car_data_targets->emplace_back(car_data[i]);
+  }
+  for (auto stuff : *car_data_targets) {
+    std::cerr << "    car_data_targets[i].pos: "
+              << stuff.pos << std::endl;
   }
   return car_data_self;
 }
 
 template <typename T>
 void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
-    const CarData& car_data_self, const std::vector<CarData*>& car_data_targets,
+    const CarData& car_data_self, const std::vector<CarData>& car_data_targets,
     const systems::Context<T>& context,
     systems::BasicVector<T>* output_vector) const {
   std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations ..."
@@ -406,9 +457,10 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
 
   std::vector<SourceState> source_states_targets;
   for (auto car_data : car_data_targets) {
-    const T& s_target = car_data->pos;
-    const T& v_target = car_data->vel;
-    const maliput::api::Lane* lane_target = car_data->lane;
+    const T& s_target = car_data.pos;
+    const T& v_target = car_data.vel;
+    std::cerr << "  IdmPlanner s_target: " << s_target << std::endl;
+    const maliput::api::Lane* lane_target = car_data.lane;
     LanePosition lp_target(s_target, 0., 0.);
     RoadPosition rp_target(lane_target, lp_target);
     source_states_targets.emplace_back(rp_target, v_target);
