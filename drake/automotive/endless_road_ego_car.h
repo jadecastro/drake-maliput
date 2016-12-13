@@ -5,7 +5,7 @@
 #include "drake/automotive/endless_road_simple_car.h"
 #include "drake/automotive/gen/endless_road_car_state.h"
 #include "drake/automotive/gen/endless_road_oracle_output.h"
-#include "drake/automotive/target_selector_and_idm_planner.h"
+#include "drake/automotive/target_selector_and_idm_merge_planner.h"
 #include "drake/systems/framework/context.h"
 #include "drake/systems/framework/diagram.h"
 
@@ -65,7 +65,8 @@ class EndlessRoadEgoCar : public systems::Diagram<T> {
 
   /// Getters for the subsystems.
   const EndlessRoadSimpleCar<T>* car_system() const { return car_; }
-  const TargetSelectorAndIdmPlanner<T>* get_selector_planner_system() const {
+  const TargetSelectorAndIdmMergePlanner<T>* get_selector_planner_system()
+      const {
     return selector_planner_;
   }
 
@@ -80,7 +81,7 @@ class EndlessRoadEgoCar : public systems::Diagram<T> {
   const std::string id_;
   const int num_cars_;
   const EndlessRoadSimpleCar<T>* car_ = nullptr;
-  const TargetSelectorAndIdmPlanner<T>* selector_planner_ = nullptr;
+  const TargetSelectorAndIdmMergePlanner<T>* selector_planner_ = nullptr;
 };
 
 }  // namespace automotive

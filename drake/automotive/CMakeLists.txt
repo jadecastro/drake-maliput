@@ -37,6 +37,7 @@ add_library_with_exports(LIB_NAME drakeAutomotive SOURCE_FILES
   #single_lane_ego_and_agent.cc
   #target_selector.cc
   target_selector_and_idm_planner.cc
+  target_selector_and_idm_merge_planner.cc
   trajectory_car.cc
   )
 target_link_libraries(drakeAutomotive
@@ -63,6 +64,7 @@ drake_install_headers(
   #single_lane_ego_and_agent.h
   #target_selector.h
   target_selector_and_idm_planner.h
+  target_selector_and_idm_merge_planner.h
   trajectory_car.h
   # N.B. The gen/*.h headers are installed by gen/CMakeLists.txt.
   )

@@ -45,7 +45,7 @@ EndlessRoadEgoCar<T>::EndlessRoadEgoCar(
   // Instantiate the TargetSelector and IdmPlanner to create an input
   // for the car.
   selector_planner_ =
-      builder.AddSystem(std::make_unique<TargetSelectorAndIdmPlanner<T>>(
+      builder.AddSystem(std::make_unique<TargetSelectorAndIdmMergePlanner<T>>(
           road, num_cars_, num_targets_per_car));
   // TODO (jadecastro): Default num_targets_per_car as num_cars-1 if
   // no argument.
