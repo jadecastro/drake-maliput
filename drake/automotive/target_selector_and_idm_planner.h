@@ -67,12 +67,13 @@ class TargetSelectorAndIdmPlanner : public systems::LeafSystem<T> {
 
  protected:
   struct CarData {
-    CarData(const double _pos, const double _vel,
+    CarData(const double _s, const double _lane_s, const double _lane_v,
             const maliput::api::Lane* _lane)
-        : pos(_pos), vel(_vel), lane(_lane) {}
+       : s(_s), lane_s(_lane_s), lane_v(_lane_v), lane(_lane) {}
 
-    const double pos;
-    const double vel;
+    const double s;
+    const double lane_s;
+    const double lane_v;
     const maliput::api::Lane* lane;
   };
   // LeafSystem<T> overrides
@@ -102,6 +103,7 @@ class TargetSelectorAndIdmPlanner : public systems::LeafSystem<T> {
 
   void UnwrapEndlessRoadCarState(
       const SourceState& source_state_self,
+      const double& s_absolute,
       const maliput::utility::InfiniteCircuitRoad& road,
       std::vector<PathRecord>* path_self_car) const;
 

@@ -128,16 +128,21 @@ const double kHorizonSeconds = 10.;
 template <typename T>
 void TargetSelectorAndIdmPlanner<T>::UnwrapEndlessRoadCarState(
     const SourceState& source_states_self,
+    const double& s_absolute,
     const maliput::utility::InfiniteCircuitRoad& road,
     std::vector<PathRecord>* path_self_car) const {
   const double horizon_meters =
       source_states_self.longitudinal_speed * kHorizonSeconds;
   DRAKE_DEMAND(horizon_meters >= 0.);
 
-  const maliput::api::LanePosition position = source_states_self.rp.pos;
-  const double circuit_s0 = road.lane()->circuit_s(position.s);
+  std::cerr << "   %%% source_states_self.rp.pos.s:"
+            << source_states_self.rp.pos.s << std::endl;
+  std::cerr << "   %%% s_absolute:"
+            << s_absolute << std::endl;
+  const double circuit_s0 = road.lane()->circuit_s(s_absolute);
 
   int path_index = road.GetPathIndex(circuit_s0);
+  std::cerr << "   %%% path_index:" << path_index << std::endl;
   maliput::utility::InfiniteCircuitRoad::Record path_record =
       road.path_record(path_index);
   double circuit_s_in = circuit_s0;
@@ -202,6 +207,11 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
   double bound_nudge = 0.1 * params.car_length();
   // Loop over the partial path constructed over the perception horizon.
   while (lane_this_car != path_self_car.end()) {
+    std::cerr << "        ** lane_this_car: "
+              << lane_this_car->lane << std::endl;
+    std::cerr << "          !lane_this_car->is_reversed: "
+              << !lane_this_car->is_reversed << std::endl;
+    std::cerr << "          is_first: " << is_first << std::endl;
     const double possible_lane_datum =
         (!lane_this_car->is_reversed) ? 0. : lane_this_car->lane->length();
     const double lane_datum =
@@ -224,18 +234,23 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
       auto lane_limit = cars_by_lane_and_s[lane_this_car->lane].end();
       is_car_past_limit = states_this_car != lane_limit;
       //if (is_first) {
-      //  is_car_past_limit |= (states_this_car->first - self_car.rp.pos.s) >= 0;
+      //  is_car_past_limit |=
+      //     (states_this_car->first - self_car.rp.pos.s) >= 0;
       //}
       index_this_car = states_this_car->second;
       std::cerr << "      index_this_car: " << index_this_car << std::endl;
     } else {
-      auto states_this_car = std::make_reverse_iterator(
+      std::cerr << "      lane_length: " << lane_length << std::endl;
+      auto states_this_car =
           cars_by_lane_and_s[lane_this_car->lane].lower_bound(last_position -
-                                                              bound_nudge));
-      auto lane_limit = cars_by_lane_and_s[lane_this_car->lane].rend();
+                                                              bound_nudge);
+      std::cerr << "      states_this_car: " << states_this_car->first
+                << std::endl;
+      auto lane_limit = cars_by_lane_and_s[lane_this_car->lane].end();
       is_car_past_limit = states_this_car != lane_limit;
       //if (is_first) {
-      //  is_car_past_limit |= (self_car.rp.pos.s - states_this_car->first) >= 0;
+      //  is_car_past_limit |=
+      //     (self_car.rp.pos.s - states_this_car->first) >= 0;
       //}
       index_this_car = states_this_car->second;
       std::cerr << "      index_this_car: " << index_this_car << std::endl;
@@ -259,7 +274,9 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
       std::cerr << "      pos_relative_to_lane: " <<
           pos_relative_to_lane << std::endl;
       std::cerr << "      lane_datum: " <<
-          lane_length_sum << std::endl;
+          lane_datum << std::endl;
+      std::cerr << "      lane_length: " <<
+          lane_length << std::endl;
       delta_velocity =
           self_car.longitudinal_speed - this_car.longitudinal_speed;
       break;
@@ -318,7 +335,10 @@ TargetSelectorAndIdmPlanner<T>::SelectCarState(
     vel_forward_self * std::cos(heading_road_self);
   // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
   const CarData car_data_self =
-    {rp_self.pos.s, longitudinal_speed, rp_self.lane};
+    {long_pos_road_self, rp_self.pos.s, longitudinal_speed, rp_self.lane};
+  std::cerr << "   %%% long_pos_road_self:"
+            << long_pos_road_self << std::endl;
+
 
   DRAKE_DEMAND(num_cars_ == (int)inputs_world_car.size() + 1);
   for (int i = 0; i < num_cars_ - 1; ++i) {
@@ -341,11 +361,12 @@ TargetSelectorAndIdmPlanner<T>::SelectCarState(
           vel_forward * std::cos(heading_road);
         // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
         // car_data.emplace_back(std::make_pair(&pair, rp.lane));
-        CarData car_data_value(rp.pos.s, longitudinal_speed, rp.lane);
+        CarData car_data_value(long_pos_road, rp.pos.s,
+                               longitudinal_speed, rp.lane);
         car_data.emplace_back(car_data_value);
       } else {
         double position_infty = kEnormousDistance;
-        CarData car_data_infty(position_infty, 0., rp.lane);
+        CarData car_data_infty(position_infty, position_infty, 0., rp.lane);
         car_data.emplace_back(car_data_infty);
       }
     } else {
@@ -390,8 +411,9 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
   const T& delta = params.delta();
   const T& car_length = params.car_length();
 
-  const T& s_self = car_data_self.pos;  // Road position
-  const T& v_self = car_data_self.vel;  // Along-lane velocity
+  const T& s_self_absolute = car_data_self.s;  // Road position
+  const T& s_self = car_data_self.lane_s;  // Lane position
+  const T& v_self = car_data_self.lane_v;  // Along-lane velocity
   const maliput::api::Lane* lane_self = car_data_self.lane;
   // Compose the inputs into the required containers.
   LanePosition lp_self(s_self, 0., 0.);
@@ -400,8 +422,8 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
 
   std::vector<SourceState> source_states_targets;
   for (auto car_data : car_data_targets) {
-    const T& s_target = car_data.pos;
-    const T& v_target = car_data.vel;
+    const T& s_target = car_data.lane_s;
+    const T& v_target = car_data.lane_v;
     const maliput::api::Lane* lane_target = car_data.lane;
     LanePosition lp_target(s_target, 0., 0.);
     RoadPosition rp_target(lane_target, lp_target);
@@ -410,7 +432,8 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
 
   // Get the local path of the self-car.
   std::vector<PathRecord> path_self_car;
-  UnwrapEndlessRoadCarState(source_states_self, *road_, &path_self_car);
+  UnwrapEndlessRoadCarState(source_states_self, s_self_absolute,
+                            *road_, &path_self_car);
 
   // Obtain the relative quantities for the nearest car ahead of the self-car.
   std::pair<double, double> relative_sv = AssessLongitudinal(
