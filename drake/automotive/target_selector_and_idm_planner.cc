@@ -261,7 +261,10 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
     if (is_car_past_limit) {
       const SourceState& this_car = source_states_targets[index_this_car];
       rp_this_car = this_car.rp;
-      const double pos_relative_to_lane = (!lane_this_car->is_reversed) ?
+      // TODO (jadecastro): This is somewhat of a hack.
+      bool is_not_reversed_nor_infty = !lane_this_car->is_reversed ||
+          (rp_this_car.pos.s > 0.5*kEnormousDistance);
+      const double pos_relative_to_lane = (is_not_reversed_nor_infty) ?
           (rp_this_car.pos.s - lane_datum) :
           (lane_datum - rp_this_car.pos.s);
       // Compute the relative position and velocity of the next car found.
