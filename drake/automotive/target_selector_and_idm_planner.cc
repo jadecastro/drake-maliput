@@ -86,7 +86,7 @@ void TargetSelectorAndIdmPlanner<T>::EvalOutput(
   // const EndlessRoadCarState<T>* const input_self_car =
   //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_self);
   // DRAKE_ASSERT(input_self_car);
-  std::cerr << "  self position: " << basic_input_self->GetAtIndex(0) << "\n";
+  //std::cerr << "  self position: " << basic_input_self->GetAtIndex(0) << "\n";
 
   // Obtain the world-car inputs.
   // std::vector<const EndlessRoadCarState<T>*> inputs_world;
@@ -99,8 +99,8 @@ void TargetSelectorAndIdmPlanner<T>::EvalOutput(
     //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_world);
     // DRAKE_ASSERT(input_world);
     // inputs_world.push_back(input_world);
-    std::cerr << "  world car " << i
-              << " position: " << basic_input_world->GetAtIndex(0) << "\n";
+    //std::cerr << "  world car " << i
+    //          << " position: " << basic_input_world->GetAtIndex(0) << "\n";
 
     inputs_world.push_back(basic_input_world);
   }
@@ -134,13 +134,10 @@ void TargetSelectorAndIdmPlanner<T>::UnwrapEndlessRoadCarState(
       source_states_self.longitudinal_speed * kHorizonSeconds;
   DRAKE_DEMAND(horizon_meters >= 0.);
 
-  std::cerr << "   %%% source_states_self.rp.pos.s:"
-            << source_states_self.rp.pos.s << std::endl;
-  std::cerr << "   %%% s_absolute:" << s_absolute << std::endl;
-  const double circuit_s0 = road.lane()->circuit_s(s_absolute);
+ const double circuit_s0 = road.lane()->circuit_s(s_absolute);
 
   int path_index = road.GetPathIndex(circuit_s0);
-  std::cerr << "   %%% path_index:" << path_index << std::endl;
+  //std::cerr << "   %%% path_index:" << path_index << std::endl;
   maliput::utility::InfiniteCircuitRoad::Record path_record =
       road.path_record(path_index);
   double circuit_s_in = circuit_s0;
@@ -204,11 +201,6 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
   double bound_nudge = 0.1 * params.car_length();
   // Loop over the partial path constructed over the perception horizon.
   while (lane_this_car != path_self_car.end()) {
-    std::cerr << "        ** lane_this_car: " << lane_this_car->lane
-              << std::endl;
-    std::cerr << "          !lane_this_car->is_reversed: "
-              << !lane_this_car->is_reversed << std::endl;
-    std::cerr << "          is_first: " << is_first << std::endl;
     const double possible_lane_datum =
         (!lane_this_car->is_reversed) ? 0. : lane_this_car->lane->length();
     const double lane_datum =
@@ -235,14 +227,11 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
       //     (states_this_car->first - self_car.rp.pos.s) >= 0;
       //}
       index_this_car = states_this_car->second;
-      std::cerr << "      index_this_car: " << index_this_car << std::endl;
+      //std::cerr << "      index_this_car: " << index_this_car << std::endl;
     } else {
-      std::cerr << "      lane_length: " << lane_length << std::endl;
       auto states_this_car =
           cars_by_lane_and_s[lane_this_car->lane].lower_bound(last_position -
                                                               bound_nudge);
-      std::cerr << "      states_this_car: " << states_this_car->first
-                << std::endl;
       auto lane_limit = cars_by_lane_and_s[lane_this_car->lane].end();
       is_car_past_limit = states_this_car != lane_limit;
       // if (is_first) {
@@ -250,7 +239,7 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
       //     (self_car.rp.pos.s - states_this_car->first) >= 0;
       //}
       index_this_car = states_this_car->second;
-      std::cerr << "      index_this_car: " << index_this_car << std::endl;
+      //std::cerr << "      index_this_car: " << index_this_car << std::endl;
     }
 
     // TODO (jadecastro): This could cause false alarms and lead to
@@ -268,13 +257,6 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
       // Compute the relative position and velocity of the next car found.
       delta_position =
           lane_length_sum + pos_relative_to_lane - params.car_length();
-      std::cerr << "      rp_this_car.pos.s: " << rp_this_car.pos.s
-                << std::endl;
-      std::cerr << "      lane_length_sum: " << lane_length_sum << std::endl;
-      std::cerr << "      pos_relative_to_lane: " << pos_relative_to_lane
-                << std::endl;
-      std::cerr << "      lane_datum: " << lane_datum << std::endl;
-      std::cerr << "      lane_length: " << lane_length << std::endl;
       delta_velocity =
           self_car.longitudinal_speed - this_car.longitudinal_speed;
       break;
@@ -294,10 +276,10 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
   }
   // If delta_position < kCarLength, the cars crashed!
   DRAKE_DEMAND(delta_position > 0.);
-  std::cerr << "  @@@@@ IdmPlanner  delta_position: " << delta_position
-            << std::endl;
-  std::cerr << "  @@@@@ IdmPlanner  delta_velocity: " << delta_velocity
-            << std::endl;
+  //std::cerr << "  @@@@@ IdmPlanner  delta_position: " << delta_position
+  //          << std::endl;
+  //std::cerr << "  @@@@@ IdmPlanner  delta_velocity: " << delta_velocity
+  //          << std::endl;
   // Populate the relative target quantities.
 
   return std::make_pair(delta_position, delta_velocity);
@@ -334,7 +316,6 @@ TargetSelectorAndIdmPlanner<T>::SelectCarState(
   // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
   const CarData car_data_self = {long_pos_road_self, rp_self.pos.s,
                                  longitudinal_speed, rp_self.lane};
-  std::cerr << "   %%% long_pos_road_self:" << long_pos_road_self << std::endl;
 
   DRAKE_DEMAND(num_cars_ == (int)inputs_world_car.size() + 1);
   for (int i = 0; i < num_cars_ - 1; ++i) {
@@ -445,21 +426,21 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
   const T s_star =
       s_0 + v_self * time_headway + v_self * v_rel / (2 * sqrt(a * b));
 
-  std::cerr << "  IdmPlanner v_ref: " << v_ref << std::endl;
-  std::cerr << "  IdmPlanner s_self: " << s_self << std::endl;
-  std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
-  std::cerr << "  IdmPlanner s_rel: " << s_rel << std::endl;
-  std::cerr << "  IdmPlanner v_rel: " << v_rel << std::endl;
+  //std::cerr << "  IdmPlanner v_ref: " << v_ref << std::endl;
+  //std::cerr << "  IdmPlanner s_self: " << s_self << std::endl;
+  //std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
+  //std::cerr << "  IdmPlanner s_rel: " << s_rel << std::endl;
+  //std::cerr << "  IdmPlanner v_rel: " << v_rel << std::endl;
 
   output_vector->SetAtIndex(
       0, a * (1.0 - pow(v_self / v_ref, delta) -
               pow(s_star / s_rel, 2.0)));  // Longitudinal acceleration.
   output_vector->SetAtIndex(1, 0.0);       // Lateral acceleration.
 
-  std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
-            << std::endl;
-  std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations."
-            << std::endl;
+  //std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
+  //          << std::endl;
+  //std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations."
+  //          << std::endl;
 }
 
 // Lambda-expression approach to sort indices (adapted from

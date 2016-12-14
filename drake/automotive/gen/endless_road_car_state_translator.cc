@@ -18,7 +18,6 @@ EndlessRoadCarStateTranslator::AllocateOutputVector() const {
 void EndlessRoadCarStateTranslator::Serialize(
     double time, const systems::VectorBase<double>& vector_base,
     std::vector<uint8_t>* lcm_message_bytes) const {
-  std::cerr << "EndlessRoadCarStateTranslator::Serialize...\n";
   //const auto* const vector =
   //    dynamic_cast<const EndlessRoadCarState<double>*>(&vector_base);
   //DRAKE_DEMAND(vector != nullptr);

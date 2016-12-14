@@ -83,8 +83,8 @@ void EndlessRoadTrafficCar<T>::SetDefaultState(
       this->GetMutableSubsystemContext(context, car_);
   DRAKE_DEMAND(context_car != nullptr);
 
-  const double& thing = car_->get_s_init();
-  std::cerr << "  EndlessRoadTrafficCar s_init: " << thing << ".\n";
+  //const double& thing = car_->get_s_init();
+  //std::cerr << "  EndlessRoadTrafficCar s_init: " << thing << ".\n";
 
   // Set the default state based on the member fields.
   car_->SetDefaultState(context_car);

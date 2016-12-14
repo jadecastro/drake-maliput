@@ -139,9 +139,6 @@ void EndlessRoadSimpleCar<T>::DoEvalTimeDerivatives(
     const Accelerations& accelerations,
     systems::VectorBase<T>* rates) const {
 
-  std::cerr << "   ****  DoEvalTimeDerivatives s_init: " <<
-      state.GetAtIndex(0) << std::endl;
-
   // Position + velocity ---> position derivatives.
   maliput::api::LanePosition
     lane_position(state.GetAtIndex(0), state.GetAtIndex(1), 0.);

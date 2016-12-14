@@ -30,12 +30,15 @@ namespace automotive {
 using maliput::api::RoadPosition;
 using maliput::api::LanePosition;
 
+// TODO(jadecastro): Do away with any/all need to depend on traffic car paths.
 template <typename T>
 TargetSelectorAndIdmMergePlanner<T>::TargetSelectorAndIdmMergePlanner(
-    const maliput::utility::InfiniteCircuitRoad* road, const int num_cars,
+    const maliput::utility::InfiniteCircuitRoad* road,
+    const maliput::utility::InfiniteCircuitRoad* road_traffic,
+    const int num_cars,
     const int num_targets_per_car, const bool do_restrict_to_lane,
     const bool do_sort)
-    : road_(road),
+    : road_(road), road_traffic_(road_traffic),
       num_cars_(num_cars),
       num_targets_per_car_(num_targets_per_car),
       do_restrict_to_lane_(do_restrict_to_lane),
@@ -86,7 +89,7 @@ void TargetSelectorAndIdmMergePlanner<T>::EvalOutput(
   // const EndlessRoadCarState<T>* const input_self_car =
   //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_self);
   // DRAKE_ASSERT(input_self_car);
-  std::cerr << "  self position: " << basic_input_self->GetAtIndex(0) << "\n";
+  //std::cerr << "  self position: " << basic_input_self->GetAtIndex(0) << "\n";
 
   // Obtain the world-car inputs.
   // std::vector<const EndlessRoadCarState<T>*> inputs_world;
@@ -99,8 +102,8 @@ void TargetSelectorAndIdmMergePlanner<T>::EvalOutput(
     //  dynamic_cast<const EndlessRoadCarState<T>*>(basic_input_world);
     // DRAKE_ASSERT(input_world);
     // inputs_world.push_back(input_world);
-    std::cerr << "  world car " << i
-              << " position: " << basic_input_world->GetAtIndex(0) << "\n";
+    //std::cerr << "  world car " << i
+    //          << " position: " << basic_input_world->GetAtIndex(0) << "\n";
 
     inputs_world.push_back(basic_input_world);
   }
@@ -141,13 +144,13 @@ void TargetSelectorAndIdmMergePlanner<T>::UnwrapEndlessRoadCarState(
   DRAKE_DEMAND(horizon_meters >= 0.);
 
   const double s_absolute_self = source_states_self.s_absolute;
-  std::cerr << "   %%% source_states_self.rp.pos.s:"
-            << source_states_self.rp.pos.s << std::endl;
-  std::cerr << "   %%% s_absolute_self:" << s_absolute_self << std::endl;
+  //std::cerr << "   %%% source_states_self.rp.pos.s:"
+  //          << source_states_self.rp.pos.s << std::endl;
+  //std::cerr << "   %%% s_absolute_self:" << s_absolute_self << std::endl;
   const double circuit_s0 = road.lane()->circuit_s(s_absolute_self);
 
   int path_index = road.GetPathIndex(circuit_s0);
-  std::cerr << "   %%% path_index:" << path_index << std::endl;
+  //std::cerr << "   %%% path_index:" << path_index << std::endl;
   maliput::utility::InfiniteCircuitRoad::Record path_record =
       road.path_record(path_index);
   double circuit_s_in = circuit_s0;
@@ -214,16 +217,11 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
   // horizon.
   //
   // TODO(jadecastro): Most of the work of looping through the entire
-  // road segments is completely implementation-specific and should be
+  // road path is completely implementation-specific and should be
   // hidden from the user in an API.  This of course would ease
   // (hopefully seamless) portability should any of the road
   // definition change.
   while (lane_this_car != path_self_car.end()) {
-    std::cerr << "        ** lane_this_car: " << lane_this_car->lane
-              << std::endl;
-    std::cerr << "          !lane_this_car->is_reversed: "
-              << !lane_this_car->is_reversed << std::endl;
-    std::cerr << "          is_first: " << is_first << std::endl;
     const double possible_lane_datum =
         (!lane_this_car->is_reversed) ? 0. : lane_this_car->lane->length();
     const double lane_datum =
@@ -246,18 +244,13 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
       auto lane_limit = cars_by_lane_and_s[lane_this_car->lane].end();
       is_car_past_limit = states_this_car != lane_limit;
       index_this_car = states_this_car->second;
-      std::cerr << "      index_this_car: " << index_this_car << std::endl;
     } else {
-      std::cerr << "      lane_length: " << lane_length << std::endl;
       auto states_this_car =
           cars_by_lane_and_s[lane_this_car->lane].lower_bound(last_position -
                                                               bound_nudge);
-      std::cerr << "      states_this_car: " << states_this_car->first
-                << std::endl;
       auto lane_limit = cars_by_lane_and_s[lane_this_car->lane].end();
       is_car_past_limit = states_this_car != lane_limit;
       index_this_car = states_this_car->second;
-      std::cerr << "      index_this_car: " << index_this_car << std::endl;
     }
 
     // TODO (jadecastro): This check is somewhat fragile; it could
@@ -275,13 +268,6 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
       // Compute the relative position and velocity of the next car found.
       delta_position =
           lane_length_sum + pos_relative_to_lane - params.car_length();
-      std::cerr << "      rp_this_car.pos.s: " << rp_this_car.pos.s
-                << std::endl;
-      std::cerr << "      lane_length_sum: " << lane_length_sum << std::endl;
-      std::cerr << "      pos_relative_to_lane: " << pos_relative_to_lane
-                << std::endl;
-      std::cerr << "      lane_datum: " << lane_datum << std::endl;
-      std::cerr << "      lane_length: " << lane_length << std::endl;
       delta_velocity =
           self_car.longitudinal_speed - this_car.longitudinal_speed;
       break;
@@ -301,10 +287,10 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
   }
   // If delta_position < kCarLength, the cars crashed!
   DRAKE_DEMAND(delta_position > 0.);
-  std::cerr << "  @@@@@ IdmPlanner  delta_position: " << delta_position
-            << std::endl;
-  std::cerr << "  @@@@@ IdmPlanner  delta_velocity: " << delta_velocity
-            << std::endl;
+  //std::cerr << "  @@@@@ IdmPlanner  delta_position: " << delta_position
+  //          << std::endl;
+  //std::cerr << "  @@@@@ IdmPlanner  delta_velocity: " << delta_velocity
+  //          << std::endl;
   // Populate the relative target quantities.
 
   return std::make_pair(delta_position, delta_velocity);
@@ -359,6 +345,7 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
     const std::vector<SourceState>& source_states_targets,
     const std::vector<PathRecord>& path_self_car,
     const maliput::utility::InfiniteCircuitRoad& road) const {
+  // TODO(jadecastro): Why am I bringing in a global???
 
   // Indexing Phase.
   // For each car, measure/record the 'time-in' and 'time-out' to all junctions
@@ -385,19 +372,14 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
   bool is_first = true;
   for (const PathRecord& section: path_self_car) {
     double lane_length{};
-    std::cerr << "      *** AssessIntersections (self):" << std::endl;
     if (!section.is_reversed) {
       const double lane_datum = (is_first) ? self.rp.pos.s : 0.;
-      std::cerr << "        lane_datum: " << lane_datum << std::endl;
       lane_length = section.lane->length() - lane_datum;
     } else {
       const double lane_datum = (is_first) ? self.rp.pos.s :
           section.lane->length();
-      std::cerr << "        lane_datum: " << lane_datum << std::endl;
       lane_length = lane_datum;
     }
-    std::cerr << "        lane_length: " << lane_length << std::endl;
-    std::cerr << "        lane_length_sum: " << lane_length_sum << std::endl;
     DRAKE_DEMAND(lane_length > 0.);
     const double s_in = lane_length_sum;
     lane_length_sum += lane_length;
@@ -439,25 +421,25 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
     DRAKE_DEMAND(horizon_meters >= 0.);
 
     const double s_absolute = target.s_absolute;
-    const double circuit_s0 = road.lane()->circuit_s(s_absolute);
-    int path_index = road.GetPathIndex(circuit_s0);
-    std::cerr << "   %%% path_index:" << path_index << std::endl;
+    const double circuit_s0 = road_traffic_->lane()->circuit_s(s_absolute);
+    int path_index = road_traffic_->GetPathIndex(circuit_s0);
+    //std::cerr << "   %%% path_index:" << path_index << std::endl;
     maliput::utility::InfiniteCircuitRoad::Record path_record =
-      road.path_record(path_index);
+      road_traffic_->path_record(path_index);
     double circuit_s_in = circuit_s0;
     std::vector<PathRecord> path;
     while (circuit_s_in <= (circuit_s0 + horizon_meters)) {
       path.push_back({path_record.lane, path_record.is_reversed});
 
       // TODO(maddog) Index should decrement for s_dot < 0.
-      if (++path_index >= road.num_path_records()) {
+      if (++path_index >= road_traffic_->num_path_records()) {
         path_index = 0;
       }
-      path_record = road.path_record(path_index);
+      path_record = road_traffic_->path_record(path_index);
       circuit_s_in = path_record.start_circuit_s;
       // Handle wrap-around of "circuit s" values.
       if (circuit_s_in < circuit_s0) {
-        circuit_s_in += road.cycle_length();
+        circuit_s_in += road_traffic_->cycle_length();
       }
     }
 
@@ -478,28 +460,14 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
     }
     for (const PathRecord& section: path) {
       double lane_length{};
-      std::cerr << "      *** AssessIntersections (target):" << std::endl;
       if (!section.is_reversed) {
         const double lane_datum = (is_first) ? s_target : 0.;
-        if (is_first) {
-          std::cerr << "        s_target: " << s_target << std::endl;
-        }
-        std::cerr << "        lane_datum: " << lane_datum << std::endl;
         lane_length = section.lane->length() - lane_datum;
       } else {
         const double lane_datum = (is_first) ? s_target :
           section.lane->length();
-        if (is_first) {
-          std::cerr << "        s_target: " << s_target << std::endl;
-        } else {
-          std::cerr << "        section.lane->length: "
-                    << section.lane->length() << std::endl;
-        }
-        std::cerr << "        lane_datum: " << lane_datum << std::endl;
         lane_length = lane_datum;
       }
-      std::cerr << "        lane_length: " << lane_length << std::endl;
-      std::cerr << "        lane_length_sum: " << lane_length_sum << std::endl;
       DRAKE_DEMAND(lane_length > 0.);
       const double s_in = lane_length_sum;
       lane_length_sum += lane_length;
@@ -588,12 +556,8 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
             // *** implement some logic to process it.
             continue;
           }
-          std::cerr << "      AssessIntersections: delta_position_centroids: "
-                    << delta_position_centroids << std::endl;
           double delta_position =
               delta_position_centroids - params.car_length();
-          std::cerr << "      AssessIntersections: delta_position: "
-                    << delta_position << std::endl;
 
           if (delta_position <= 0.) {
             // TODO(jadecastro): Change this. Make the self car speed up.
@@ -656,7 +620,6 @@ TargetSelectorAndIdmMergePlanner<T>::SelectCarState(
   // pair = std::make_pair(T{rp.pos.s}, T{longitudinal_speed});
   const CarData car_data_self = {long_pos_road_self, rp_self.pos.s,
                                  longitudinal_speed, rp_self.lane};
-  std::cerr << "   %%% long_pos_road_self:" << long_pos_road_self << std::endl;
 
   DRAKE_DEMAND(num_cars_ == (int)inputs_world_car.size() + 1);
   for (int i = 0; i < num_cars_ - 1; ++i) {
@@ -665,7 +628,7 @@ TargetSelectorAndIdmMergePlanner<T>::SelectCarState(
     const double heading_road = car_state->GetAtIndex(2);
     const double vel_forward = car_state->GetAtIndex(3);
     const maliput::api::RoadPosition rp =
-        road_->ProjectToSourceRoad({long_pos_road, 0., 0.}).first;
+        road_traffic_->ProjectToSourceRoad({long_pos_road, 0., 0.}).first;
     DRAKE_DEMAND(std::cos(heading_road) >= 0.);
     DRAKE_DEMAND(vel_forward >= 0.);
 
@@ -673,7 +636,7 @@ TargetSelectorAndIdmMergePlanner<T>::SelectCarState(
     if (!do_restrict_to_lane_) {
       maliput::api::GeoPosition geo_pos = rp.lane->ToGeoPosition(rp.pos);
       distances.emplace_back(
-          road_->RoadGeometry::Distance(geo_pos_self, geo_pos));
+          road_traffic_->RoadGeometry::Distance(geo_pos_self, geo_pos));
       if (distances[i] < kPerceptionDistance) {
         const double longitudinal_speed =  // Along-lane speed.
             vel_forward * std::cos(heading_road);
@@ -766,10 +729,12 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
       params, source_states_self, source_states_targets, path_self_car, *road_);
   const double s_rel_ool = sv_relative_outoflane.first;
   const double v_rel_ool = sv_relative_outoflane.second;
-  std::cerr << " Compute IDM Accelerations: sv_relative_outoflane.s: "
-            << s_rel_ool << std::endl;
-  std::cerr << "                                                 .v: "
-            << v_rel_ool << std::endl;
+  if (s_rel_ool < kEnormousDistance) {
+    std::cerr << " Compute IDM Accelerations: sv_relative_outoflane.s: "
+              << s_rel_ool << std::endl;
+    std::cerr << "                                                 .v: "
+              << v_rel_ool << std::endl;
+  }
   // **** Use the output!! ****
 
   // Check that we're supplying the planner with sane parameters and
@@ -781,21 +746,21 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
   const T s_star =
       s_0 + v_self * time_headway + v_self * v_rel / (2 * sqrt(a * b));
 
-  std::cerr << "  IdmPlanner v_ref: " << v_ref << std::endl;
-  std::cerr << "  IdmPlanner s_self: " << s_self << std::endl;
-  std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
-  std::cerr << "  IdmPlanner s_rel: " << s_rel << std::endl;
-  std::cerr << "  IdmPlanner v_rel: " << v_rel << std::endl;
+  //std::cerr << "  IdmPlanner v_ref: " << v_ref << std::endl;
+  //std::cerr << "  IdmPlanner s_self: " << s_self << std::endl;
+  //std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
+  //std::cerr << "  IdmPlanner s_rel: " << s_rel << std::endl;
+  //std::cerr << "  IdmPlanner v_rel: " << v_rel << std::endl;
 
   output_vector->SetAtIndex(
       0, a * (1.0 - pow(v_self / v_ref, delta) -
               pow(s_star / s_rel, 2.0)));  // Longitudinal acceleration.
   output_vector->SetAtIndex(1, 0.0);       // Lateral acceleration.
 
-  std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
-            << std::endl;
-  std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations."
-            << std::endl;
+  //std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
+  //          << std::endl;
+  //std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations."
+  //          << std::endl;
 }
 
 // Lambda-expression approach to sort indices (adapted from

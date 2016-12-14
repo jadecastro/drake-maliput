@@ -23,6 +23,13 @@ DEFINE_string(road_path, "",
               "indicating at which end of the first lane to begin the "
               "circuit.  If the string is empty, a default path will "
               "be selected.");
+DEFINE_string(road_path_traffic, "",
+              "A string defining a traffi car's circuit through the road"
+              "geometry, consisting of lane id's separated by commas."
+              "The first lane id must be prefixed by either 'start:' or 'end:' "
+              "indicating at which end of the first lane to begin the "
+              "circuit.  If the string is empty, the ego path will "
+              "be used.");
 // "Ego car" in this instance means "controlled by something smarter than
 // this demo code".
 DEFINE_int32(num_user_car, 1, "Number of user-controlled vehicles");
@@ -115,6 +122,7 @@ int main(int argc, char* argv[]) {
         base_road->junction(0)->segment(0)->lane(0),
         maliput::api::LaneEnd::kStart);
     std::vector<const maliput::api::Lane*> path;
+    std::vector<const maliput::api::Lane*> path_traffic;
 
     if (! FLAGS_road_path.empty()) {
       std::string end;
@@ -138,10 +146,38 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    const maliput::utility::InfiniteCircuitRoad* const endless_road =
-        simulator->SetRoadGeometry(&base_road, start, path);
+    if (FLAGS_road_path_traffic.empty()) {
+      path = path_traffic;  // Just fold in the ego's path.
+    } else {
+      std::string end;
+      std::string lane_id;
+      std::stringstream ss(FLAGS_road_path_traffic);
 
-    double longitudinal_offset = 0;
+      std::getline(ss, end, ':');
+      std::getline(ss, lane_id, ',');
+      if ((end != "start") && (end != "end")) {
+        std::cerr << "ERROR:  road_path must start with 'start:' or 'end:'."
+                  << std::endl;
+        return 1;
+      }
+      start = maliput::api::LaneEnd(
+          FindLaneByIdOrDie(lane_id, base_road.get()),
+          (end == "start") ? maliput::api::LaneEnd::kStart :
+          maliput::api::LaneEnd::kFinish);
+
+      while (std::getline(ss, lane_id, ',')) {
+        path_traffic.push_back(FindLaneByIdOrDie(lane_id, base_road.get()));
+      }
+    }
+
+    auto endless_roads =
+        simulator->SetRoadGeometry(&base_road, start, path, path_traffic);
+    const maliput::utility::InfiniteCircuitRoad* const endless_road =
+        endless_roads.first;
+    const maliput::utility::InfiniteCircuitRoad* const endless_road_traffic =
+        endless_roads.second;
+
+    double longitudinal_offset = 200.;
 
     // "Traffic model" is "drive at a constant LANE-space velocity".
     // TODO(maddog) Implement traffic models other than "just drive at
@@ -184,11 +220,12 @@ int main(int argc, char* argv[]) {
     // "Ego model" is "drive at a constant LANE-space velocity".
     const double kEgoInitialSpeed = 10.0;
     const double kEgoLateralOffsetUnit = 0.0;
-    const double kEgoLongitudinalSpacing = 30.0;
+    const double kEgoLongitudinalSpacing = 100.0;
     DRAKE_DEMAND(kEgoInitialSpeed > 0);
     DRAKE_DEMAND(kEgoLongitudinalSpacing > 0);
     for (int i = 0; i < FLAGS_num_ego_car; ++i) {
-      longitudinal_offset += kEgoLongitudinalSpacing;
+      //longitudinal_offset += kEgoLongitudinalSpacing;
+      longitudinal_offset = 50.;
       std::cerr << " Adding ego car at position: " <<
                 longitudinal_offset << std::endl;
       const double lateral_offset = kEgoLateralOffsetUnit;
@@ -199,6 +236,7 @@ int main(int argc, char* argv[]) {
     }
     // Throw if there is a possibility of overlapping.
     DRAKE_DEMAND(longitudinal_offset < endless_road->cycle_length());
+    DRAKE_DEMAND(longitudinal_offset < endless_road_traffic->cycle_length());
   }
 
   simulator->Start();

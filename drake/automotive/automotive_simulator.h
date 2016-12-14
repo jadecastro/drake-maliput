@@ -146,10 +146,13 @@ class AutomotiveSimulator {
   /// for details.
   ///
   /// @pre Start() has NOT been called.
-  const maliput::utility::InfiniteCircuitRoad* SetRoadGeometry(
-      std::unique_ptr<const maliput::api::RoadGeometry>* road,
-      const maliput::api::LaneEnd& start,
-      const std::vector<const maliput::api::Lane*>& path);
+  std::pair<const maliput::utility::InfiniteCircuitRoad*,
+      const maliput::utility::InfiniteCircuitRoad*>
+      SetRoadGeometry(
+          std::unique_ptr<const maliput::api::RoadGeometry>* road,
+          const maliput::api::LaneEnd& start,
+          const std::vector<const maliput::api::Lane*>& path,
+          const std::vector<const maliput::api::Lane*>& path_traffic);
 
   /// Adds an LCM publisher for the given @p system.
   /// @pre Start() has NOT been called.
@@ -249,6 +252,8 @@ class AutomotiveSimulator {
   std::unique_ptr<lcm::DrakeLcmInterface> lcm_{};
   std::unique_ptr<const maliput::api::RoadGeometry> road_{};
   std::unique_ptr<const maliput::utility::InfiniteCircuitRoad> endless_road_{};
+  std::unique_ptr<const maliput::utility::InfiniteCircuitRoad>
+      endless_road_traffic_{};
   // TODO(jadecastro): We no longer need to store a std::map of the cars/i.c.'s.
   std::map<EndlessRoadCar<T>*, EndlessRoadCarState<T>>
     endless_road_user_cars_;

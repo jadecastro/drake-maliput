@@ -42,7 +42,9 @@ template <typename T>
 class TargetSelectorAndIdmMergePlanner : public systems::LeafSystem<T> {
  public:
   explicit TargetSelectorAndIdmMergePlanner(
-      const maliput::utility::InfiniteCircuitRoad* road, const int num_cars,
+      const maliput::utility::InfiniteCircuitRoad* road,
+      const maliput::utility::InfiniteCircuitRoad* road_traffic,
+      const int num_cars,
       const int num_targets_per_car, const bool do_restrict_to_lane = false,
       const bool do_sort = true);
   ~TargetSelectorAndIdmMergePlanner() override;
@@ -135,6 +137,7 @@ class TargetSelectorAndIdmMergePlanner : public systems::LeafSystem<T> {
   std::vector<int> SortDistances(const std::vector<T>& v) const;
 
   const maliput::utility::InfiniteCircuitRoad* road_;
+  const maliput::utility::InfiniteCircuitRoad* road_traffic_;
   const int num_cars_;
   const int num_targets_per_car_;
   const bool do_restrict_to_lane_;

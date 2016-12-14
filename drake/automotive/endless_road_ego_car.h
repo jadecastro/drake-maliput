@@ -52,6 +52,7 @@ class EndlessRoadEgoCar : public systems::Diagram<T> {
   /// @p a_agent constant acceleration of the agent car.
   EndlessRoadEgoCar(const std::string& id, const int num_cars,
                     const maliput::utility::InfiniteCircuitRoad* road,
+                    const maliput::utility::InfiniteCircuitRoad* road_traffic,
                     const T& s_init, const T& r_init, const T& v_init,
                     const T& heading_init, const T& v_ref);
 

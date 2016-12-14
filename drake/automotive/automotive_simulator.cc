@@ -196,12 +196,12 @@ int AutomotiveSimulator<T>::AddEndlessRoadTrafficCar(
     const double v_init,
     const int num_cars) {
   DRAKE_DEMAND(!started_);
-  DRAKE_DEMAND((bool)endless_road_);
+  DRAKE_DEMAND((bool)endless_road_traffic_);
   // TODO(jadecastro): Initialize heading also?
   // TODO(jadecastro): Do something smarter to set v_ref.
   auto endless_road_traffic_car =
     builder_->template AddSystem<EndlessRoadTrafficCar<T>>(
-      id, num_cars, endless_road_.get(),
+      id, num_cars, endless_road_traffic_.get(),
       s_init, r_init, v_init, 0., 30.);
 
   // Save the desired initial state in order to initialize the
@@ -222,7 +222,7 @@ int AutomotiveSimulator<T>::AddEndlessRoadTrafficCar(
 
   auto coord_transform =
     builder_->template AddSystem<EndlessRoadCarToEulerFloatingJoint<T>>(
-            endless_road_.get());
+            endless_road_traffic_.get());
   const int vehicle_number = allocate_vehicle_number();
   builder_->Connect(car->get_output_port(0),
                     coord_transform->get_input_port(0));
@@ -246,7 +246,7 @@ int AutomotiveSimulator<T>::AddEndlessRoadEgoCar(
   // TODO(jadecastro): Do something smarter to set v_ref.
   auto endless_road_ego_car =
     builder_->template AddSystem<EndlessRoadEgoCar<T>>(
-      id, num_cars, endless_road_.get(),
+      id, num_cars, endless_road_.get(), endless_road_traffic_.get(),
       s_init, r_init, v_init, 0., 30.);
 
   // Save the desired initial state in order to initialize the
@@ -277,17 +277,23 @@ int AutomotiveSimulator<T>::AddEndlessRoadEgoCar(
 
 
 template <typename T>
-const maliput::utility::InfiniteCircuitRoad*
+std::pair<const maliput::utility::InfiniteCircuitRoad*,
+          const maliput::utility::InfiniteCircuitRoad*>
 AutomotiveSimulator<T>::SetRoadGeometry(
     std::unique_ptr<const maliput::api::RoadGeometry>* road,
     const maliput::api::LaneEnd& start,
-    const std::vector<const maliput::api::Lane*>& path) {
+    const std::vector<const maliput::api::Lane*>& path,
+    const std::vector<const maliput::api::Lane*>& path_traffic) {
   DRAKE_DEMAND(!started_);
   road_ = std::move(*road);
   endless_road_ = std::make_unique<maliput::utility::InfiniteCircuitRoad>(
       maliput::api::RoadGeometryId({"ForeverRoad"}),
       road_.get(), start, path);
-  return endless_road_.get();
+  endless_road_traffic_ =
+      std::make_unique<maliput::utility::InfiniteCircuitRoad>(
+          maliput::api::RoadGeometryId({"ForeverRoad"}),
+          road_.get(), start, path_traffic);
+  return std::make_pair(endless_road_.get(), endless_road_traffic_.get());
 }
 
 

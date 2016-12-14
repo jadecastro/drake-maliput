@@ -18,7 +18,9 @@ namespace automotive {
 template <typename T>
 EndlessRoadEgoCar<T>::EndlessRoadEgoCar(
     const std::string& id, const int num_cars,
-    const maliput::utility::InfiniteCircuitRoad* road, const T& s_init,
+    const maliput::utility::InfiniteCircuitRoad* road,
+    const maliput::utility::InfiniteCircuitRoad* road_traffic,
+    const T& s_init,
     const T& r_init, const T& v_init, const T& heading_init, const T& v_ref)
     : v_ref_(v_ref), id_(id), num_cars_(num_cars) {
   /*
@@ -46,7 +48,7 @@ EndlessRoadEgoCar<T>::EndlessRoadEgoCar(
   // for the car.
   selector_planner_ =
       builder.AddSystem(std::make_unique<TargetSelectorAndIdmMergePlanner<T>>(
-          road, num_cars_, num_targets_per_car));
+          road, road_traffic, num_cars_, num_targets_per_car));
   // TODO (jadecastro): Default num_targets_per_car as num_cars-1 if
   // no argument.
 
@@ -83,8 +85,8 @@ void EndlessRoadEgoCar<T>::SetDefaultState(systems::Context<T>* context) const {
       this->GetMutableSubsystemContext(context, car_);
   DRAKE_DEMAND(context_car != nullptr);
 
-  const double& thing = car_->get_s_init();
-  std::cerr << "  EndlessRoadEgoCar s_init: " << thing << ".\n";
+  //const double& thing = car_->get_s_init();
+  //std::cerr << "  EndlessRoadEgoCar s_init: " << thing << ".\n";
 
   // Set the default state based on the member fields.
   car_->SetDefaultState(context_car);
