@@ -84,9 +84,12 @@ class TargetSelectorAndIdmMergePlanner : public systems::LeafSystem<T> {
   struct SourceState {
     SourceState() {}
 
-    SourceState(maliput::api::RoadPosition arp, double als)
-        : rp(arp), longitudinal_speed(als) {}
+    SourceState(double s_abs,
+                maliput::api::RoadPosition arp,
+                double als)
+    : s_absolute(s_abs), rp(arp), longitudinal_speed(als) {}
 
+    double s_absolute{};
     maliput::api::RoadPosition rp;
     double longitudinal_speed{};
   };
@@ -96,13 +99,15 @@ class TargetSelectorAndIdmMergePlanner : public systems::LeafSystem<T> {
     bool is_reversed{};
   };
 
+  enum LaneRelation { kIntersection, kMerge, kSplit };
+
   TargetSelectorAndIdmMergePlanner::CarData SelectCarState(
       const systems::BasicVector<T>* input_self_car,
       const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
       std::vector<CarData>* car_data_targets) const;
 
   void UnwrapEndlessRoadCarState(
-      const SourceState& source_state_self, const double& s_absolute,
+      const SourceState& source_state_self,
       const maliput::utility::InfiniteCircuitRoad& road,
       std::vector<PathRecord>* path_self_car) const;
 
@@ -111,6 +116,16 @@ class TargetSelectorAndIdmMergePlanner : public systems::LeafSystem<T> {
       const SourceState& source_states_self,
       const std::vector<SourceState>& source_states_target,
       const std::vector<PathRecord>& path_self_car) const;
+
+  LaneRelation DetermineLaneRelation(const PathRecord& pra,
+                                     const PathRecord& prb) const;
+
+  std::pair<double, double> AssessIntersections(
+    const IdmPlannerParameters<T>& params,
+    const SourceState& source_states_self,
+    const std::vector<SourceState>& source_states_targets,
+    const std::vector<PathRecord>& path_self_car,
+    const maliput::utility::InfiniteCircuitRoad& road) const;
 
   void ComputeIdmAccelerations(const CarData& car_data_self,
                                const std::vector<CarData>& car_data_target,

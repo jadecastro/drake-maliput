@@ -110,24 +110,29 @@ void TargetSelectorAndIdmMergePlanner<T>::EvalOutput(
       output->GetMutableVectorData(0);
   DRAKE_ASSERT(output_vector != nullptr);
 
+  // Mimics the selection of targets (observed traffic cars).
   std::vector<CarData> car_data_targets;
   CarData car_data_self =
       SelectCarState(basic_input_self, inputs_world, &car_data_targets);
 
-  // Compute the IDM accelerations.
+  // Invoke a planner to compute the car accelerations based on target
+  // observables.
   ComputeIdmAccelerations(car_data_self, car_data_targets, context,
                           output_vector);
 }
 
+//namespace {
 const double kEnormousDistance = 1e12;
 const double kPerceptionDistance = 60.0;  // Targets are imperceptible
                                           // outside this radius.
 const double kHorizonSeconds = 10.;
+const double kNonZeroSpeed = 1e-12;
+//const double kLudicruslySmallTime = 1e-12;
 // TODO(jadecastro): Store these as IdmParameters or CarParameters.
 
 template <typename T>
 void TargetSelectorAndIdmMergePlanner<T>::UnwrapEndlessRoadCarState(
-    const SourceState& source_states_self, const double& s_self_absolute,
+    const SourceState& source_states_self,
     const maliput::utility::InfiniteCircuitRoad& road,
     std::vector<PathRecord>* path_self_car) const {
 
@@ -135,10 +140,11 @@ void TargetSelectorAndIdmMergePlanner<T>::UnwrapEndlessRoadCarState(
       source_states_self.longitudinal_speed * kHorizonSeconds;
   DRAKE_DEMAND(horizon_meters >= 0.);
 
+  const double s_absolute_self = source_states_self.s_absolute;
   std::cerr << "   %%% source_states_self.rp.pos.s:"
             << source_states_self.rp.pos.s << std::endl;
-  std::cerr << "   %%% s_self_absolute:" << s_self_absolute << std::endl;
-  const double circuit_s0 = road.lane()->circuit_s(s_self_absolute);
+  std::cerr << "   %%% s_absolute_self:" << s_absolute_self << std::endl;
+  const double circuit_s0 = road.lane()->circuit_s(s_absolute_self);
 
   int path_index = road.GetPathIndex(circuit_s0);
   std::cerr << "   %%% path_index:" << path_index << std::endl;
@@ -169,7 +175,7 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
     const SourceState& source_states_self,
     const std::vector<SourceState>& source_states_targets,
     const std::vector<PathRecord>& path_self_car) const {
-  // NB(jadecastro): Defaults the targets as static obstacles at infinity.
+  // NB: Defaults the targets as static obstacles at infinity.
   double delta_position = kEnormousDistance;
   double delta_velocity = 0.;
 
@@ -197,14 +203,21 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
     cars_by_lane_and_s[target.rp.lane].emplace(target.rp.pos.s, i);
   }
 
-  // NB(jadecastro): Starting at the current self car lane, crawl
+  // NB: Starting at the current self car lane, crawl
   // through the segments and return the data for the next car in
   // the train.
   double lane_length_sum = 0.;  // Sum of the segment lengths crawled
                                 // through so far.
   bool is_first = true;
   double bound_nudge = 0.1 * params.car_length();
-  // Loop over the partial path constructed over the perception horizon.
+  // Loop over the partial path constructed over the perception
+  // horizon.
+  //
+  // TODO(jadecastro): Most of the work of looping through the entire
+  // road segments is completely implementation-specific and should be
+  // hidden from the user in an API.  This of course would ease
+  // (hopefully seamless) portability should any of the road
+  // definition change.
   while (lane_this_car != path_self_car.end()) {
     std::cerr << "        ** lane_this_car: " << lane_this_car->lane
               << std::endl;
@@ -222,7 +235,7 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
     // The linear position of the last car found in the train
     const double last_position = (is_first) ? lane_datum : rp_this_car.pos.s;
 
-    // NB(jadecastro): `states_this_car` contains states and index of the
+    // NB: `states_this_car` contains states and index of the
     // next car in the train.
     bool is_car_past_limit;
     int index_this_car;
@@ -247,17 +260,17 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
       std::cerr << "      index_this_car: " << index_this_car << std::endl;
     }
 
-    // TODO (jadecastro): This could cause false alarms and lead to
-    // the sim crashing inadvertantly.
+    // TODO (jadecastro): This check is somewhat fragile; it could
+    // cause false alarms and make the sim crash inadvertantly.
     if (is_car_past_limit) {
       const SourceState& this_car = source_states_targets[index_this_car];
       rp_this_car = this_car.rp;
       // TODO (jadecastro): This is somewhat of a hack.
-      bool is_not_reversed_nor_infty =
+      bool is_not_reversed_or_infty =
           !lane_this_car->is_reversed ||
           (rp_this_car.pos.s > 0.5 * kEnormousDistance);
       const double pos_relative_to_lane =
-          (is_not_reversed_nor_infty) ? (rp_this_car.pos.s - lane_datum)
+          (is_not_reversed_or_infty) ? (rp_this_car.pos.s - lane_datum)
                                       : (lane_datum - rp_this_car.pos.s);
       // Compute the relative position and velocity of the next car found.
       delta_position =
@@ -297,10 +310,10 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
   return std::make_pair(delta_position, delta_velocity);
 }
 
-enum LaneRelation { kIntersection, kMerge, kSplit };
+//enum LaneRelation { kIntersection, kMerge, kSplit };
 
 template <typename T>
-LaneRelation
+typename TargetSelectorAndIdmMergePlanner<T>::LaneRelation
 TargetSelectorAndIdmMergePlanner<T>::DetermineLaneRelation(
     const PathRecord& pra,
     const PathRecord& prb) const {
@@ -312,6 +325,7 @@ TargetSelectorAndIdmMergePlanner<T>::DetermineLaneRelation(
   // Otherwise, they merely intersect.
   // TODO(maddog)  Two other goofy cases:  split-merge, and tangent-loops.
 
+  // TODO(jadecastro): Should go into an api.
   const maliput::api::BranchPoint* a_end_pt =
       pra.lane->GetBranchPoint(
           (pra.is_reversed) ? maliput::api::LaneEnd::kStart
@@ -343,38 +357,47 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
     const IdmPlannerParameters<T>& params,
     const SourceState& source_states_self,
     const std::vector<SourceState>& source_states_targets,
-    const std::vector<PathRecord>& path_self_car) const {
+    const std::vector<PathRecord>& path_self_car,
+    const maliput::utility::InfiniteCircuitRoad& road) const {
 
   // Indexing Phase.
   // For each car, measure/record the 'time-in' and 'time-out' to all junctions
   // expected to be traversed within kEventHorizon.
   struct TimeBox {
+    int car_index;
     PathRecord pr;
     double time_in;
     double time_out;
     double s_in;  // Distance to entry from current position.
     double s_out; // Distance to exit from current position.
   };
-  std::map<const maliput::api::Junction*, TimeBox> box_by_junction;
+  std::map<const maliput::api::Junction*, TimeBox> self_box_by_junction;
   std::map<const maliput::api::Junction*,
            std::vector<TimeBox>> target_boxes_by_junction;
-  std::vector<const maliput::api::Junction*> junctions_by_car;
+  std::vector<const maliput::api::Junction*> self_junctions;
+  std::map<int, std::vector<const maliput::api::Junction*>>
+    target_junctions_by_car;
 
+  // Extract Junctions and TimeBoxes for the self car.
   const SourceState& self = source_states_self;
   DRAKE_DEMAND(self.rp.lane == path_self_car[0].lane);
-
   double lane_length_sum = 0.;
   bool is_first = true;
   for (const PathRecord& section: path_self_car) {
     double lane_length{};
+    std::cerr << "      *** AssessIntersections (self):" << std::endl;
     if (!section.is_reversed) {
       const double lane_datum = (is_first) ? self.rp.pos.s : 0.;
+      std::cerr << "        lane_datum: " << lane_datum << std::endl;
       lane_length = section.lane->length() - lane_datum;
     } else {
       const double lane_datum = (is_first) ? self.rp.pos.s :
           section.lane->length();
+      std::cerr << "        lane_datum: " << lane_datum << std::endl;
       lane_length = lane_datum;
     }
+    std::cerr << "        lane_length: " << lane_length << std::endl;
+    std::cerr << "        lane_length_sum: " << lane_length_sum << std::endl;
     DRAKE_DEMAND(lane_length > 0.);
     const double s_in = lane_length_sum;
     lane_length_sum += lane_length;
@@ -385,28 +408,120 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
     // TODO(maddog) time in/out should account for length of vehicle, too.
     const double time_in = s_in / speed;
     const double time_out = s_out / speed;
-    const TimeBox box = TimeBox{section,
+    const TimeBox box = TimeBox{0, section,  // NB: self car_index is not used.
                                 time_in, time_out,
                                 s_in, s_out};
 
     const maliput::api::Junction* junction =
         section.lane->segment()->junction();
-    box_by_junction[junction] = box;
-    junctions_by_car.push_back(junction);
+    self_box_by_junction[junction] = box;
+    self_junctions.push_back(junction);
 
     is_first = false;
   }
 
-  target_boxes_by_junction = ;
-  // *** The following is missing a targets_boxes_by_junction
-  // *** structure. We want to ideally get this from the current
-  // *** target positions and their *projected* paths, if the paths
-  // *** are trivial to find (they're determined by simple
-  // *** connections).  Later, this should extend to all possible
-  // *** paths to tease out the worst case scenario.
-  
+  // For each visible target, extract a Junction and TimeBox.
+  for (int i = 0; i < (int)source_states_targets.size(); ++i) {
+    const SourceState& target = source_states_targets[i];
+    double lane_length_sum = 0.;
+    bool is_first = true;
 
-  // Measure Phase.
+    // First, extract the projected path taken by the target.
+    //
+    // TODO(jadecastro): This incorrectly depends on the self-car's
+    // path.  We want to ideally get this from the current target
+    // positions and their *projected* paths, if the paths are trivial
+    // to find (they're determined by simple connections).  Later,
+    // this should extend to all possible paths to tease out the worst
+    // case scenario.
+    const double horizon_meters =
+      source_states_self.longitudinal_speed * kHorizonSeconds;
+    DRAKE_DEMAND(horizon_meters >= 0.);
+
+    const double s_absolute = target.s_absolute;
+    const double circuit_s0 = road.lane()->circuit_s(s_absolute);
+    int path_index = road.GetPathIndex(circuit_s0);
+    std::cerr << "   %%% path_index:" << path_index << std::endl;
+    maliput::utility::InfiniteCircuitRoad::Record path_record =
+      road.path_record(path_index);
+    double circuit_s_in = circuit_s0;
+    std::vector<PathRecord> path;
+    while (circuit_s_in <= (circuit_s0 + horizon_meters)) {
+      path.push_back({path_record.lane, path_record.is_reversed});
+
+      // TODO(maddog) Index should decrement for s_dot < 0.
+      if (++path_index >= road.num_path_records()) {
+        path_index = 0;
+      }
+      path_record = road.path_record(path_index);
+      circuit_s_in = path_record.start_circuit_s;
+      // Handle wrap-around of "circuit s" values.
+      if (circuit_s_in < circuit_s0) {
+        circuit_s_in += road.cycle_length();
+      }
+    }
+
+    // Next, store the Junctions and TimeBoxes for this target, based
+    // on its predicted local path.
+    const double s_target = target.rp.pos.s;
+    if (s_target > 0.5 * kEnormousDistance) { /* We're outside sensing range */
+      for (const PathRecord& section: path) {
+        const TimeBox box = TimeBox{i, section,
+                                    0., 0.,
+                                    -kEnormousDistance, kEnormousDistance};
+        const maliput::api::Junction* junction =
+            section.lane->segment()->junction();
+        target_boxes_by_junction[junction].push_back(box);
+        target_junctions_by_car[i].push_back(junction);
+      }
+      continue;
+    }
+    for (const PathRecord& section: path) {
+      double lane_length{};
+      std::cerr << "      *** AssessIntersections (target):" << std::endl;
+      if (!section.is_reversed) {
+        const double lane_datum = (is_first) ? s_target : 0.;
+        if (is_first) {
+          std::cerr << "        s_target: " << s_target << std::endl;
+        }
+        std::cerr << "        lane_datum: " << lane_datum << std::endl;
+        lane_length = section.lane->length() - lane_datum;
+      } else {
+        const double lane_datum = (is_first) ? s_target :
+          section.lane->length();
+        if (is_first) {
+          std::cerr << "        s_target: " << s_target << std::endl;
+        } else {
+          std::cerr << "        section.lane->length: "
+                    << section.lane->length() << std::endl;
+        }
+        std::cerr << "        lane_datum: " << lane_datum << std::endl;
+        lane_length = lane_datum;
+      }
+      std::cerr << "        lane_length: " << lane_length << std::endl;
+      std::cerr << "        lane_length_sum: " << lane_length_sum << std::endl;
+      DRAKE_DEMAND(lane_length > 0.);
+      const double s_in = lane_length_sum;
+      lane_length_sum += lane_length;
+      const double s_out = lane_length_sum;
+      // TODO(maddog) Decide if better way to deal with zero speed.
+      const double speed = std::max(target.longitudinal_speed, kNonZeroSpeed);
+      // TODO(maddog) time in/out should account for length of vehicle, too.
+      const double time_in = s_in / speed;
+      const double time_out = s_out / speed;
+      const TimeBox box = TimeBox{i, section,
+                                  time_in, time_out,
+                                  s_in, s_out};
+
+      const maliput::api::Junction* junction =
+          section.lane->segment()->junction();
+      target_boxes_by_junction[junction].push_back(box);
+      target_junctions_by_car[i].push_back(junction);
+
+      is_first = false;
+    }
+  }
+
   // Find cars which are entering the same junction at the same time
   // as the self car.
   // We only want to pay attention to cars coming from the right, and
@@ -415,10 +530,10 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
   double maybe_diff_vel{};
 
   // Iterate over the junctions which the self car participates in.
-  for (const auto& junction : junctions_by_car) {
+  for (const auto& junction : self_junctions) {
 
     // Find the TimeBox for this car.
-    const TimeBox self_box = box_by_junction[junction];
+    const TimeBox self_box = self_box_by_junction[junction];
     DRAKE_DEMAND(self_box.time_in < self_box.time_out);
 
     const double kMergeHorizonSeconds = 2.;
@@ -444,9 +559,10 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
 
       switch (DetermineLaneRelation(self_box.pr, other_box.pr)) {
         case kIntersection: {
+          // TODO(jadecastro): Refactor.
           // Skip other if it enters after self enters (i.e., self is first),
           // or exits before self enters (i.e., other is out of the way).
-          DRAKE_DEMAND(other_box.time_in < other_box.time_out);
+          //DRAKE_DEMAND(other_box.time_in < other_box.time_out);
           if ((other_box.time_in > self_box.time_in) ||
               (other_box.time_out < self_box.time_in)) { continue; }
 
@@ -463,19 +579,29 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
 
           const double delta_position_centroids =
               self_box.s_out - other_box.s_out;
+          // TODO(jadecastro): Should also consider other_box.s_in so
+          // as to make the car speed up to avoid collisions.
+          //
           // Traffic car is 'behind' self.
           if (delta_position_centroids < 0.) {
+            // *** Decide whether to pass this info through or
+            // *** implement some logic to process it.
             continue;
           }
-
+          std::cerr << "      AssessIntersections: delta_position_centroids: "
+                    << delta_position_centroids << std::endl;
           double delta_position =
               delta_position_centroids - params.car_length();
+          std::cerr << "      AssessIntersections: delta_position: "
+                    << delta_position << std::endl;
+
           if (delta_position <= 0.) {
+            // TODO(jadecastro): Change this. Make the self car speed up.
             const double kTinyDistance = 0.01;
             delta_position = kTinyDistance;
           }
           if (delta_position < might_collide_at) {
-            might_collide_at = net_delta_sigma;
+            might_collide_at = delta_position;
             maybe_diff_vel =
                 source_states_self.longitudinal_speed -
                 source_states_targets[other_box.car_index].longitudinal_speed;
@@ -491,16 +617,18 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
     }
   }
 
-  if (might_collide_at < delta_position) {
-    return std::make_pair(delta_position, delta_velocity);
-  }
-  return std::make_pair(0., 0.);
+  // **** Decide from which target we take the might_collide_at and
+  // **** maybe_diff_vel.
+
+  //TODO(jadecastro): Ugh, these variable names...
+  return std::make_pair(might_collide_at, maybe_diff_vel);
 }
 
 template <typename T>
 typename TargetSelectorAndIdmMergePlanner<T>::CarData
 TargetSelectorAndIdmMergePlanner<T>::SelectCarState(
-    const systems::BasicVector<T>* input_self_car,  // TODO(jadecastro): Ref.
+    const systems::BasicVector<T>* input_self_car,
+    // TODO(jadecastro): ^^ Bring in as a reference?
     const std::vector<const systems::BasicVector<T>*>& inputs_world_car,
     std::vector<CarData>* car_data_targets) const {
   car_data_targets->clear();
@@ -582,6 +710,9 @@ TargetSelectorAndIdmMergePlanner<T>::SelectCarState(
   return car_data_self;
 }
 
+//}  // namespace
+// TODO(jadecastro): Anon. namespace in TargetSelectorAndIdmPlanner too.
+
 template <typename T>
 void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
     const CarData& car_data_self, const std::vector<CarData>& car_data_targets,
@@ -600,40 +731,46 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
   const T& delta = params.delta();
   const T& car_length = params.car_length();
 
-  const T& s_self_absolute = car_data_self.s;  // Road position
+  const T& s_absolute_self = car_data_self.s;  // Road position
   const T& s_self = car_data_self.lane_s;      // Lane position
   const T& v_self = car_data_self.lane_v;      // Along-lane velocity
   const maliput::api::Lane* lane_self = car_data_self.lane;
   // Compose the inputs into the required containers.
   LanePosition lp_self(s_self, 0., 0.);
   RoadPosition rp_self(lane_self, lp_self);
-  SourceState source_states_self(rp_self, v_self);
+  SourceState source_states_self(s_absolute_self, rp_self, v_self);
 
   std::vector<SourceState> source_states_targets;
   for (auto car_data : car_data_targets) {
+    const T& s_absolute_target = car_data.s;
     const T& s_target = car_data.lane_s;
     const T& v_target = car_data.lane_v;
     const maliput::api::Lane* lane_target = car_data.lane;
     LanePosition lp_target(s_target, 0., 0.);
     RoadPosition rp_target(lane_target, lp_target);
-    source_states_targets.emplace_back(rp_target, v_target);
+    source_states_targets.emplace_back(s_absolute_target, rp_target, v_target);
   }
 
   // Get the local path of the self-car.
   std::vector<PathRecord> path_self_car;
-  UnwrapEndlessRoadCarState(source_states_self, s_self_absolute, *road_,
+  UnwrapEndlessRoadCarState(source_states_self, *road_,
                             &path_self_car);
 
   // Obtain the relative quantities for the nearest car ahead of the self-car.
-  std::pair<double, double> relative_sv = AssessLongitudinal(
+  std::pair<double, double> sv_relative_lane = AssessLongitudinal(
       params, source_states_self, source_states_targets, path_self_car);
-  const double s_rel = relative_sv.first;
-  const double v_rel = relative_sv.second;
+  const double s_rel = sv_relative_lane.first;
+  const double v_rel = sv_relative_lane.second;
 
-  std::pair<double, double> relative_sv = AssessIntersections(
-      params, source_states_self, source_states_targets, path_self_car);
+  std::pair<double, double> sv_relative_outoflane = AssessIntersections(
+      params, source_states_self, source_states_targets, path_self_car, *road_);
+  const double s_rel_ool = sv_relative_outoflane.first;
+  const double v_rel_ool = sv_relative_outoflane.second;
+  std::cerr << " Compute IDM Accelerations: sv_relative_outoflane.s: "
+            << s_rel_ool << std::endl;
+  std::cerr << "                                                 .v: "
+            << v_rel_ool << std::endl;
   // **** Use the output!! ****
-  
 
   // Check that we're supplying the planner with sane parameters and
   // inputs.
