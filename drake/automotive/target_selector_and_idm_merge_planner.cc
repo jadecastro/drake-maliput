@@ -338,7 +338,7 @@ TargetSelectorAndIdmMergePlanner<T>::DetermineLaneRelation(
 }
 
 template <typename T>
-std::pair<double, double>
+std::tuple<double, double, double, double>
 TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
     const IdmPlannerParameters<T>& params,
     const SourceState& source_states_self,
@@ -494,8 +494,10 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
   // as the self car.
   // We only want to pay attention to cars coming from the right, and
   // ultimately only care about the nearest such car.
-  double might_collide_at = kEnormousDistance;
-  double maybe_diff_vel{};
+  double might_collide_at_rear = -kEnormousDistance;
+  double might_collide_at_front = kEnormousDistance;
+  double maybe_diff_vel_rear{};
+  double maybe_diff_vel_front{};
 
   // Iterate over the junctions which the self car participates in.
   for (const auto& junction : self_junctions) {
@@ -536,9 +538,12 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
 
           // Finally:  there could possibly be a collision at this junction,
           // so consider self's position of entry as an obstacle.
-          if (self_box.s_in < might_collide_at) {
-            might_collide_at = self_box.s_in;
-            maybe_diff_vel = source_states_self.longitudinal_speed - 0.;
+          if (self_box.s_in < might_collide_at_front) {
+            might_collide_at_front = self_box.s_in;
+            maybe_diff_vel_front = source_states_self.longitudinal_speed - 0.;
+          } else if (self_box.s_out > might_collide_at_rear) {
+            might_collide_at_rear = self_box.s_out;
+            maybe_diff_vel_rear = source_states_self.longitudinal_speed - 0.;
           }
           break;
         }
@@ -551,25 +556,34 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
           // as to make the car speed up to avoid collisions.
           //
           // Traffic car is 'behind' self.
-          if (delta_position_centroids < 0.) {
+          //if (delta_position_centroids < 0.) {
             // *** Decide whether to pass this info through or
             // *** implement some logic to process it.
-            continue;
-          }
-          double delta_position =
-              delta_position_centroids - params.car_length();
+          //continue;
+          //}
+          const double kTinyDistance = 0.01;
+          double delta_position = (delta_position_centroids > 0.) ?
+              std::max(delta_position_centroids - params.car_length(),
+                       kTinyDistance) :
+              std::min(delta_position_centroids + params.car_length(),
+                       -kTinyDistance);
 
-          if (delta_position <= 0.) {
-            // TODO(jadecastro): Change this. Make the self car speed up.
-            const double kTinyDistance = 0.01;
-            delta_position = kTinyDistance;
-          }
-          if (delta_position < might_collide_at) {
-            might_collide_at = delta_position;
-            maybe_diff_vel =
+          // Report the relative states of the car immediately in
+          // front and behind the self for the lane we are merging
+          // into.
+          if (delta_position > 0. && delta_position < might_collide_at_front) {
+            might_collide_at_front = delta_position;
+            maybe_diff_vel_front =
+                source_states_self.longitudinal_speed -
+                source_states_targets[other_box.car_index].longitudinal_speed;
+          } else if (delta_position < 0. &&
+                     delta_position > might_collide_at_rear) {
+            might_collide_at_rear = delta_position;
+            maybe_diff_vel_rear =
                 source_states_self.longitudinal_speed -
                 source_states_targets[other_box.car_index].longitudinal_speed;
           }
+
           break;
         }
         case kSplit: {
@@ -581,11 +595,13 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
     }
   }
 
-  // **** Decide from which target we take the might_collide_at and
-  // **** maybe_diff_vel.
-
   //TODO(jadecastro): Ugh, these variable names...
-  return std::make_pair(might_collide_at, maybe_diff_vel);
+  //  std::pair<double, double> collision_states_front = std::make_pair(
+  //    might_collide_at_front, maybe_diff_vel_front);
+  //std::pair<double, double> collision_states_rear = std::make_pair(
+  //    might_collide_at_rear, maybe_diff_vel_rear);
+  return std::make_tuple(might_collide_at_front, maybe_diff_vel_front,
+                         might_collide_at_rear, maybe_diff_vel_rear);
 }
 
 template <typename T>
@@ -725,15 +741,25 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
   const double s_rel = sv_relative_lane.first;
   const double v_rel = sv_relative_lane.second;
 
-  std::pair<double, double> sv_relative_outoflane = AssessIntersections(
-      params, source_states_self, source_states_targets, path_self_car, *road_);
-  const double s_rel_ool = sv_relative_outoflane.first;
-  const double v_rel_ool = sv_relative_outoflane.second;
-  if (s_rel_ool < kEnormousDistance) {
-    std::cerr << " Compute IDM Accelerations: sv_relative_outoflane.s: "
-              << s_rel_ool << std::endl;
-    std::cerr << "                                                 .v: "
-              << v_rel_ool << std::endl;
+  std::tuple<double, double, double, double>
+      sv_relative_outoflane = AssessIntersections(
+          params, source_states_self, source_states_targets,
+          path_self_car, *road_);
+  const double s_rel_ool_front = std::get<0>(sv_relative_outoflane);
+  const double v_rel_ool_front = std::get<1>(sv_relative_outoflane);
+  const double s_rel_ool_rear = std::get<2>(sv_relative_outoflane);
+  const double v_rel_ool_rear = std::get<3>(sv_relative_outoflane);
+  if (s_rel_ool_front < kEnormousDistance) {
+    std::cerr << " Compute IDM Accelerations: s_rel_ool_front: "
+              << s_rel_ool_front << std::endl;
+    std::cerr << "                            v_rel_ool_front: "
+              << v_rel_ool_front << std::endl;
+  }
+  if (s_rel_ool_rear > -kEnormousDistance) {
+    std::cerr << " Compute IDM Accelerations: s_rel_ool_rear: "
+              << s_rel_ool_rear << std::endl;
+    std::cerr << "                            v_rel_ool_rear: "
+              << v_rel_ool_rear << std::endl;
   }
   // **** Use the output!! ****
 
@@ -745,20 +771,42 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
 
   const T s_star =
       s_0 + v_self * time_headway + v_self * v_rel / (2 * sqrt(a * b));
+  const T s_star_ool_front =
+      s_0 + v_self * time_headway +
+      v_self * v_rel_ool_front / (2 * sqrt(a * b));
+  const T s_star_ool_rear =
+      s_0 + v_self * time_headway +
+      v_self * v_rel_ool_rear / (2 * sqrt(a * b));
+  const T accel_factor_inlane_front = pow(s_star / s_rel, 2.0);
+  const T accel_factor_outoflane_front =
+      pow(s_star_ool_front / s_rel_ool_front, 2.0);
+  const T accel_factor_outoflane_rear =
+      pow(s_star_ool_rear / s_rel_ool_rear, 2.0);
 
   //std::cerr << "  IdmPlanner v_ref: " << v_ref << std::endl;
   //std::cerr << "  IdmPlanner s_self: " << s_self << std::endl;
-  //std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
+  std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
   //std::cerr << "  IdmPlanner s_rel: " << s_rel << std::endl;
   //std::cerr << "  IdmPlanner v_rel: " << v_rel << std::endl;
 
-  output_vector->SetAtIndex(
-      0, a * (1.0 - pow(v_self / v_ref, delta) -
-              pow(s_star / s_rel, 2.0)));  // Longitudinal acceleration.
+  std::cerr << "  IdmPlanner accel_factor_inlane_front: "
+            << accel_factor_inlane_front << std::endl;
+  std::cerr << "             accel_factor_outoflane_front: "
+            << accel_factor_outoflane_front << std::endl;
+  std::cerr << "             accel_factor_outoflane_rear: "
+            << accel_factor_outoflane_rear << std::endl;
+
+  const double longitudinal_accel = std::min(
+      a * (1.0 - pow(v_self / v_ref, delta)
+           - accel_factor_inlane_front
+           - accel_factor_outoflane_front
+           + accel_factor_outoflane_rear), 8.);
+  output_vector->SetAtIndex(0,
+                            longitudinal_accel);  // Longitudinal acceleration.
   output_vector->SetAtIndex(1, 0.0);       // Lateral acceleration.
 
-  //std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
-  //          << std::endl;
+  std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
+            << std::endl;
   //std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations."
   //          << std::endl;
 }

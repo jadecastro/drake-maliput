@@ -122,12 +122,12 @@ class TargetSelectorAndIdmMergePlanner : public systems::LeafSystem<T> {
   LaneRelation DetermineLaneRelation(const PathRecord& pra,
                                      const PathRecord& prb) const;
 
-  std::pair<double, double> AssessIntersections(
-    const IdmPlannerParameters<T>& params,
-    const SourceState& source_states_self,
-    const std::vector<SourceState>& source_states_targets,
-    const std::vector<PathRecord>& path_self_car,
-    const maliput::utility::InfiniteCircuitRoad& road) const;
+  std::tuple<double, double, double, double> AssessIntersections(
+      const IdmPlannerParameters<T>& params,
+      const SourceState& source_states_self,
+      const std::vector<SourceState>& source_states_targets,
+      const std::vector<PathRecord>& path_self_car,
+      const maliput::utility::InfiniteCircuitRoad& road) const;
 
   void ComputeIdmAccelerations(const CarData& car_data_self,
                                const std::vector<CarData>& car_data_target,

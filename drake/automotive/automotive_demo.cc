@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
     const maliput::utility::InfiniteCircuitRoad* const endless_road_traffic =
         endless_roads.second;
 
-    double longitudinal_offset = 200.;
+    double longitudinal_offset = 210.;
 
     // "Traffic model" is "drive at a constant LANE-space velocity".
     // TODO(maddog) Implement traffic models other than "just drive at
