@@ -290,7 +290,7 @@ TargetSelectorAndIdmMergePlanner<T>::AssessLongitudinal(
     std::cerr << "TOO CLOSE!      delta_pos " << delta_position << std::endl;
   }
   // If delta_position < kCarLength, the cars crashed!
-  DRAKE_DEMAND(delta_position > 0.);
+  //DRAKE_DEMAND(delta_position > 0.);
   //std::cerr << "  @@@@@ IdmPlanner  delta_position: " << delta_position
   //          << std::endl;
   //std::cerr << "  @@@@@ IdmPlanner  delta_velocity: " << delta_velocity
@@ -729,7 +729,7 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
   // Obtain the relative quantities for the nearest car ahead of the self-car.
   std::pair<double, double> sv_relative_lane = AssessLongitudinal(
       params, source_states_self, source_states_targets, path_self_car);
-  const double s_rel = sv_relative_lane.first;
+  double s_rel = sv_relative_lane.first;
   const double v_rel = sv_relative_lane.second;
 
   std::tuple<double, double, double, double>
@@ -757,7 +757,10 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
   // inputs.
   DRAKE_DEMAND(a > 0.0);
   DRAKE_DEMAND(b > 0.0);
-  DRAKE_DEMAND(s_rel > car_length);
+  //DRAKE_DEMAND(s_rel > car_length);
+  if (s_rel <= car_length) {
+    s_rel = kEnormousDistance;
+  }
 
   const T s_star =
       s_0 + v_self * time_headway + v_self * v_rel / (2 * sqrt(a * b));

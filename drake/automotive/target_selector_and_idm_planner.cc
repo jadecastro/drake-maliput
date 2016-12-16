@@ -275,7 +275,7 @@ std::pair<double, double> TargetSelectorAndIdmPlanner<T>::AssessLongitudinal(
     std::cerr << "TOO CLOSE!      delta_pos " << delta_position << std::endl;
   }
   // If delta_position < kCarLength, the cars crashed!
-  DRAKE_DEMAND(delta_position > 0.);
+  //DRAKE_DEMAND(delta_position > 0.);
   //std::cerr << "  @@@@@ IdmPlanner  delta_position: " << delta_position
   //          << std::endl;
   //std::cerr << "  @@@@@ IdmPlanner  delta_velocity: " << delta_velocity
@@ -414,14 +414,17 @@ void TargetSelectorAndIdmPlanner<T>::ComputeIdmAccelerations(
   // Obtain the relative quantities for the nearest car ahead of the self-car.
   std::pair<double, double> relative_sv = AssessLongitudinal(
       params, source_states_self, source_states_targets, path_self_car);
-  const double s_rel = relative_sv.first;
+  double s_rel = relative_sv.first;
   const double v_rel = relative_sv.second;
 
   // Check that we're supplying the planner with sane parameters and
   // inputs.
   DRAKE_DEMAND(a > 0.0);
   DRAKE_DEMAND(b > 0.0);
-  DRAKE_DEMAND(s_rel > car_length);
+  //DRAKE_DEMAND(s_rel > car_length);
+  if (s_rel <= car_length) {
+    s_rel = kEnormousDistance;
+  }
 
   const T s_star =
       s_0 + v_self * time_headway + v_self * v_rel / (2 * sqrt(a * b));
@@ -468,7 +471,7 @@ TargetSelectorAndIdmPlanner<T>::AllocateParameters() const {
   params->set_a(T(4.0));             // max acceleration.
   params->set_b(T(12.0));            // comfortable braking deceleration.
   params->set_s_0(T(2.0));           // minimum desired net distance.
-  params->set_time_headway(T(1.0));  // desired time headway to lead vehicle.
+  params->set_time_headway(T(0.5));  // desired time headway to lead vehicle.
   params->set_delta(T(4.0));       // recommended choice of free-road exponent.
   params->set_car_length(T(4.6));  // length of leading car.
   return std::make_unique<systems::Parameters<T>>(std::move(params));
