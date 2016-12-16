@@ -154,12 +154,16 @@ void TargetSelectorAndIdmMergePlanner<T>::UnwrapEndlessRoadCarState(
   maliput::utility::InfiniteCircuitRoad::Record path_record =
       road.path_record(path_index);
   double circuit_s_in = circuit_s0;
+  int loopback_counter = 0;
   while (circuit_s_in <= (circuit_s0 + horizon_meters)) {
     path_self_car->push_back({path_record.lane, path_record.is_reversed});
 
     // TODO(maddog) Index should decrement for s_dot < 0.
     if (++path_index >= road.num_path_records()) {
       path_index = 0;
+      if (loopback_counter++ > 1) {
+        break;
+      }
     }
     path_record = road.path_record(path_index);
     circuit_s_in = path_record.start_circuit_s;
@@ -552,15 +556,6 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
 
           const double delta_position_centroids =
               self_box.s_out - other_box.s_out;
-          // TODO(jadecastro): Should also consider other_box.s_in so
-          // as to make the car speed up to avoid collisions.
-          //
-          // Traffic car is 'behind' self.
-          //if (delta_position_centroids < 0.) {
-            // *** Decide whether to pass this info through or
-            // *** implement some logic to process it.
-          //continue;
-          //}
           const double kTinyDistance = 0.01;
           double delta_position = (delta_position_centroids > 0.) ?
               std::max(delta_position_centroids - params.car_length(),
@@ -596,10 +591,6 @@ TargetSelectorAndIdmMergePlanner<T>::AssessIntersections(
   }
 
   //TODO(jadecastro): Ugh, these variable names...
-  //  std::pair<double, double> collision_states_front = std::make_pair(
-  //    might_collide_at_front, maybe_diff_vel_front);
-  //std::pair<double, double> collision_states_rear = std::make_pair(
-  //    might_collide_at_rear, maybe_diff_vel_rear);
   return std::make_tuple(might_collide_at_front, maybe_diff_vel_front,
                          might_collide_at_rear, maybe_diff_vel_rear);
 }
@@ -761,7 +752,6 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
     std::cerr << "                            v_rel_ool_rear: "
               << v_rel_ool_rear << std::endl;
   }
-  // **** Use the output!! ****
 
   // Check that we're supplying the planner with sane parameters and
   // inputs.
@@ -785,29 +775,27 @@ void TargetSelectorAndIdmMergePlanner<T>::ComputeIdmAccelerations(
 
   //std::cerr << "  IdmPlanner v_ref: " << v_ref << std::endl;
   //std::cerr << "  IdmPlanner s_self: " << s_self << std::endl;
-  std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
+  //std::cerr << "  IdmPlanner v_self: " << v_self << std::endl;
   //std::cerr << "  IdmPlanner s_rel: " << s_rel << std::endl;
   //std::cerr << "  IdmPlanner v_rel: " << v_rel << std::endl;
 
-  std::cerr << "  IdmPlanner accel_factor_inlane_front: "
-            << accel_factor_inlane_front << std::endl;
-  std::cerr << "             accel_factor_outoflane_front: "
-            << accel_factor_outoflane_front << std::endl;
-  std::cerr << "             accel_factor_outoflane_rear: "
-            << accel_factor_outoflane_rear << std::endl;
+  //std::cerr << "  IdmPlanner accel_factor_inlane_front: "
+  //          << accel_factor_inlane_front << std::endl;
+  //std::cerr << "             accel_factor_outoflane_front: "
+  //          << accel_factor_outoflane_front << std::endl;
+  //std::cerr << "             accel_factor_outoflane_rear: "
+  //          << accel_factor_outoflane_rear << std::endl;
 
   const double longitudinal_accel = std::min(
       a * (1.0 - pow(v_self / v_ref, delta)
            - accel_factor_inlane_front
            - accel_factor_outoflane_front
-           + accel_factor_outoflane_rear), 8.);
+           + accel_factor_outoflane_rear), 100.);
   output_vector->SetAtIndex(0,
                             longitudinal_accel);  // Longitudinal acceleration.
   output_vector->SetAtIndex(1, 0.0);       // Lateral acceleration.
 
-  std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
-            << std::endl;
-  //std::cerr << "  $$$$$$$$ Selector/IdmPlanner::ComputeIdmAccelerations."
+  //std::cerr << "  IdmPlanner accel cmd: " << output_vector->GetAtIndex(0)
   //          << std::endl;
 }
 
@@ -830,8 +818,6 @@ std::unique_ptr<systems::Parameters<T>>
 TargetSelectorAndIdmMergePlanner<T>::AllocateParameters() const {
   // Default values from https://en.wikipedia.org/wiki/Intelligent_driver_model.
   auto params = std::make_unique<IdmPlannerParameters<T>>();
-  // TODO(jadecastro): Workaround to ignore all input arguments since
-  // they don't seem to be working in the simulator.
   params->set_v_ref(T(30.));         // desired velocity in free traffic. (30)
   params->set_a(T(4.0));             // max acceleration.
   params->set_b(T(12.0));            // comfortable braking deceleration.
